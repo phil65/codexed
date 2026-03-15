@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-from pydantic import Field
+from pydantic import AnyUrl, Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
@@ -28,7 +28,7 @@ from codexed.models.thread_status import ThreadStatusValue  # noqa: TC001
 
 
 if TYPE_CHECKING:
-    from mcp.types import Annotations, Icon, ToolAnnotations
+    from mcp.types import Annotations, Icon, Resource, ResourceTemplate, Tool, ToolAnnotations
 
 
 # Strict validation in tests to catch schema changes, lenient in production
@@ -343,10 +343,23 @@ class McpTool(CodexBaseModel):
     name: str
     title: str | None = None
     description: str | None = None
-    input_schema: dict[str, Any] | None = None
+    input_schema: dict[str, Any]
     output_schema: dict[str, Any] | None = None
     annotations: ToolAnnotations | None = None
     icons: list[Icon] | None = None
+
+    def to_mcp_tool(self) -> Tool:
+        from mcp.types import Tool
+
+        return Tool(
+            name=self.name,
+            title=self.title,
+            description=self.description,
+            inputSchema=self.input_schema,
+            outputSchema=self.output_schema,
+            annotations=self.annotations,
+            icons=self.icons,
+        )
 
 
 class McpResource(CodexBaseModel):
@@ -361,6 +374,20 @@ class McpResource(CodexBaseModel):
     annotations: Annotations | None = None
     icons: list[Icon] | None = None
 
+    def to_mcp_resource(self) -> Resource:
+        from mcp.types import Resource
+
+        return Resource(
+            uri=AnyUrl(self.uri),
+            name=self.name,
+            title=self.title,
+            description=self.description,
+            mimeType=self.mime_type,
+            size=self.size,
+            annotations=self.annotations,
+            icons=self.icons,
+        )
+
 
 class McpResourceTemplate(CodexBaseModel):
     """Resource template exposed by an MCP server. Mirrors `mcp.types.ResourceTemplate`."""
@@ -371,6 +398,17 @@ class McpResourceTemplate(CodexBaseModel):
     description: str | None = None
     mime_type: str | None = None
     annotations: Annotations | None = None
+
+    def to_mcp_resource(self) -> ResourceTemplate:
+        from mcp.types import ResourceTemplate
+
+        return ResourceTemplate(
+            uriTemplate=self.uri_template,
+            name=self.name,
+            title=self.title,
+            description=self.description,
+            annotations=self.annotations,
+        )
 
 
 class McpServerStatusEntry(CodexBaseModel):
