@@ -289,3 +289,53 @@ class ExternalAgentConfigDetectResponse(CodexBaseModel):
     """Response for externalAgentConfig/detect request."""
 
     items: list[ExternalAgentConfigMigrationItem]
+
+
+# ============================================================================
+# Filesystem responses
+# ============================================================================
+
+
+class FsReadFileResponse(CodexBaseModel):
+    """Response for fs/readFile request."""
+
+    data_base64: str
+
+
+class FsWriteFileResponse(CodexBaseModel):
+    """Response for fs/writeFile request."""
+
+
+class FsCreateDirectoryResponse(CodexBaseModel):
+    """Response for fs/createDirectory request."""
+
+
+class FsGetMetadataResponse(CodexBaseModel):
+    """Response for fs/getMetadata request."""
+
+    is_directory: bool
+    is_file: bool
+    created_at_ms: int
+    modified_at_ms: int
+
+
+class FsReadDirectoryEntry(CodexBaseModel):
+    """A directory entry returned by fs/readDirectory."""
+
+    file_name: str
+    is_directory: bool
+    is_file: bool
+
+
+class FsReadDirectoryResponse(CodexBaseModel):
+    """Response for fs/readDirectory request."""
+
+    entries: list[FsReadDirectoryEntry]
+
+
+class FsRemoveResponse(CodexBaseModel):
+    """Response for fs/remove request."""
+
+
+class FsCopyResponse(CodexBaseModel):
+    """Response for fs/copy request."""

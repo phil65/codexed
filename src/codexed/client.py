@@ -38,6 +38,17 @@ from codexed.models import (
     ExternalAgentConfigImportParams,
     FeedbackUploadParams,
     FeedbackUploadResponse,
+    FsCopyParams,
+    FsCreateDirectoryParams,
+    FsGetMetadataParams,
+    FsGetMetadataResponse,
+    FsReadDirectoryEntry,
+    FsReadDirectoryParams,
+    FsReadDirectoryResponse,
+    FsReadFileParams,
+    FsReadFileResponse,
+    FsRemoveParams,
+    FsWriteFileParams,
     GetAccountParams,
     GetAccountRateLimitsResponse,
     GetAccountResponse,
@@ -1172,6 +1183,107 @@ class CodexClient:
         )
         result = await self._send_request("command/exec", params)
         return CommandExecResponse.model_validate(result)
+
+    # ========================================================================
+    # Filesystem methods
+    # ========================================================================
+
+    async def fs_read_file(self, path: str) -> FsReadFileResponse:
+        """Read a file from the host filesystem.
+
+        Args:
+            path: Absolute path to read.
+
+        Returns:
+            FsReadFileResponse with base64-encoded file contents.
+        """
+        params = FsReadFileParams(path=path)
+        result = await self._send_request("fs/readFile", params)
+        return FsReadFileResponse.model_validate(result)
+
+    async def fs_write_file(self, path: str, data_base64: str) -> None:
+        """Write a file on the host filesystem.
+
+        Args:
+            path: Absolute path to write.
+            data_base64: File contents encoded as base64.
+        """
+        params = FsWriteFileParams(path=path, data_base64=data_base64)
+        await self._send_request("fs/writeFile", params)
+
+    async def fs_create_directory(self, path: str, *, recursive: bool | None = None) -> None:
+        """Create a directory on the host filesystem.
+
+        Args:
+            path: Absolute directory path to create.
+            recursive: Whether to create parent directories. Defaults to True server-side.
+        """
+        params = FsCreateDirectoryParams(path=path, recursive=recursive)
+        await self._send_request("fs/createDirectory", params)
+
+    async def fs_get_metadata(self, path: str) -> FsGetMetadataResponse:
+        """Get metadata for an absolute path.
+
+        Args:
+            path: Absolute path to inspect.
+
+        Returns:
+            FsGetMetadataResponse with isDirectory, isFile, and timestamps.
+        """
+        params = FsGetMetadataParams(path=path)
+        result = await self._send_request("fs/getMetadata", params)
+        return FsGetMetadataResponse.model_validate(result)
+
+    async def fs_read_directory(self, path: str) -> list[FsReadDirectoryEntry]:
+        """List direct child entries for a directory.
+
+        Args:
+            path: Absolute directory path to read.
+
+        Returns:
+            List of directory entries with fileName, isDirectory, isFile.
+        """
+        params = FsReadDirectoryParams(path=path)
+        result = await self._send_request("fs/readDirectory", params)
+        return FsReadDirectoryResponse.model_validate(result).entries
+
+    async def fs_remove(
+        self,
+        path: str,
+        *,
+        recursive: bool | None = None,
+        force: bool | None = None,
+    ) -> None:
+        """Remove a file or directory from the host filesystem.
+
+        Args:
+            path: Absolute path to remove.
+            recursive: Whether to recurse into directories. Defaults to True server-side.
+            force: Whether to ignore missing paths. Defaults to True server-side.
+        """
+        params = FsRemoveParams(path=path, recursive=recursive, force=force)
+        await self._send_request("fs/remove", params)
+
+    async def fs_copy(
+        self,
+        source_path: str,
+        destination_path: str,
+        *,
+        recursive: bool = False,
+    ) -> None:
+        """Copy a file or directory tree on the host filesystem.
+
+        Args:
+            source_path: Absolute source path.
+            destination_path: Absolute destination path.
+            recursive: Required for directory copies; ignored for file copies.
+        """
+        params = FsCopyParams(
+            source_path=source_path,
+            destination_path=destination_path,
+            recursive=recursive,
+        )
+        await self._send_request("fs/copy", params)
 
     # ========================================================================
     # MCP server methods

@@ -394,6 +394,59 @@ class ExternalAgentConfigImportParams(CodexBaseModel):
     migration_items: list[ExternalAgentConfigMigrationItem]
 
 
+# ============================================================================
+# Filesystem params
+# ============================================================================
+
+
+class FsReadFileParams(CodexBaseModel):
+    """Parameters for fs/readFile request."""
+
+    path: str
+
+
+class FsWriteFileParams(CodexBaseModel):
+    """Parameters for fs/writeFile request."""
+
+    path: str
+    data_base64: str
+
+
+class FsCreateDirectoryParams(CodexBaseModel):
+    """Parameters for fs/createDirectory request."""
+
+    path: str
+    recursive: bool | None = None
+
+
+class FsGetMetadataParams(CodexBaseModel):
+    """Parameters for fs/getMetadata request."""
+
+    path: str
+
+
+class FsReadDirectoryParams(CodexBaseModel):
+    """Parameters for fs/readDirectory request."""
+
+    path: str
+
+
+class FsRemoveParams(CodexBaseModel):
+    """Parameters for fs/remove request."""
+
+    path: str
+    recursive: bool | None = None
+    force: bool | None = None
+
+
+class FsCopyParams(CodexBaseModel):
+    """Parameters for fs/copy request."""
+
+    source_path: str
+    destination_path: str
+    recursive: bool = False
+
+
 class CommandExecutionRequestApprovalParams(CodexBaseModel):
     """Parameters for item/commandExecution/requestApproval server request."""
 
