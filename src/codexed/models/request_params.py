@@ -8,9 +8,9 @@ from pydantic import Discriminator, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
+    ApprovalDecision,
     ApprovalPolicy,
     CollaborationMode,
-    CommandExecutionApprovalDecision,
     MergeStrategy,
     Personality,
     ReasoningEffort,
@@ -465,7 +465,7 @@ class CommandExecutionRequestApprovalParams(CodexBaseModel):
     additional_permissions: dict[str, Any] | None = None
     proposed_execpolicy_amendment: ExecPolicyAmendment | None = None
     proposed_network_policy_amendments: list[NetworkPolicyAmendment] | None = None
-    available_decisions: list[CommandExecutionApprovalDecision] | None = None
+    available_decisions: list[ApprovalDecision] | None = None
 
 
 class FileChangeRequestApprovalParams(CodexBaseModel):

@@ -6,9 +6,8 @@ import mcp.types
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
+    ApprovalDecision,
     AskForApproval,
-    CommandExecutionApprovalDecision,
-    FileChangeApprovalDecision,
     ModeKind,
     ReasoningEffort,
     SandboxPolicy,
@@ -35,13 +34,13 @@ from codexed.models.thread_item import DynamicToolCallOutputContentItem  # noqa:
 class CommandExecutionRequestApprovalResponse(CodexBaseModel):
     """Response for item/commandExecution/requestApproval server request."""
 
-    decision: CommandExecutionApprovalDecision
+    decision: ApprovalDecision
 
 
 class FileChangeRequestApprovalResponse(CodexBaseModel):
     """Response for item/fileChange/requestApproval server request."""
 
-    decision: FileChangeApprovalDecision
+    decision: ApprovalDecision
 
 
 class ToolRequestUserInputResponse(CodexBaseModel):
