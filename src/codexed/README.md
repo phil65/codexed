@@ -7,7 +7,7 @@ Python adapter for the [Codex](https://github.com/openai/codex) app-server JSON-
 ```python
 import asyncio
 from codexed import CodexClient
-from codexed.models.events import AgentMessageDeltaEvent, TurnCompletedEvent, get_text_delta
+from codexed.models import AgentMessageDeltaEvent, TurnCompletedEvent, get_text_delta
 
 async def main():
     async with CodexClient() as client:
@@ -46,7 +46,7 @@ async with CodexClient() as client:
 Events are a discriminated union. Use pattern matching or helper functions:
 
 ```python
-from codexed.models.events import (
+from codexed.models import (
     AgentMessageDeltaEvent,
     CommandExecutionOutputDeltaEvent,
     TurnCompletedEvent,
