@@ -104,6 +104,7 @@ from codexed.request_handlers import (
     SERVER_REQUEST_COMMAND_APPROVAL,
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
     SERVER_REQUEST_FILE_CHANGE_APPROVAL,
+    SERVER_REQUEST_MCP_ELICITATION,
     SERVER_REQUEST_TYPES,
     SERVER_REQUEST_USER_INPUT,
     create_auto_approve_dict,
@@ -145,6 +146,7 @@ if TYPE_CHECKING:
         DynamicToolCallHandler,
         FileChangeApprovalHandler,
         HandlerMethod,
+        McpElicitationHandler,
         ServerRequestHandler,
         UserInputHandler,
     )
@@ -358,6 +360,7 @@ class CodexClient:
         on_file_change_approval: FileChangeApprovalHandler | None = None,
         on_user_input: UserInputHandler | None = None,
         on_dynamic_tool_call: DynamicToolCallHandler | None = None,
+        on_mcp_elicitation: McpElicitationHandler | None = None,
     ) -> None:
         """Initialize the Codex app-server client.
 
@@ -371,6 +374,7 @@ class CodexClient:
             on_file_change_approval: Handler for file change approval requests.
             on_user_input: Handler for tool user input requests.
             on_dynamic_tool_call: Handler for dynamic tool call requests.
+            on_mcp_elicitation: Handler for MCP elicitation requests.
         """
         self._codex_command = codex_command
         self._profile = profile
@@ -393,6 +397,8 @@ class CodexClient:
             self.register_handler(SERVER_REQUEST_USER_INPUT, on_user_input)  # type: ignore[arg-type]
         if on_dynamic_tool_call:
             self.register_handler(SERVER_REQUEST_DYNAMIC_TOOL_CALL, on_dynamic_tool_call)  # type: ignore[arg-type]
+        if on_mcp_elicitation:
+            self.register_handler(SERVER_REQUEST_MCP_ELICITATION, on_mcp_elicitation)  # type: ignore[arg-type]
 
     async def __aenter__(self) -> Self:
         """Async context manager entry - starts the app-server."""
