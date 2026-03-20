@@ -174,7 +174,7 @@ def test_to_tool_list_only_set():
     """to_tool_list should only return explicitly set tools."""
     config = BuiltinToolsConfig(shell=ShellToolConfig(), js_repl=JsReplToolConfig())
     tools = config.to_tool_list()
-    assert len(tools) == 2
+    assert len(tools) == 2  # noqa: PLR2004
     assert isinstance(tools[0], ShellToolConfig)
     assert isinstance(tools[1], JsReplToolConfig)
 
@@ -312,7 +312,7 @@ def test_discriminated_list_roundtrip():
     ]
     data = adapter.dump_python(tools, mode="python")
     restored = adapter.validate_python(data)
-    assert len(restored) == 3
+    assert len(restored) == 3  # noqa: PLR2004
     assert isinstance(restored[0], ShellToolConfig)
     assert isinstance(restored[1], WebSearchToolConfig)
     assert isinstance(restored[2], JsReplToolConfig)
@@ -327,7 +327,7 @@ def test_discriminated_list_json_roundtrip():
     ]
     json_bytes = adapter.dump_json(tools)
     restored = adapter.validate_json(json_bytes)
-    assert len(restored) == 2
+    assert len(restored) == 2  # noqa: PLR2004
     assert isinstance(restored[0], ShellToolConfig)
     assert restored[0].allow_login_shell is True
     assert isinstance(restored[1], WebSearchToolConfig)
