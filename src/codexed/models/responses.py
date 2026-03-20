@@ -55,6 +55,14 @@ class DynamicToolCallResponse(CodexBaseModel):
     success: bool
 
 
+class McpServerElicitationResponse(CodexBaseModel):
+    """Response for mcpServer/elicitation/request server request."""
+
+    action: Literal["accept", "decline", "cancel"]
+    content: Any | None = None
+    meta: Any | None = None
+
+
 class ThreadReadResponse(CodexBaseModel):
     """Response for thread/read request."""
 

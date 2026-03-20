@@ -499,3 +499,42 @@ class DynamicToolCallParams(CodexBaseModel):
     call_id: str
     tool: str
     arguments: Any
+
+
+# --- MCP Elicitation ---
+
+McpElicitationAction = Literal["accept", "decline", "cancel"]
+"""Action taken by the user on an elicitation request."""
+
+
+class McpElicitationFormParams(CodexBaseModel):
+    """Form-mode MCP elicitation request."""
+
+    mode: Literal["form"] = "form"
+    meta: Any | None = None
+    message: str
+    requested_schema: dict[str, Any]
+
+
+class McpElicitationUrlParams(CodexBaseModel):
+    """URL-mode MCP elicitation request (browser-based auth)."""
+
+    mode: Literal["url"] = "url"
+    meta: Any | None = None
+    message: str
+    url: str
+    elicitation_id: str
+
+
+class McpServerElicitationRequestParams(CodexBaseModel):
+    """Parameters for mcpServer/elicitation/request server request."""
+
+    thread_id: str
+    turn_id: str | None = None
+    server_name: str
+    mode: Literal["form", "url"]
+    meta: Any | None = None
+    message: str
+    requested_schema: dict[str, Any] | None = None
+    url: str | None = None
+    elicitation_id: str | None = None

@@ -12,6 +12,8 @@ from codexed.models import (
     DynamicToolCallResponse,
     FileChangeRequestApprovalParams,
     FileChangeRequestApprovalResponse,
+    McpServerElicitationRequestParams,
+    McpServerElicitationResponse,
     ToolRequestUserInputParams,
     ToolRequestUserInputResponse,
 )
@@ -22,12 +24,14 @@ SERVER_REQUEST_COMMAND_APPROVAL = "item/commandExecution/requestApproval"
 SERVER_REQUEST_FILE_CHANGE_APPROVAL = "item/fileChange/requestApproval"
 SERVER_REQUEST_USER_INPUT = "item/tool/requestUserInput"
 SERVER_REQUEST_DYNAMIC_TOOL_CALL = "item/tool/call"
+SERVER_REQUEST_MCP_ELICITATION = "mcpServer/elicitation/request"
 
 HandlerMethod = Literal[
     "item/commandExecution/requestApproval",
     "item/fileChange/requestApproval",
     "item/tool/requestUserInput",
     "item/tool/call",
+    "mcpServer/elicitation/request",
 ]
 # Type for server request parameter models
 ServerRequestParams = (
@@ -35,6 +39,7 @@ ServerRequestParams = (
     | FileChangeRequestApprovalParams
     | ToolRequestUserInputParams
     | DynamicToolCallParams
+    | McpServerElicitationRequestParams
 )
 
 # Type for server request response models
@@ -43,6 +48,7 @@ ServerRequestResponse = (
     | FileChangeRequestApprovalResponse
     | ToolRequestUserInputResponse
     | DynamicToolCallResponse
+    | McpServerElicitationResponse
 )
 
 # Server request handler callback type
@@ -59,6 +65,9 @@ FileChangeApprovalHandler = Callable[
 ]
 UserInputHandler = Callable[[ToolRequestUserInputParams], Awaitable[ToolRequestUserInputResponse]]
 DynamicToolCallHandler = Callable[[DynamicToolCallParams], Awaitable[DynamicToolCallResponse]]
+McpElicitationHandler = Callable[
+    [McpServerElicitationRequestParams], Awaitable[McpServerElicitationResponse]
+]
 
 # Map from wire method names to param/response model types
 SERVER_REQUEST_TYPES: dict[str, tuple[type[ServerRequestParams], type[ServerRequestResponse]]] = {
@@ -75,6 +84,10 @@ SERVER_REQUEST_TYPES: dict[str, tuple[type[ServerRequestParams], type[ServerRequ
         ToolRequestUserInputResponse,
     ),
     SERVER_REQUEST_DYNAMIC_TOOL_CALL: (DynamicToolCallParams, DynamicToolCallResponse),
+    SERVER_REQUEST_MCP_ELICITATION: (
+        McpServerElicitationRequestParams,
+        McpServerElicitationResponse,
+    ),
 }
 
 
@@ -105,9 +118,15 @@ def create_auto_approve_dict() -> dict[str, ServerRequestHandler]:
     ) -> ServerRequestResponse:
         return DynamicToolCallResponse(content_items=[], success=False)
 
+    async def auto_decline_elicitation(
+        _params: ServerRequestParams,
+    ) -> ServerRequestResponse:
+        return McpServerElicitationResponse(action="decline")
+
     dct: dict[str, ServerRequestHandler] = {}
     dct[SERVER_REQUEST_COMMAND_APPROVAL] = auto_approve_command
     dct[SERVER_REQUEST_FILE_CHANGE_APPROVAL] = auto_approve_file_change
     dct[SERVER_REQUEST_USER_INPUT] = auto_approve_user_input
     dct[SERVER_REQUEST_DYNAMIC_TOOL_CALL] = auto_approve_dynamic_tool
+    dct[SERVER_REQUEST_MCP_ELICITATION] = auto_decline_elicitation
     return dct
