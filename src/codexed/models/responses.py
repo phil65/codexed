@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+import mcp.types
+
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
     AskForApproval,
@@ -61,6 +63,14 @@ class McpServerElicitationResponse(CodexBaseModel):
     action: Literal["accept", "decline", "cancel"]
     content: Any | None = None
     meta: Any | None = None
+
+    def to_mcp(self) -> mcp.types.ElicitResult:
+        return mcp.types.ElicitResult(action=self.action, content=self.content)
+
+    @classmethod
+    def from_mcp(cls, result: mcp.types.ElicitResult) -> McpServerElicitationResponse:
+        """Create from MCP ElicitResult."""
+        return cls(action=result.action, content=result.content)
 
 
 class ThreadReadResponse(CodexBaseModel):

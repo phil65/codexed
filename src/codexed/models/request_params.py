@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TC003
-from typing import Any, Literal, Self
+from typing import Annotated, Any, Literal, Self
+
+import mcp.types
+from pydantic import Discriminator, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
@@ -507,34 +510,85 @@ McpElicitationAction = Literal["accept", "decline", "cancel"]
 """Action taken by the user on an elicitation request."""
 
 
-class McpElicitationFormParams(CodexBaseModel):
-    """Form-mode MCP elicitation request."""
-
-    mode: Literal["form"] = "form"
-    meta: Any | None = None
-    message: str
-    requested_schema: dict[str, Any]
-
-
-class McpElicitationUrlParams(CodexBaseModel):
-    """URL-mode MCP elicitation request (browser-based auth)."""
-
-    mode: Literal["url"] = "url"
-    meta: Any | None = None
-    message: str
-    url: str
-    elicitation_id: str
-
-
-class McpServerElicitationRequestParams(CodexBaseModel):
-    """Parameters for mcpServer/elicitation/request server request."""
+class _McpElicitationBase(CodexBaseModel):
+    """Common fields for MCP elicitation requests."""
 
     thread_id: str
     turn_id: str | None = None
     server_name: str
-    mode: Literal["form", "url"]
     meta: Any | None = None
     message: str
-    requested_schema: dict[str, Any] | None = None
-    url: str | None = None
-    elicitation_id: str | None = None
+
+
+class McpElicitationFormParams(_McpElicitationBase):
+    """Form-mode MCP elicitation request."""
+
+    mode: Literal["form"] = "form"
+    requested_schema: dict[str, Any]
+
+    def to_mcp(self) -> mcp.types.ElicitRequestFormParams:
+        return mcp.types.ElicitRequestFormParams(
+            message=self.message,
+            requestedSchema=self.requested_schema,
+        )
+
+    @classmethod
+    def from_mcp(
+        cls,
+        params: mcp.types.ElicitRequestFormParams,
+        thread_id: str,
+        server_name: str,
+        turn_id: str | None = None,
+    ) -> McpElicitationFormParams:
+        """Create from MCP ElicitRequestFormParams."""
+        return cls(
+            message=params.message,
+            requested_schema=dict(params.requestedSchema),
+            thread_id=thread_id,
+            server_name=server_name,
+            turn_id=turn_id,
+        )
+
+
+class McpElicitationUrlParams(_McpElicitationBase):
+    """URL-mode MCP elicitation request (browser-based auth)."""
+
+    mode: Literal["url"] = "url"
+    url: str
+    elicitation_id: str
+
+    def to_mcp(self) -> mcp.types.ElicitRequestURLParams:
+        return mcp.types.ElicitRequestURLParams(
+            message=self.message,
+            url=self.url,
+            elicitationId=self.elicitation_id,
+        )
+
+    @classmethod
+    def from_mcp(
+        cls,
+        params: mcp.types.ElicitRequestURLParams,
+        thread_id: str,
+        server_name: str,
+        turn_id: str | None = None,
+    ) -> McpElicitationUrlParams:
+        """Create from MCP ElicitRequestURLParams."""
+        return cls(
+            message=params.message,
+            url=params.url,
+            elicitation_id=params.elicitationId,
+            thread_id=thread_id,
+            server_name=server_name,
+            turn_id=turn_id,
+        )
+
+
+McpServerElicitationRequestParams = Annotated[
+    McpElicitationFormParams | McpElicitationUrlParams,
+    Discriminator("mode"),
+]
+"""Parameters for mcpServer/elicitation/request, discriminated by mode."""
+
+mcp_elicitation_adapter: TypeAdapter[McpServerElicitationRequestParams] = TypeAdapter(
+    McpServerElicitationRequestParams
+)

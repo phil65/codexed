@@ -105,6 +105,7 @@ from codexed.request_handlers import (
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
     SERVER_REQUEST_FILE_CHANGE_APPROVAL,
     SERVER_REQUEST_MCP_ELICITATION,
+    SERVER_REQUEST_SKILL_APPROVAL,
     SERVER_REQUEST_TYPES,
     SERVER_REQUEST_USER_INPUT,
     create_auto_approve_dict,
@@ -142,9 +143,8 @@ if TYPE_CHECKING:
     )
     from codexed.models.request_params import HazelnutScope, LoginType, ProductSurface
     from codexed.request_handlers import (
-        CommandApprovalHandler,
+        ApprovalHandler,
         DynamicToolCallHandler,
-        FileChangeApprovalHandler,
         HandlerMethod,
         McpElicitationHandler,
         ServerRequestHandler,
@@ -356,8 +356,7 @@ class CodexClient:
         profile: str | None = None,
         env_vars: dict[str, str] | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
-        on_command_approval: CommandApprovalHandler | None = None,
-        on_file_change_approval: FileChangeApprovalHandler | None = None,
+        on_approval: ApprovalHandler | None = None,
         on_user_input: UserInputHandler | None = None,
         on_dynamic_tool_call: DynamicToolCallHandler | None = None,
         on_mcp_elicitation: McpElicitationHandler | None = None,
@@ -370,8 +369,8 @@ class CodexClient:
             env_vars: Optional environment variables to set for the Codex process.
             mcp_servers: Optional MCP servers to inject programmatically.
                 Keys are server names, values are server configurations.
-            on_command_approval: Handler for command execution approval requests.
-            on_file_change_approval: Handler for file change approval requests.
+            on_approval: Handler for all approval requests
+                (command execution, file change, and skill approval).
             on_user_input: Handler for tool user input requests.
             on_dynamic_tool_call: Handler for dynamic tool call requests.
             on_mcp_elicitation: Handler for MCP elicitation requests.
@@ -389,10 +388,10 @@ class CodexClient:
         self._writer_lock = asyncio.Lock()
         self._active_threads: set[str] = set()
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
-        if on_command_approval:
-            self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_command_approval)  # type: ignore[arg-type]
-        if on_file_change_approval:
-            self.register_handler(SERVER_REQUEST_FILE_CHANGE_APPROVAL, on_file_change_approval)  # type: ignore[arg-type]
+        if on_approval:
+            self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_FILE_CHANGE_APPROVAL, on_approval)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_SKILL_APPROVAL, on_approval)  # type: ignore[arg-type]
         if on_user_input:
             self.register_handler(SERVER_REQUEST_USER_INPUT, on_user_input)  # type: ignore[arg-type]
         if on_dynamic_tool_call:
@@ -1774,7 +1773,10 @@ class CodexClient:
             return
 
         try:
-            parsed_params = params_type.model_validate(params)
+            if isinstance(params_type, TypeAdapter):
+                parsed_params = params_type.validate_python(params)
+            else:
+                parsed_params = params_type.model_validate(params)
             response_model = await handler(parsed_params)
             await self._send_server_request_response(request_id, response_model)
         except Exception:

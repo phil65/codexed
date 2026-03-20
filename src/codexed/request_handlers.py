@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from typing import Literal
 
+from pydantic import TypeAdapter
+
 from codexed.models import (
     CommandExecutionRequestApprovalParams,
     CommandExecutionRequestApprovalResponse,
@@ -12,10 +14,17 @@ from codexed.models import (
     DynamicToolCallResponse,
     FileChangeRequestApprovalParams,
     FileChangeRequestApprovalResponse,
-    McpServerElicitationRequestParams,
     McpServerElicitationResponse,
+    SkillRequestApprovalParams,
+    SkillRequestApprovalResponse,
     ToolRequestUserInputParams,
     ToolRequestUserInputResponse,
+)
+from codexed.models.request_params import (
+    McpElicitationFormParams,
+    McpElicitationUrlParams,
+    McpServerElicitationRequestParams,
+    mcp_elicitation_adapter,
 )
 
 
@@ -24,6 +33,7 @@ SERVER_REQUEST_COMMAND_APPROVAL = "item/commandExecution/requestApproval"
 SERVER_REQUEST_FILE_CHANGE_APPROVAL = "item/fileChange/requestApproval"
 SERVER_REQUEST_USER_INPUT = "item/tool/requestUserInput"
 SERVER_REQUEST_DYNAMIC_TOOL_CALL = "item/tool/call"
+SERVER_REQUEST_SKILL_APPROVAL = "skill/requestApproval"
 SERVER_REQUEST_MCP_ELICITATION = "mcpServer/elicitation/request"
 
 HandlerMethod = Literal[
@@ -31,21 +41,25 @@ HandlerMethod = Literal[
     "item/fileChange/requestApproval",
     "item/tool/requestUserInput",
     "item/tool/call",
+    "skill/requestApproval",
     "mcpServer/elicitation/request",
 ]
 # Type for server request parameter models
 ServerRequestParams = (
     CommandExecutionRequestApprovalParams
     | FileChangeRequestApprovalParams
+    | SkillRequestApprovalParams
     | ToolRequestUserInputParams
     | DynamicToolCallParams
-    | McpServerElicitationRequestParams
+    | McpElicitationFormParams
+    | McpElicitationUrlParams
 )
 
 # Type for server request response models
 ServerRequestResponse = (
     CommandExecutionRequestApprovalResponse
     | FileChangeRequestApprovalResponse
+    | SkillRequestApprovalResponse
     | ToolRequestUserInputResponse
     | DynamicToolCallResponse
     | McpServerElicitationResponse
@@ -69,8 +83,24 @@ McpElicitationHandler = Callable[
     [McpServerElicitationRequestParams], Awaitable[McpServerElicitationResponse]
 ]
 
-# Map from wire method names to param/response model types
-SERVER_REQUEST_TYPES: dict[str, tuple[type[ServerRequestParams], type[ServerRequestResponse]]] = {
+# Unified approval handler: one callback for all approval types
+ApprovalParams = (
+    CommandExecutionRequestApprovalParams
+    | FileChangeRequestApprovalParams
+    | SkillRequestApprovalParams
+)
+ApprovalResponse = (
+    CommandExecutionRequestApprovalResponse
+    | FileChangeRequestApprovalResponse
+    | SkillRequestApprovalResponse
+)
+ApprovalHandler = Callable[[ApprovalParams], Awaitable[ApprovalResponse]]
+
+# Validator: either a model class or a TypeAdapter for discriminated unions
+ParamsValidator = type[ServerRequestParams] | TypeAdapter[ServerRequestParams]
+
+# Map from wire method names to param validator + response model type
+SERVER_REQUEST_TYPES: dict[str, tuple[ParamsValidator, type[ServerRequestResponse]]] = {
     SERVER_REQUEST_COMMAND_APPROVAL: (
         CommandExecutionRequestApprovalParams,
         CommandExecutionRequestApprovalResponse,
@@ -84,8 +114,12 @@ SERVER_REQUEST_TYPES: dict[str, tuple[type[ServerRequestParams], type[ServerRequ
         ToolRequestUserInputResponse,
     ),
     SERVER_REQUEST_DYNAMIC_TOOL_CALL: (DynamicToolCallParams, DynamicToolCallResponse),
+    SERVER_REQUEST_SKILL_APPROVAL: (
+        SkillRequestApprovalParams,
+        SkillRequestApprovalResponse,
+    ),
     SERVER_REQUEST_MCP_ELICITATION: (
-        McpServerElicitationRequestParams,
+        mcp_elicitation_adapter,  # type: ignore[dict-item]
         McpServerElicitationResponse,
     ),
 }
@@ -118,6 +152,11 @@ def create_auto_approve_dict() -> dict[str, ServerRequestHandler]:
     ) -> ServerRequestResponse:
         return DynamicToolCallResponse(content_items=[], success=False)
 
+    async def auto_approve_skill(
+        _params: ServerRequestParams,
+    ) -> ServerRequestResponse:
+        return SkillRequestApprovalResponse(decision="allow")
+
     async def auto_decline_elicitation(
         _params: ServerRequestParams,
     ) -> ServerRequestResponse:
@@ -128,5 +167,6 @@ def create_auto_approve_dict() -> dict[str, ServerRequestHandler]:
     dct[SERVER_REQUEST_FILE_CHANGE_APPROVAL] = auto_approve_file_change
     dct[SERVER_REQUEST_USER_INPUT] = auto_approve_user_input
     dct[SERVER_REQUEST_DYNAMIC_TOOL_CALL] = auto_approve_dynamic_tool
+    dct[SERVER_REQUEST_SKILL_APPROVAL] = auto_approve_skill
     dct[SERVER_REQUEST_MCP_ELICITATION] = auto_decline_elicitation
     return dct
