@@ -2,7 +2,7 @@
 
 [project]
 name = "codexed"
-version = "0.0.4"
+version = "0.0.5"
 description = "Alternative codex app-server client"
 readme = "README.md"
 requires-python = ">=3.13"
