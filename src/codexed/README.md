@@ -52,7 +52,6 @@ from codexed.models import (
     TurnCompletedEvent,
     TurnErrorEvent,
     get_text_delta,
-    is_delta_event,
 )
 
 async for event in client.turn_stream(thread_id, message):

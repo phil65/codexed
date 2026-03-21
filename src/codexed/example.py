@@ -10,14 +10,9 @@ from codexed import CodexClient
 from codexed.models.events import (
     AgentMessageDeltaEvent,
     CommandExecutionOutputDeltaEvent,
-    ItemCompletedEvent,
-    RawResponseItemCompletedEvent,
     TurnCompletedEvent,
     TurnErrorEvent,
     get_text_delta,
-    is_completed_event,
-    is_delta_event,
-    is_error_event,
 )
 
 
@@ -129,30 +124,7 @@ async def event_inspection_example() -> None:
         async for event in session.turn_stream("What files are here?"):
             # Print all event types
             print(f"[{event.event_type}]", end=" ")
-
-            # Show event-specific details
-            if is_delta_event(event):
-                text = get_text_delta(event)
-                if text:
-                    print(f"text: {text[:50]}...")
-                else:
-                    print(f"data: {event.data}")
-            elif is_completed_event(event):
-                # Get ID from different event types with proper type safety
-                match event:
-                    case ItemCompletedEvent() | RawResponseItemCompletedEvent():
-                        print("✓ item")
-                    case TurnCompletedEvent(data=data):
-                        print(f"✓ turn:{data.turn.id}")
-                    case _:
-                        print("✓")
-            elif is_error_event(event):
-                print(f"✗ {event.data}")
-            else:
-                print(event.data)
-
-            if isinstance(event, TurnCompletedEvent):
-                break
+            print(event)
 
 
 async def main() -> None:

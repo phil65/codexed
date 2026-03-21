@@ -576,34 +576,3 @@ def get_text_delta(event: CodexEvent) -> str:
             return data.delta
         case _:
             return ""
-
-
-def is_delta_event(event: CodexEvent) -> bool:
-    """Check if this is a delta event (streaming content)."""
-    return isinstance(
-        event,
-        AgentMessageDeltaEvent
-        | PlanDeltaEvent
-        | ReasoningTextDeltaEvent
-        | ReasoningSummaryTextDeltaEvent
-        | CommandExecutionOutputDeltaEvent
-        | FileChangeOutputDeltaEvent,
-    )
-
-
-def is_completed_event(event: CodexEvent) -> bool:
-    """Check if this is a completion event."""
-    return isinstance(
-        event,
-        TurnCompletedEvent
-        | ItemCompletedEvent
-        | RawResponseItemCompletedEvent
-        | McpServerOAuthLoginCompletedEvent
-        | AccountLoginCompletedEvent
-        | LoginChatGptCompleteEvent,
-    )
-
-
-def is_error_event(event: CodexEvent) -> bool:
-    """Check if this is an error event."""
-    return isinstance(event, ErrorEvent | TurnErrorEvent)

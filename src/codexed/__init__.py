@@ -144,9 +144,6 @@ from codexed.models.events import (
     TurnPlanUpdatedEvent,
     TurnStartedEvent,
     get_text_delta,
-    is_completed_event,
-    is_delta_event,
-    is_error_event,
 )
 from codexed.models.mcp_server import (
     HttpMcpServer,
@@ -295,9 +292,6 @@ __all__ = [
     "UserInputText",
     "WorkspaceWriteSandboxPolicy",
     "get_text_delta",
-    "is_completed_event",
-    "is_delta_event",
-    "is_error_event",
     "is_retryable_error",
     "map_jsonrpc_error",
     "tools_to_config_dict",

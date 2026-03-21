@@ -156,9 +156,6 @@ from codexed.models.events import (
     WindowsWorldWritableWarningEvent,
     codex_event_adapter,
     get_text_delta,
-    is_completed_event,
-    is_delta_event,
-    is_error_event,
 )
 from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
 
@@ -798,8 +795,5 @@ __all__ = [
     "WriteStatus",
     "codex_event_adapter",
     "get_text_delta",
-    "is_completed_event",
-    "is_delta_event",
-    "is_error_event",
     "tools_to_config_dict",
 ]
