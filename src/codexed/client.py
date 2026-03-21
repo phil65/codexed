@@ -335,6 +335,7 @@ class Session:
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
         personality: Personality | None = None,
+        turn_id: str | None = None,
     ) -> Session:
         """Fork this thread.  See :meth:`CodexClient.thread_fork`."""
         return await self._client.thread_fork(
@@ -351,6 +352,7 @@ class Session:
             tools=tools,
             code_mode=code_mode,
             personality=personality,
+            turn_id=turn_id,
         )
 
     def __repr__(self) -> str:
@@ -654,6 +656,7 @@ class CodexClient:
         code_mode: bool | None = None,
         personality: Personality | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
+        turn_id: str | None = None,
     ) -> Session:
         """Fork an existing thread into a new thread with copied history.
 
@@ -672,6 +675,7 @@ class CodexClient:
             code_mode: Enable experimental code mode feature flag
             personality: Personality for forked thread
             mcp_servers: Per-thread MCP server configurations
+            turn_id: If provided, rollback the forked thread to this turn
 
         Returns:
             Session wrapping the new forked thread
@@ -692,7 +696,10 @@ class CodexClient:
         result = await self._send_request("thread/fork", params)
         response = ThreadResponse.model_validate(result)
         self._active_threads.add(response.thread.id)
-        return Session(self, response)
+        session = Session(self, response)
+        if turn_id is not None:
+            await self.thread_rollback_to_turn(session.thread_id, turn_id)
+        return session
 
     async def thread_list(
         self,
