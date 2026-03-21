@@ -9,6 +9,16 @@ from __future__ import annotations
 from typing import Any
 
 
+# JSON-RPC 2.0 standard error codes
+JSONRPC_PARSE_ERROR = -32700
+JSONRPC_INVALID_REQUEST = -32600
+JSONRPC_METHOD_NOT_FOUND = -32601
+JSONRPC_INVALID_PARAMS = -32602
+JSONRPC_INTERNAL_ERROR = -32603
+JSONRPC_SERVER_ERROR_MIN = -32099
+JSONRPC_SERVER_ERROR_MAX = -32000
+
+
 class CodexError(Exception):
     """Base exception for Codex adapter errors."""
 
@@ -113,7 +123,7 @@ def _is_server_overloaded(data: Any) -> bool:  # noqa: PLR0911
     return False
 
 
-def map_jsonrpc_error(
+def map_jsonrpc_error(  # noqa: PLR0911
     code: int,
     message: str,
     data: dict[str, Any] | None = None,
@@ -128,18 +138,18 @@ def map_jsonrpc_error(
     Returns:
         Appropriately typed CodexRequestError subclass.
     """
-    if code == -32700:
+    if code == JSONRPC_PARSE_ERROR:
         return ParseError(code, message, data)
-    if code == -32600:
+    if code == JSONRPC_INVALID_REQUEST:
         return InvalidRequestError(code, message, data)
-    if code == -32601:
+    if code == JSONRPC_METHOD_NOT_FOUND:
         return MethodNotFoundError(code, message, data)
-    if code == -32602:
+    if code == JSONRPC_INVALID_PARAMS:
         return InvalidParamsError(code, message, data)
-    if code == -32603:
+    if code == JSONRPC_INTERNAL_ERROR:
         return InternalRpcError(code, message, data)
 
-    if -32099 <= code <= -32000:
+    if JSONRPC_SERVER_ERROR_MIN <= code <= JSONRPC_SERVER_ERROR_MAX:
         if _is_server_overloaded(data):
             if _contains_retry_limit_text(message):
                 return RetryLimitExceededError(code, message, data)
