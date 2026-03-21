@@ -9,12 +9,10 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
     CollabAgentStatus,
     CollabAgentTool,
-    CollabAgentToolCallStatus,
     CommandExecutionStatus,
-    DynamicToolCallStatus,
-    McpToolCallStatus,
     MessagePhase,
     PatchApplyStatus,
+    ToolCallStatus,
 )
 from codexed.models.command_action import CommandAction  # noqa: TC001
 from codexed.models.user_input import UserInput  # noqa: TC001
@@ -160,7 +158,7 @@ class ThreadItemMcpToolCall(BaseThreadItem):
     type: Literal["mcpToolCall"] = "mcpToolCall"
     server: str
     tool: str
-    status: McpToolCallStatus
+    status: ToolCallStatus
     arguments: dict[str, Any] | None = None
     result: McpToolCallResult | None = None
     error: McpToolCallError | None = None
@@ -182,7 +180,7 @@ class ThreadItemDynamicToolCall(BaseThreadItem):
     type: Literal["dynamicToolCall"] = "dynamicToolCall"
     tool: str
     arguments: dict[str, Any] | None = None
-    status: DynamicToolCallStatus
+    status: ToolCallStatus
     content_items: list[DynamicToolCallOutputContentItem] | None = None
     success: bool | None = None
     duration_ms: int | None = None
@@ -248,7 +246,7 @@ class ThreadItemCollabAgentToolCall(BaseThreadItem):
 
     type: Literal["collabAgentToolCall"] = "collabAgentToolCall"
     tool: CollabAgentTool
-    status: CollabAgentToolCallStatus
+    status: ToolCallStatus
     sender_thread_id: str
     receiver_thread_ids: list[str] = Field(default_factory=list)
     prompt: str | None = None

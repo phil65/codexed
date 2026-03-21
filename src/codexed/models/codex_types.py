@@ -46,10 +46,8 @@ ThreadSourceKind = Literal[
 MessagePhase = Literal["commentary", "final_answer"]
 PatchApplyStatus = Literal["inProgress", "completed", "failed", "declined"]
 CommandExecutionStatus = Literal["inProgress", "completed", "failed", "declined"]
-McpToolCallStatus = Literal["inProgress", "completed", "failed"]
-DynamicToolCallStatus = Literal["inProgress", "completed", "failed"]
+ToolCallStatus = Literal["inProgress", "completed", "failed"]
 CollabAgentTool = Literal["spawnAgent", "sendInput", "resumeAgent", "wait", "closeAgent"]
-CollabAgentToolCallStatus = Literal["inProgress", "completed", "failed"]
 CollabAgentStatus = Literal[
     "pendingInit", "running", "completed", "errored", "shutdown", "notFound"
 ]
