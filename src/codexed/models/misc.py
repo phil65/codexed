@@ -200,12 +200,11 @@ class Turn(CodexBaseModel):
 
         last_unphased: str | None = None
         for item in reversed(self.items):
-            if not isinstance(item, ThreadItemAgentMessage):
-                continue
-            if item.phase == "final_answer":
-                return item.text
-            if item.phase is None and last_unphased is None:
-                last_unphased = item.text
+            match item:
+                case ThreadItemAgentMessage(phase="final_answer", text=text):
+                    return text
+                case ThreadItemAgentMessage(phase=None, text=text) if last_unphased is None:
+                    last_unphased = text
         return last_unphased
 
 
