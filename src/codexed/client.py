@@ -1254,18 +1254,33 @@ class CodexClient:
         result = await self._send_request("fs/getMetadata", params)
         return FsGetMetadataResponse.model_validate(result)
 
-    async def fs_read_directory(self, path: str) -> list[FsReadDirectoryEntry]:
-        """List direct child entries for a directory.
+    async def fs_read_directory(
+        self,
+        path: str,
+        *,
+        recursive: bool = False,
+    ) -> list[FsReadDirectoryEntry]:
+        """List child entries for a directory.
 
         Args:
             path: Absolute directory path to read.
+            recursive: If True, recursively list all descendant entries.
 
         Returns:
             List of directory entries with fileName, isDirectory, isFile.
         """
         params = FsReadDirectoryParams(path=path)
         result = await self._send_request("fs/readDirectory", params)
-        return FsReadDirectoryResponse.model_validate(result).entries
+        entries = FsReadDirectoryResponse.model_validate(result).entries
+        if not recursive:
+            return entries
+        all_entries = list(entries)
+        for entry in entries:
+            if entry.is_directory:
+                sub_path = f"{path.rstrip('/')}/{entry.file_name}"
+                sub_entries = await self.fs_read_directory(sub_path, recursive=True)
+                all_entries.extend(sub_entries)
+        return all_entries
 
     async def fs_remove(
         self,
