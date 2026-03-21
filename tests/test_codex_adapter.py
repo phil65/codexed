@@ -8,7 +8,6 @@ import pytest
 
 from codexed import CodexClient, HttpMcpServer, StdioMcpServer
 from codexed.exceptions import CodexProcessError, CodexRequestError
-from codexed.helpers import mcp_config_to_toml_inline
 from codexed.models.events import AgentMessageDeltaEvent
 
 
@@ -59,14 +58,14 @@ async def test_send_request_not_connected_raises():
 def test_mcp_config_to_toml_stdio():
     """StdioMcpServer serializes to TOML inline format."""
     config = StdioMcpServer(command="npx", args=["-y", "pkg"])
-    result = mcp_config_to_toml_inline("bash", config)
+    result = config.to_config_toml("bash")
     assert result == 'mcp_servers.bash={command = "npx", args = ["-y", "pkg"]}'
 
 
 def test_mcp_config_to_toml_http():
     """HttpMcpServer serializes to TOML inline format."""
     config = HttpMcpServer(url="http://localhost:8000", bearer_token_env_var="TOKEN")
-    result = mcp_config_to_toml_inline("api", config)
+    result = config.to_config_toml("api")
     assert 'url = "http://localhost:8000"' in result
     assert 'bearer_token_env_var = "TOKEN"' in result
 

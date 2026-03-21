@@ -19,7 +19,7 @@ from codexed.exceptions import (
     TurnFailedError,
     map_jsonrpc_error,
 )
-from codexed.helpers import kebab_to_camel, mcp_config_to_toml_inline
+from codexed.helpers import kebab_to_camel
 from codexed.models import (
     AgentMessageDeltaData,
     AgentMessageDeltaEvent,
@@ -439,7 +439,7 @@ class CodexClient:
             cmd.extend(["--profile", self._profile])
         # Add MCP server configurations via --config flags
         for server_name, server_config in self._mcp_servers.items():
-            config_str = mcp_config_to_toml_inline(server_name, server_config)
+            config_str = server_config.to_config_toml(server_name)
             cmd.extend(["--config", config_str])
 
         logger.info("Starting Codex app-server: %s", " ".join(cmd))
