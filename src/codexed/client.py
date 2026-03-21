@@ -13,7 +13,12 @@ from typing import TYPE_CHECKING, Any, assert_never
 import anyenv
 from pydantic import BaseModel, TypeAdapter
 
-from codexed.exceptions import CodexProcessError, CodexRequestError
+from codexed.exceptions import (
+    CodexProcessError,
+    TransportClosedError,
+    TurnFailedError,
+    map_jsonrpc_error,
+)
 from codexed.helpers import kebab_to_camel, mcp_config_to_toml_inline
 from codexed.models import (
     AgentMessageDeltaData,
@@ -471,7 +476,7 @@ class CodexClient:
         # Reject pending requests
         for future in self._pending_requests.values():
             if not future.done():
-                future.set_exception(CodexProcessError("Connection closed"))
+                future.set_exception(TransportClosedError("Connection closed"))
         self._pending_requests.clear()
 
     # ========================================================================
@@ -904,7 +909,7 @@ class CodexClient:
                         break
                     case TurnErrorEvent(data=TurnErrorData(error=error)):
                         yield event
-                        raise CodexRequestError(-32000, error)
+                        raise TurnFailedError(error, turn_id=turn_id)
                     case _:
                         yield event
         finally:  # Cleanup turn queue
@@ -1019,7 +1024,7 @@ class CodexClient:
                 case AgentMessageDeltaEvent(data=AgentMessageDeltaData(delta=delta)):
                     response_text += delta
                 case TurnErrorEvent(data=TurnErrorData(error=error)):
-                    raise CodexRequestError(-32000, error)
+                    raise TurnFailedError(error, turn_id="unknown")
 
         # Parse into typed model
         return result_type.model_validate_json(response_text)
@@ -1628,7 +1633,7 @@ class CodexClient:
             Response result (not yet validated - caller should validate)
         """
         if self._process is None or self._process.stdin is None:
-            raise CodexProcessError("Not connected to Codex app-server")
+            raise TransportClosedError("Not connected to Codex app-server")
 
         request_id = self._request_id
         self._request_id += 1
@@ -1708,7 +1713,7 @@ class CodexClient:
             future = self._pending_requests.pop(response.id, None)
             if future and not future.done():
                 if err := response.error:
-                    future.set_exception(CodexRequestError(err.code, err.message, err.data))
+                    future.set_exception(map_jsonrpc_error(err.code, err.message, err.data))
                 else:
                     future.set_result(response.result)
         except Exception as exc:  # noqa: BLE001
@@ -1802,7 +1807,7 @@ class CodexClient:
     async def _write_message(self, message: dict[str, Any]) -> None:
         """Write a JSON message to the app-server stdin."""
         if self._process is None or self._process.stdin is None:
-            raise CodexProcessError("Not connected to Codex app-server")
+            raise TransportClosedError("Not connected to Codex app-server")
         async with self._writer_lock:
             line = json.dumps(message) + "\n"
             self._process.stdin.write(line.encode())
