@@ -9,14 +9,12 @@ from codexed.models.base import CodexBaseModel
 
 
 class ByteRange(CodexBaseModel):
-    """Byte range within a UTF-8 text buffer.
-
-    start: Start byte offset (inclusive).
-    end: End byte offset (exclusive).
-    """
+    """Byte range within a UTF-8 text buffer."""
 
     start: int = Field(..., ge=0)
+    """Start byte offset (inclusive)."""
     end: int = Field(..., ge=0)
+    """End byte offset (exclusive)."""
 
 
 class TextElement(CodexBaseModel):

@@ -7,37 +7,39 @@ from typing import Literal
 from codexed.models.base import CodexBaseModel
 
 
-class CommandActionRead(CodexBaseModel):
+class BaseCommandAction(CodexBaseModel):
+    """Base command action model."""
+
+    command: str
+
+
+class CommandActionRead(BaseCommandAction):
     """Read command action."""
 
     type: Literal["read"] = "read"
-    command: str
     name: str
     path: str
 
 
-class CommandActionListFiles(CodexBaseModel):
+class CommandActionListFiles(BaseCommandAction):
     """List files command action."""
 
     type: Literal["listFiles"] = "listFiles"
-    command: str
     path: str | None = None
 
 
-class CommandActionSearch(CodexBaseModel):
+class CommandActionSearch(BaseCommandAction):
     """Search command action."""
 
     type: Literal["search"] = "search"
-    command: str
     query: str | None = None
     path: str | None = None
 
 
-class CommandActionUnknown(CodexBaseModel):
+class CommandActionUnknown(BaseCommandAction):
     """Unknown command action."""
 
     type: Literal["unknown"] = "unknown"
-    command: str
 
 
 # Discriminated union of command actions
