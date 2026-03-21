@@ -128,6 +128,15 @@ class ThreadItemCommandExecution(BaseThreadItem):
     exit_code: int | None = None
     duration_ms: int | None = None
 
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of this command execution."""
+        output = self.aggregated_output or ""
+        msg = f"[Executed: {self.command}]"
+        if output:
+            msg += f"\n{output[:200]}"
+        return msg
+
 
 class ThreadItemFileChange(BaseThreadItem):
     """File change item."""
@@ -135,6 +144,14 @@ class ThreadItemFileChange(BaseThreadItem):
     type: Literal["fileChange"] = "fileChange"
     changes: list[FileUpdateChange]
     status: PatchApplyStatus
+
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of file changes."""
+        paths = [c.path for c in self.changes]
+        if len(paths) > 3:  # noqa: PLR2004
+            return f"[Files: {', '.join(paths[:3])} +{len(paths) - 3} more]"
+        return f"[Files: {', '.join(paths)}]"
 
 
 class ThreadItemMcpToolCall(BaseThreadItem):
@@ -148,6 +165,15 @@ class ThreadItemMcpToolCall(BaseThreadItem):
     result: McpToolCallResult | None = None
     error: McpToolCallError | None = None
     duration_ms: int | None = None
+
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of this MCP tool call."""
+        result_text = ""
+        if self.result and self.result.content:
+            texts = [str(b.model_dump().get("text", "")) for b in self.result.content]
+            result_text = " ".join(texts)
+        return f"[Tool: {self.tool}] {result_text[:100]}"
 
 
 class ThreadItemDynamicToolCall(BaseThreadItem):
@@ -169,12 +195,22 @@ class ThreadItemWebSearch(BaseThreadItem):
     query: str
     action: WebSearchAction | None = None
 
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of this web search."""
+        return f"[Web Search: {self.query}]"
+
 
 class ThreadItemImageView(BaseThreadItem):
     """Image view item."""
 
     type: Literal["imageView"] = "imageView"
     path: str
+
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of this image view."""
+        return f"[Viewed Image: {self.path}]"
 
 
 class ThreadItemEnteredReviewMode(BaseThreadItem):
@@ -183,12 +219,22 @@ class ThreadItemEnteredReviewMode(BaseThreadItem):
     type: Literal["enteredReviewMode"] = "enteredReviewMode"
     review: str
 
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of entering review mode."""
+        return f"[Entered Review Mode: {self.review}]"
+
 
 class ThreadItemExitedReviewMode(BaseThreadItem):
     """Exited review mode item."""
 
     type: Literal["exitedReviewMode"] = "exitedReviewMode"
     review: str
+
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of exiting review mode."""
+        return f"[Exited Review Mode: {self.review}]"
 
 
 class ThreadItemContextCompaction(BaseThreadItem):
@@ -208,6 +254,14 @@ class ThreadItemCollabAgentToolCall(BaseThreadItem):
     prompt: str | None = None
     agents_states: dict[str, CollabAgentState] = Field(default_factory=dict)
 
+    @property
+    def item_summary(self) -> str:
+        """Human-readable summary of this collab agent tool call."""
+        first_state = next(iter(self.agents_states.values()), None)
+        status = first_state.status if first_state else "unknown"
+        receiver_ids = ", ".join(self.receiver_thread_ids)
+        return f"[Collab Agent: {self.tool}] {receiver_ids} ({status})"
+
 
 # Discriminated union of all ThreadItem types
 ThreadItem = (
@@ -226,3 +280,20 @@ ThreadItem = (
     | ThreadItemExitedReviewMode
     | ThreadItemContextCompaction
 )
+
+ThreadItemType = Literal[
+    "userMessage",
+    "agentMessage",
+    "plan",
+    "reasoning",
+    "commandExecution",
+    "fileChange",
+    "mcpToolCall",
+    "dynamicToolCall",
+    "collabAgentToolCall",
+    "webSearch",
+    "imageView",
+    "enteredReviewMode",
+    "exitedReviewMode",
+    "contextCompaction",
+]
