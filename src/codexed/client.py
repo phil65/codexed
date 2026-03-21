@@ -90,7 +90,6 @@ from codexed.models import (
     ThreadRollbackResponse,
     ThreadSetNameParams,
     ThreadStartParams,
-    ThreadTokenUsage,
     ThreadTokenUsageUpdatedData,
     ThreadTokenUsageUpdatedEvent,
     ThreadUnarchiveParams,
@@ -146,6 +145,7 @@ if TYPE_CHECKING:
         SkillData,
         ThreadSortKey,
         ThreadSourceKind,
+        ThreadTokenUsage,
         ToolConfig,
         UserInput,
     )

@@ -137,7 +137,7 @@ def _sandbox_policy_discriminator(v: Any) -> str:
         case {"type": str(raw_type)}:
             return _SANDBOX_TYPE_ALIASES.get(raw_type, raw_type)
         case BaseModel():
-            return str(v.model_fields["type"].default)
+            return str(type(v).model_fields["type"].default)
         case _:
             return str(v)
 
@@ -147,7 +147,7 @@ def _read_only_access_discriminator(v: Any) -> str:
         case {"type": str(raw_type)}:
             return _READ_ONLY_ACCESS_TYPE_ALIASES.get(raw_type, raw_type)
         case BaseModel():
-            return str(v.model_fields["type"].default)
+            return str(type(v).model_fields["type"].default)
         case _:
             return str(v)
 
