@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import Discriminator, Field, Tag
+from pydantic import Discriminator, Field
 
 from codexed.models.base import CodexBaseModel
 
@@ -38,9 +38,7 @@ class OutputTextContent(CodexBaseModel):
 
 
 ContentItem = Annotated[
-    Annotated[InputTextContent, Tag("input_text")]
-    | Annotated[InputImageContent, Tag("input_image")]
-    | Annotated[OutputTextContent, Tag("output_text")],
+    InputTextContent | InputImageContent | OutputTextContent,
     Discriminator("type"),
 ]
 
@@ -63,8 +61,7 @@ class ReasoningPlainTextContent(CodexBaseModel):
 
 
 ReasoningItemContent = Annotated[
-    Annotated[ReasoningTextContent, Tag("reasoning_text")]
-    | Annotated[ReasoningPlainTextContent, Tag("text")],
+    ReasoningTextContent | ReasoningPlainTextContent,
     Discriminator("type"),
 ]
 
@@ -95,8 +92,7 @@ class FunctionCallOutputImageItem(CodexBaseModel):
 
 
 FunctionCallOutputContentItem = Annotated[
-    Annotated[FunctionCallOutputTextItem, Tag("input_text")]
-    | Annotated[FunctionCallOutputImageItem, Tag("input_image")],
+    FunctionCallOutputTextItem | FunctionCallOutputImageItem,
     Discriminator("type"),
 ]
 
@@ -158,10 +154,10 @@ class WebSearchActionOther(CodexBaseModel):
 
 
 WebSearchAction = Annotated[
-    Annotated[WebSearchActionSearch, Tag("search")]
-    | Annotated[WebSearchActionOpenPage, Tag("open_page")]
-    | Annotated[WebSearchActionFindInPage, Tag("find_in_page")]
-    | Annotated[WebSearchActionOther, Tag("other")],
+    WebSearchActionSearch
+    | WebSearchActionOpenPage
+    | WebSearchActionFindInPage
+    | WebSearchActionOther,
     Discriminator("type"),
 ]
 
@@ -283,17 +279,17 @@ class OtherResponseItem(CodexBaseModel):
 
 
 ResponseItem = Annotated[
-    Annotated[MessageResponseItem, Tag("message")]
-    | Annotated[ReasoningResponseItem, Tag("reasoning")]
-    | Annotated[LocalShellCallResponseItem, Tag("local_shell_call")]
-    | Annotated[FunctionCallResponseItem, Tag("function_call")]
-    | Annotated[FunctionCallOutputResponseItem, Tag("function_call_output")]
-    | Annotated[CustomToolCallResponseItem, Tag("custom_tool_call")]
-    | Annotated[CustomToolCallOutputResponseItem, Tag("custom_tool_call_output")]
-    | Annotated[WebSearchCallResponseItem, Tag("web_search_call")]
-    | Annotated[ImageGenerationCallResponseItem, Tag("image_generation_call")]
-    | Annotated[GhostSnapshotResponseItem, Tag("ghost_snapshot")]
-    | Annotated[CompactionResponseItem, Tag("compaction")]
-    | Annotated[OtherResponseItem, Tag("other")],
+    MessageResponseItem
+    | ReasoningResponseItem
+    | LocalShellCallResponseItem
+    | FunctionCallResponseItem
+    | FunctionCallOutputResponseItem
+    | CustomToolCallResponseItem
+    | CustomToolCallOutputResponseItem
+    | WebSearchCallResponseItem
+    | ImageGenerationCallResponseItem
+    | GhostSnapshotResponseItem
+    | CompactionResponseItem
+    | OtherResponseItem,
     Discriminator("type"),
 ]

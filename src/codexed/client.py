@@ -1157,11 +1157,7 @@ class CodexClient:
     # Model methods
     # ========================================================================
 
-    async def model_list(
-        self,
-        *,
-        include_hidden: bool | None = None,
-    ) -> list[ModelData]:
+    async def model_list(self, *, include_hidden: bool | None = None) -> list[ModelData]:
         """List available models with reasoning effort options.
 
         Args:
