@@ -90,6 +90,9 @@ from codexed.models import (
     ThreadRollbackResponse,
     ThreadSetNameParams,
     ThreadStartParams,
+    ThreadTokenUsage,
+    ThreadTokenUsageUpdatedData,
+    ThreadTokenUsageUpdatedEvent,
     ThreadUnarchiveParams,
     ThreadUnarchiveResponse,
     ThreadUnsubscribeParams,
@@ -179,6 +182,7 @@ class Session:
     def __init__(self, client: CodexClient, response: ThreadResponse) -> None:
         self._client = client
         self.response = response
+        self.usage: ThreadTokenUsage | None = None
 
     @property
     def thread_id(self) -> str:
@@ -187,7 +191,7 @@ class Session:
 
     # -- Turn operations -----------------------------------------------------
 
-    def turn_stream(
+    async def turn_stream(
         self,
         user_input: str | list[UserInput],
         *,
@@ -202,7 +206,7 @@ class Session:
         collaboration_mode: CollaborationMode | None = None,
     ) -> AsyncIterator[CodexEvent]:
         """Start a turn and stream events.  See :meth:`CodexClient.turn_stream`."""
-        return self._client.turn_stream(
+        async for event in self._client.turn_stream(
             self.thread_id,
             user_input,
             model=model,
@@ -214,7 +218,13 @@ class Session:
             personality=personality,
             summary=summary,
             collaboration_mode=collaboration_mode,
-        )
+        ):
+            match event:
+                case ThreadTokenUsageUpdatedEvent(
+                    data=ThreadTokenUsageUpdatedData(token_usage=usage)
+                ):
+                    self.usage = usage
+            yield event
 
     async def turn_steer(
         self,

@@ -6,11 +6,10 @@ Each event type is a proper BaseModel with the event_type as the discriminator.
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Literal
 
 from pydantic import Field, TypeAdapter
 
-from codexed import TokenUsageBreakdown
 from codexed.models.base import CodexBaseModel
 from codexed.models.event_data import (  # noqa: TC001
     AccountLoginCompletedData,
@@ -53,6 +52,10 @@ from codexed.models.event_data import (  # noqa: TC001
     TurnStartedData,
     WindowsWorldWritableWarningData,
 )
+
+
+if TYPE_CHECKING:
+    from codexed import TokenUsageBreakdown
 
 
 class ErrorEvent(CodexBaseModel):
