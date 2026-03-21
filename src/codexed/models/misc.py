@@ -186,6 +186,26 @@ class Turn(CodexBaseModel):
     status: TurnStatusValue = "inProgress"
     error: TurnError | None = None
 
+    @property
+    def final_response(self) -> str | None:
+        """Extract the final assistant response text from this turn.
+
+        Looks for the last ``ThreadItemAgentMessage`` with ``phase="final_answer"``.
+        Falls back to the last agent message with no phase (for models that don't
+        emit phase metadata). Returns None if the turn has no agent messages.
+        """
+        from codexed.models.thread_item import ThreadItemAgentMessage
+
+        last_unphased: str | None = None
+        for item in reversed(self.items):
+            if not isinstance(item, ThreadItemAgentMessage):
+                continue
+            if item.phase == "final_answer":
+                return item.text
+            if item.phase is None and last_unphased is None:
+                last_unphased = item.text
+        return last_unphased
+
 
 class Thread(CodexBaseModel):
     """Thread data structure."""
