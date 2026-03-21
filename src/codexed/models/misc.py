@@ -193,6 +193,8 @@ class Turn(CodexBaseModel):
         Looks for the last ``ThreadItemAgentMessage`` with ``phase="final_answer"``.
         Falls back to the last agent message with no phase (for models that don't
         emit phase metadata). Returns None if the turn has no agent messages.
+
+        For structured output turns, this returns the raw JSON string.
         """
         from codexed.models.thread_item import ThreadItemAgentMessage
 
