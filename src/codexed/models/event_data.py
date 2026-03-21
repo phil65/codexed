@@ -57,7 +57,7 @@ class RawResponseItemCompletedData(CodexBaseModel):
 # Item delta notifications
 
 
-class AgentMessageDeltaData(CodexBaseModel):
+class DeltaData(CodexBaseModel):
     """Payload for item/agentMessage/delta notification."""
 
     thread_id: str
@@ -66,32 +66,23 @@ class AgentMessageDeltaData(CodexBaseModel):
     delta: str
 
 
-class PlanDeltaData(CodexBaseModel):
+class AgentMessageDeltaData(DeltaData):
+    """Payload for item/agentMessage/delta notification."""
+
+
+class PlanDeltaData(DeltaData):
     """Payload for item/plan/delta notification."""
 
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
 
-
-class ReasoningTextDeltaData(CodexBaseModel):
+class ReasoningTextDeltaData(DeltaData):
     """Payload for item/reasoning/textDelta notification."""
 
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
     content_index: int
 
 
-class ReasoningSummaryTextDeltaData(CodexBaseModel):
+class ReasoningSummaryTextDeltaData(DeltaData):
     """Payload for item/reasoning/summaryTextDelta notification."""
 
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
     summary_index: int
 
 
@@ -104,13 +95,8 @@ class ReasoningSummaryPartAddedData(CodexBaseModel):
     summary_index: int
 
 
-class CommandExecutionOutputDeltaData(CodexBaseModel):
+class CommandExecutionOutputDeltaData(DeltaData):
     """Payload for item/commandExecution/outputDelta notification."""
-
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
 
 
 class CommandExecutionTerminalInteractionData(CodexBaseModel):
@@ -123,13 +109,8 @@ class CommandExecutionTerminalInteractionData(CodexBaseModel):
     stdin: str
 
 
-class FileChangeOutputDeltaData(CodexBaseModel):
+class FileChangeOutputDeltaData(DeltaData):
     """Payload for item/fileChange/outputDelta notification."""
-
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
 
 
 class McpToolCallProgressData(CodexBaseModel):

@@ -7,7 +7,7 @@ Python adapter for the [Codex](https://github.com/openai/codex) app-server JSON-
 ```python
 import asyncio
 from codexed import CodexClient
-from codexed.models import AgentMessageDeltaEvent, TurnCompletedEvent, get_text_delta
+from codexed.models import AgentMessageDeltaEvent, TurnCompletedEvent
 
 async def main():
     async with CodexClient() as client:
@@ -15,8 +15,8 @@ async def main():
         
         async for event in session.turn_stream("Help me refactor this code"):
             match event:
-                case AgentMessageDeltaEvent():
-                    print(get_text_delta(event), end="", flush=True)
+                case AgentMessageDeltaEvent(data=data):
+                    print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     break
 
@@ -51,13 +51,12 @@ from codexed.models import (
     CommandExecutionOutputDeltaEvent,
     TurnCompletedEvent,
     TurnErrorEvent,
-    get_text_delta,
 )
 
 async for event in client.turn_stream(thread_id, message):
     match event:
-        case AgentMessageDeltaEvent() | CommandExecutionOutputDeltaEvent():
-            print(get_text_delta(event), end="")
+        case AgentMessageDeltaEvent(data=data) | CommandExecutionOutputDeltaEvent(data=data):
+            print(data.delta, end="")
         case TurnCompletedEvent():
             break
         case TurnErrorEvent(data=data):

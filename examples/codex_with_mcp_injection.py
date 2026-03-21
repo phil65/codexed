@@ -6,7 +6,7 @@ similar to how ToolManagerBridge creates in-process MCP servers for ACP agents.
 
 from __future__ import annotations
 
-from codexed import CodexClient, HttpMcpServer, StdioMcpServer, get_text_delta
+from codexed import CodexClient, HttpMcpServer, StdioMcpServer
 
 
 async def example_with_http_mcp_server():
@@ -26,8 +26,7 @@ async def example_with_http_mcp_server():
         print(f"Started thread: {session.thread_id}")
         # Now the Codex agent has access to all tools exposed by the MCP server
         async for event in session.turn_stream("List available tools and show what they can do"):
-            if text := get_text_delta(event):
-                print(text, end="", flush=True)
+            print(event)
         print()
 
 
@@ -44,8 +43,7 @@ async def example_with_stdio_mcp_server():
         session = await client.thread_start(cwd="/tmp")
         print(f"Started thread: {session.thread_id}")
         async for event in session.turn_stream("List files in current directory"):
-            if text := get_text_delta(event):
-                print(text, end="", flush=True)
+            print(event)
         print()
 
 
@@ -76,8 +74,7 @@ async def example_with_multiple_mcp_servers():
         # The agent now has access to tools from all three MCP servers
         prompt = "Show me all available tools and their sources"
         async for event in session.turn_stream(prompt):
-            if text := get_text_delta(event):
-                print(text, end="", flush=True)
+            print(event)
         print()
 
 

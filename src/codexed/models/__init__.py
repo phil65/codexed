@@ -155,7 +155,6 @@ from codexed.models.events import (
     TurnStartedEvent,
     WindowsWorldWritableWarningEvent,
     codex_event_adapter,
-    get_text_delta,
 )
 from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
 
@@ -794,6 +793,5 @@ __all__ = [
     "WorkspaceWriteSandboxPolicy",
     "WriteStatus",
     "codex_event_adapter",
-    "get_text_delta",
     "tools_to_config_dict",
 ]

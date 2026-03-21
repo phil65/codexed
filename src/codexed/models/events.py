@@ -551,28 +551,3 @@ DeltaEvent = (
     | CommandExecutionOutputDeltaEvent
     | FileChangeOutputDeltaEvent
 )
-
-
-def get_text_delta(event: CodexEvent) -> str:
-    """Extract text delta from a delta event.
-
-    Type-safe extraction that only works on events with delta content.
-
-    Args:
-        event: Any CodexEvent
-
-    Returns:
-        The delta text if this is a delta event, empty string otherwise
-    """
-    match event:
-        case (
-            AgentMessageDeltaEvent(data=data)
-            | PlanDeltaEvent(data=data)
-            | ReasoningTextDeltaEvent(data=data)
-            | ReasoningSummaryTextDeltaEvent(data=data)
-            | CommandExecutionOutputDeltaEvent(data=data)
-            | FileChangeOutputDeltaEvent(data=data)
-        ):
-            return data.delta
-        case _:
-            return ""
