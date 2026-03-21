@@ -15,14 +15,13 @@ from pydantic import BaseModel, TypeAdapter
 
 from codexed.exceptions import (
     CodexProcessError,
+    CodexRequestError,
     TransportClosedError,
     TurnFailedError,
     map_jsonrpc_error,
 )
 from codexed.helpers import kebab_to_camel
 from codexed.models import (
-    AgentMessageDeltaData,
-    AgentMessageDeltaEvent,
     AppsListParams,
     AppsListResponse,
     CancelLoginAccountParams,
@@ -96,6 +95,7 @@ from codexed.models import (
     ThreadUnarchiveResponse,
     ThreadUnsubscribeParams,
     ThreadUnsubscribeResponse,
+    TurnCompletedData,
     TurnCompletedEvent,
     TurnErrorData,
     TurnErrorEvent,
@@ -147,6 +147,7 @@ if TYPE_CHECKING:
         ThreadSourceKind,
         ThreadTokenUsage,
         ToolConfig,
+        Turn,
         UserInput,
     )
     from codexed.models.request_params import HazelnutScope, LoginType, ProductSurface
@@ -1015,8 +1016,7 @@ class CodexClient:
             )
             print(f"Found {result.total} files: {result.files}")
         """
-        # Collect agent message text
-        response_text = ""
+        turn: Turn | None = None
         async for event in self.turn_stream(
             thread_id,
             user_input,
@@ -1031,12 +1031,18 @@ class CodexClient:
             collaboration_mode=collaboration_mode,
         ):
             match event:
-                case AgentMessageDeltaEvent(data=AgentMessageDeltaData(delta=delta)):
-                    response_text += delta
+                case TurnCompletedEvent(data=TurnCompletedData(turn=t)):
+                    turn = t
                 case TurnErrorEvent(data=TurnErrorData(error=error)):
                     raise TurnFailedError(error, turn_id="unknown")
 
-        # Parse into typed model
+        if turn is None:
+            msg = "Turn completed without a TurnCompletedEvent"
+            raise CodexRequestError(code=-1, message=msg)
+        response_text = turn.final_response
+        if response_text is None:
+            msg = "Turn completed without a final response"
+            raise CodexRequestError(code=-1, message=msg)
         return result_type.model_validate_json(response_text)
 
     # ========================================================================
