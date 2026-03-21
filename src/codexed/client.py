@@ -698,7 +698,7 @@ class CodexClient:
         self._active_threads.add(response.thread.id)
         session = Session(self, response)
         if turn_id is not None:
-            await self.thread_rollback_to_turn(session.thread_id, turn_id)
+            await session.rollback_to_turn(turn_id)
         return session
 
     async def thread_list(
