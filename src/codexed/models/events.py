@@ -10,6 +10,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field, TypeAdapter
 
+from codexed import TokenUsageBreakdown
 from codexed.models.base import CodexBaseModel
 from codexed.models.event_data import (  # noqa: TC001
     AccountLoginCompletedData,
@@ -106,6 +107,21 @@ class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
 
     event_type: Literal["thread/tokenUsage/updated"] = "thread/tokenUsage/updated"
     data: ThreadTokenUsageUpdatedData
+
+    @property
+    def total(self) -> TokenUsageBreakdown:
+        """Total Token usage of the Thread."""
+        return self.data.token_usage.total
+
+    @property
+    def last(self) -> TokenUsageBreakdown:
+        """Token usage of last turn."""
+        return self.data.token_usage.last
+
+    @property
+    def context_window(self) -> int | None:
+        """Model context window."""
+        return self.data.token_usage.model_context_window
 
 
 class ThreadCompactedEvent(CodexBaseModel):
