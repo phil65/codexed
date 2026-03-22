@@ -504,12 +504,6 @@ class DynamicToolCallParams(CodexBaseModel):
     arguments: Any
 
 
-# --- MCP Elicitation ---
-
-McpElicitationAction = Literal["accept", "decline", "cancel"]
-"""Action taken by the user on an elicitation request."""
-
-
 class _McpElicitationBase(CodexBaseModel):
     """Common fields for MCP elicitation requests."""
 

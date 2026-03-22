@@ -27,6 +27,8 @@ ItemType = Literal[
     "mcp_tool_call",
 ]
 ItemStatus = Literal["pending", "running", "completed", "error"]
+McpElicitationAction = Literal["accept", "decline", "cancel"]
+"""Action taken by the user on an elicitation request."""
 
 # New type aliases
 SessionSource = Literal["cli", "vscode", "exec", "appServer", "unknown"]
