@@ -52,6 +52,10 @@ from codexed.models.event_data import (  # noqa: TC001
     TurnStartedData,
     WindowsWorldWritableWarningData,
 )
+from codexed.models.fuzzy_search import (  # noqa: TC001
+    FuzzyFileSearchSessionCompletedData,
+    FuzzyFileSearchSessionUpdatedData,
+)
 from codexed.models.hooks import HookCompletedData, HookStartedData  # noqa: TC001
 from codexed.models.realtime import (  # noqa: TC001
     RealtimeClosedData,
@@ -61,6 +65,7 @@ from codexed.models.realtime import (  # noqa: TC001
     RealtimeStartedData,
     RealtimeTranscriptUpdatedData,
 )
+from codexed.models.terminal import CommandExecOutputDeltaData  # noqa: TC001
 
 
 if TYPE_CHECKING:
@@ -247,6 +252,37 @@ class RealtimeClosedEvent(CodexBaseModel):
 
     event_type: Literal["thread/realtime/closed"] = "thread/realtime/closed"
     data: RealtimeClosedData
+
+
+# ============================================================================
+# Terminal control events
+# ============================================================================
+
+
+class CommandExecOutputDeltaEvent(CodexBaseModel):
+    """Command exec output delta event (streaming stdout/stderr)."""
+
+    event_type: Literal["command/exec/outputDelta"] = "command/exec/outputDelta"
+    data: CommandExecOutputDeltaData
+
+
+# ============================================================================
+# Fuzzy file search events (EXPERIMENTAL)
+# ============================================================================
+
+
+class FuzzyFileSearchSessionUpdatedEvent(CodexBaseModel):
+    """Fuzzy file search session updated with results."""
+
+    event_type: Literal["fuzzyFileSearch/sessionUpdated"] = "fuzzyFileSearch/sessionUpdated"
+    data: FuzzyFileSearchSessionUpdatedData
+
+
+class FuzzyFileSearchSessionCompletedEvent(CodexBaseModel):
+    """Fuzzy file search session completed."""
+
+    event_type: Literal["fuzzyFileSearch/sessionCompleted"] = "fuzzyFileSearch/sessionCompleted"
+    data: FuzzyFileSearchSessionCompletedData
 
 
 # ============================================================================
@@ -520,6 +556,11 @@ CodexEvent = Annotated[
     | RealtimeOutputAudioDeltaEvent
     | RealtimeErrorEvent
     | RealtimeClosedEvent
+    # Terminal control events
+    | CommandExecOutputDeltaEvent
+    # Fuzzy file search events (EXPERIMENTAL)
+    | FuzzyFileSearchSessionUpdatedEvent
+    | FuzzyFileSearchSessionCompletedEvent
     # Item lifecycle
     | ItemStartedEvent
     | ItemCompletedEvent
@@ -597,6 +638,11 @@ EventType = Literal[
     "thread/realtime/outputAudio/delta",
     "thread/realtime/error",
     "thread/realtime/closed",
+    # Terminal control events
+    "command/exec/outputDelta",
+    # Fuzzy file search events (EXPERIMENTAL)
+    "fuzzyFileSearch/sessionUpdated",
+    "fuzzyFileSearch/sessionCompleted",
     # Item lifecycle
     "item/started",
     "item/completed",

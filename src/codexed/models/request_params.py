@@ -31,6 +31,7 @@ from codexed.models.misc import (  # noqa: TC001
     ToolRequestUserInputQuestion,
 )
 from codexed.models.response_item import ResponseItem  # noqa: TC001
+from codexed.models.terminal import CommandExecTerminalSize  # noqa: TC001
 from codexed.models.user_input import UserInput  # noqa: TC001
 
 
@@ -280,9 +281,18 @@ class CommandExecParams(CodexBaseModel):
     """Parameters for command/exec request."""
 
     command: list[str]
-    cwd: str | None = None
-    sandbox_policy: dict[str, Any] | None = None  # Sandbox config - flexible structure
+    process_id: str | None = None
+    tty: bool = False
+    stream_stdin: bool = False
+    stream_stdout_stderr: bool = False
+    output_bytes_cap: int | None = None
+    disable_output_cap: bool = False
+    disable_timeout: bool = False
     timeout_ms: int | None = None
+    cwd: str | None = None
+    env: dict[str, str | None] | None = None
+    size: CommandExecTerminalSize | None = None
+    sandbox_policy: dict[str, Any] | None = None
 
 
 class ModelListParams(CodexBaseModel):
