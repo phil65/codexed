@@ -52,6 +52,7 @@ from codexed.models.event_data import (  # noqa: TC001
     TurnStartedData,
     WindowsWorldWritableWarningData,
 )
+from codexed.models.hooks import HookCompletedData, HookStartedData  # noqa: TC001
 
 
 if TYPE_CHECKING:
@@ -172,6 +173,25 @@ class TurnPlanUpdatedEvent(CodexBaseModel):
 
     event_type: Literal["turn/plan/updated"] = "turn/plan/updated"
     data: TurnPlanUpdatedData
+
+
+# ============================================================================
+# Hook events
+# ============================================================================
+
+
+class HookStartedEvent(CodexBaseModel):
+    """Hook started event."""
+
+    event_type: Literal["hook/started"] = "hook/started"
+    data: HookStartedData
+
+
+class HookCompletedEvent(CodexBaseModel):
+    """Hook completed event."""
+
+    event_type: Literal["hook/completed"] = "hook/completed"
+    data: HookCompletedData
 
 
 # ============================================================================
@@ -435,6 +455,9 @@ CodexEvent = Annotated[
     | TurnErrorEvent
     | TurnDiffUpdatedEvent
     | TurnPlanUpdatedEvent
+    # Hook events
+    | HookStartedEvent
+    | HookCompletedEvent
     # Item lifecycle
     | ItemStartedEvent
     | ItemCompletedEvent
@@ -502,6 +525,9 @@ EventType = Literal[
     "turn/error",
     "turn/diff/updated",
     "turn/plan/updated",
+    # Hook events
+    "hook/started",
+    "hook/completed",
     # Item lifecycle
     "item/started",
     "item/completed",

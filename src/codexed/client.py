@@ -507,6 +507,7 @@ class CodexClient:
         merged = dict(config) if config else {}
         if code_mode is not None:
             merged.setdefault("features", {})["code_mode"] = code_mode
+        merged.setdefault("features", {})["codex_hooks"] = True
         if tools is not None:
             from codexed.models.tool_config import tools_to_config_dict
 
