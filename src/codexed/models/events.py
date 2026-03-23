@@ -53,6 +53,14 @@ from codexed.models.event_data import (  # noqa: TC001
     WindowsWorldWritableWarningData,
 )
 from codexed.models.hooks import HookCompletedData, HookStartedData  # noqa: TC001
+from codexed.models.realtime import (  # noqa: TC001
+    RealtimeClosedData,
+    RealtimeErrorData,
+    RealtimeItemAddedData,
+    RealtimeOutputAudioDeltaData,
+    RealtimeStartedData,
+    RealtimeTranscriptUpdatedData,
+)
 
 
 if TYPE_CHECKING:
@@ -192,6 +200,53 @@ class HookCompletedEvent(CodexBaseModel):
 
     event_type: Literal["hook/completed"] = "hook/completed"
     data: HookCompletedData
+
+
+# ============================================================================
+# Realtime voice events (EXPERIMENTAL)
+# ============================================================================
+
+
+class RealtimeStartedEvent(CodexBaseModel):
+    """Realtime session started event."""
+
+    event_type: Literal["thread/realtime/started"] = "thread/realtime/started"
+    data: RealtimeStartedData
+
+
+class RealtimeItemAddedEvent(CodexBaseModel):
+    """Realtime item added event."""
+
+    event_type: Literal["thread/realtime/itemAdded"] = "thread/realtime/itemAdded"
+    data: RealtimeItemAddedData
+
+
+class RealtimeTranscriptUpdatedEvent(CodexBaseModel):
+    """Realtime transcript updated event."""
+
+    event_type: Literal["thread/realtime/transcriptUpdated"] = "thread/realtime/transcriptUpdated"
+    data: RealtimeTranscriptUpdatedData
+
+
+class RealtimeOutputAudioDeltaEvent(CodexBaseModel):
+    """Realtime output audio delta event."""
+
+    event_type: Literal["thread/realtime/outputAudio/delta"] = "thread/realtime/outputAudio/delta"
+    data: RealtimeOutputAudioDeltaData
+
+
+class RealtimeErrorEvent(CodexBaseModel):
+    """Realtime error event."""
+
+    event_type: Literal["thread/realtime/error"] = "thread/realtime/error"
+    data: RealtimeErrorData
+
+
+class RealtimeClosedEvent(CodexBaseModel):
+    """Realtime session closed event."""
+
+    event_type: Literal["thread/realtime/closed"] = "thread/realtime/closed"
+    data: RealtimeClosedData
 
 
 # ============================================================================
@@ -458,6 +513,13 @@ CodexEvent = Annotated[
     # Hook events
     | HookStartedEvent
     | HookCompletedEvent
+    # Realtime voice events (EXPERIMENTAL)
+    | RealtimeStartedEvent
+    | RealtimeItemAddedEvent
+    | RealtimeTranscriptUpdatedEvent
+    | RealtimeOutputAudioDeltaEvent
+    | RealtimeErrorEvent
+    | RealtimeClosedEvent
     # Item lifecycle
     | ItemStartedEvent
     | ItemCompletedEvent
@@ -528,6 +590,13 @@ EventType = Literal[
     # Hook events
     "hook/started",
     "hook/completed",
+    # Realtime voice events (EXPERIMENTAL)
+    "thread/realtime/started",
+    "thread/realtime/itemAdded",
+    "thread/realtime/transcriptUpdated",
+    "thread/realtime/outputAudio/delta",
+    "thread/realtime/error",
+    "thread/realtime/closed",
     # Item lifecycle
     "item/started",
     "item/completed",
