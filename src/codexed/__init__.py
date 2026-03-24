@@ -16,10 +16,6 @@ __copyright__ = "Copyright (c) 2026 Philipp Temminghoff"
 __license__ = "MIT"
 __url__ = "https://github.com/phil65/codexed"
 
-__all__ = [
-    "__version__",
-]
-
 
 from codexed.client import CodexClient
 from codexed.session import Session
