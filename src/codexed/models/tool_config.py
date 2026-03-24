@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Discriminator, Tag
+from pydantic import BaseModel, ConfigDict, Discriminator
 
 
 class _ToolConfigBase(BaseModel):
@@ -55,7 +55,7 @@ class ApplyPatchToolConfig(_ToolConfigBase):
 # ---------------------------------------------------------------------------
 
 
-class WebSearchLocationConfig(_ToolConfigBase):
+class WebSearchLocation(_ToolConfigBase):
     """Location hints for web search results."""
 
     country: str | None = None
@@ -78,7 +78,7 @@ class WebSearchToolConfig(_ToolConfigBase):
     allowed_domains: list[str] | None = None
     """Restrict search to these domains only."""
 
-    location: WebSearchLocationConfig | None = None
+    location: WebSearchLocation | None = None
     """Approximate user location for localised results."""
 
 
@@ -259,24 +259,24 @@ class McpResourceToolsConfig(_ToolConfigBase):
 # ===========================================================================
 
 ToolConfig = Annotated[
-    Annotated[ShellToolConfig, Tag("shell")]
-    | Annotated[ApplyPatchToolConfig, Tag("apply_patch")]
-    | Annotated[WebSearchToolConfig, Tag("web_search")]
-    | Annotated[ImageGenerationToolConfig, Tag("image_generation")]
-    | Annotated[ViewImageToolConfig, Tag("view_image")]
-    | Annotated[PlanToolConfig, Tag("plan")]
-    | Annotated[JsReplToolConfig, Tag("js_repl")]
-    | Annotated[CollabToolsConfig, Tag("collab")]
-    | Annotated[AgentJobsToolsConfig, Tag("agent_jobs")]
-    | Annotated[RequestUserInputToolConfig, Tag("request_user_input")]
-    | Annotated[RequestPermissionsToolConfig, Tag("request_permissions")]
-    | Annotated[ArtifactsToolConfig, Tag("artifacts")]
-    | Annotated[GrepFilesToolConfig, Tag("grep_files")]
-    | Annotated[ReadFileToolConfig, Tag("read_file")]
-    | Annotated[ListDirToolConfig, Tag("list_dir")]
-    | Annotated[ToolSearchToolConfig, Tag("tool_search")]
-    | Annotated[ToolSuggestToolConfig, Tag("tool_suggest")]
-    | Annotated[McpResourceToolsConfig, Tag("mcp_resources")],
+    ShellToolConfig
+    | ApplyPatchToolConfig
+    | WebSearchToolConfig
+    | ImageGenerationToolConfig
+    | ViewImageToolConfig
+    | PlanToolConfig
+    | JsReplToolConfig
+    | CollabToolsConfig
+    | AgentJobsToolsConfig
+    | RequestUserInputToolConfig
+    | RequestPermissionsToolConfig
+    | ArtifactsToolConfig
+    | GrepFilesToolConfig
+    | ReadFileToolConfig
+    | ListDirToolConfig
+    | ToolSearchToolConfig
+    | ToolSuggestToolConfig
+    | McpResourceToolsConfig,
     Discriminator("type"),
 ]
 """Discriminated union of all builtin tool configurations."""
