@@ -378,6 +378,7 @@ class CodexClient:
         on_user_input: UserInputHandler | None = None,
         on_dynamic_tool_call: DynamicToolCallHandler | None = None,
         on_mcp_elicitation: McpElicitationHandler | None = None,
+        mcp_elicitation_for_approvals: bool = False,
     ) -> None:
         """Initialize the Codex app-server client.
 
@@ -392,6 +393,13 @@ class CodexClient:
             on_user_input: Handler for tool user input requests.
             on_dynamic_tool_call: Handler for dynamic tool call requests.
             on_mcp_elicitation: Handler for MCP elicitation requests.
+            mcp_elicitation_for_approvals: If True, enables the Codex
+                ``tool_call_mcp_elicitation`` feature flag which routes MCP tool
+                approval prompts through ``mcpServer/elicitation/request`` instead
+                of ``item/tool/requestUserInput``.  Requires *on_mcp_elicitation*
+                to handle approvals (the schema is empty; context is in ``_meta``).
+                Default is False because the default elicitation handler auto-declines,
+                which would break MCP tool approvals.
         """
         self._codex_command = codex_command
         self._profile = profile
@@ -405,6 +413,8 @@ class CodexClient:
         self._reader_task: asyncio.Task[None] | None = None
         self._writer_lock = asyncio.Lock()
         self._active_threads: set[str] = set()
+        self._mcp_elicitation_enabled = on_mcp_elicitation is not None
+        self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
         if on_approval:
             self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # type: ignore[arg-type]
@@ -502,6 +512,7 @@ class CodexClient:
         tools: list[ToolConfig] | None,
         code_mode: bool | None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
+        mcp_elicitation_for_approvals: bool = False,
     ) -> dict[str, Any] | None:
         """Merge tools, code_mode, and mcp_servers into a config dict."""
         merged = dict(config) if config else {}
@@ -509,7 +520,8 @@ class CodexClient:
             merged.setdefault("features", {})["code_mode"] = code_mode
         merged.setdefault("features", {})["codex_hooks"] = True
         merged.setdefault("features", {})["realtime_conversation"] = True
-        merged.setdefault("features", {})["tool_call_mcp_elicitation"] = True
+        if mcp_elicitation_for_approvals:
+            merged.setdefault("features", {})["tool_call_mcp_elicitation"] = True
         if tools is not None:
             from codexed.models.tool_config import tools_to_config_dict
 
@@ -575,7 +587,13 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(config, tools, code_mode, mcp_servers),
+            config=self._merge_config(
+                config,
+                tools,
+                code_mode,
+                mcp_servers,
+                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+            ),
             service_name=service_name,
             personality=personality,
             ephemeral=ephemeral,
@@ -634,7 +652,13 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(config, tools, code_mode, mcp_servers),
+            config=self._merge_config(
+                config,
+                tools,
+                code_mode,
+                mcp_servers,
+                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+            ),
             personality=personality,
         )
         result = await self._send_request("thread/resume", params)
@@ -693,7 +717,13 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(config, tools, code_mode, mcp_servers),
+            config=self._merge_config(
+                config,
+                tools,
+                code_mode,
+                mcp_servers,
+                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+            ),
             personality=personality,
         )
         result = await self._send_request("thread/fork", params)

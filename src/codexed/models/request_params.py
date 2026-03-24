@@ -521,6 +521,26 @@ class _McpElicitationBase(CodexBaseModel):
     turn_id: str | None = None
     server_name: str
     meta: Any | None = None
+    """Optional metadata from the server.
+
+    For MCP tool approval requests (when ``tool_call_mcp_elicitation`` is enabled),
+    this contains:
+
+    - ``kind`` (str): Always ``"mcp_tool_call"`` for tool approvals.
+    - ``persist`` (str | list[str]): Allowed persistence options —
+      ``"session"`` (remember for this session) and/or ``"always"``
+      (remember permanently).
+    - ``tool_title`` (str, optional): Human-readable tool name.
+    - ``tool_description`` (str, optional): Tool description.
+    - ``tool_params`` (dict, optional): The tool call arguments.
+    - ``tool_params_display`` (list, optional): Rendered parameter display.
+    - ``source`` (str, optional): ``"connector"`` if from a ChatGPT App.
+    - ``connector_id``, ``connector_name``, ``connector_description``
+      (str, optional): Connector details when source is ``"connector"``.
+
+    For regular MCP server elicitations (auth flows etc.), the meta content
+    is defined by the MCP server itself.
+    """
     message: str
 
 
@@ -531,10 +551,13 @@ class McpElicitationFormParams(_McpElicitationBase):
     requested_schema: dict[str, Any]
 
     def to_mcp(self) -> mcp.types.ElicitRequestFormParams:
-        return mcp.types.ElicitRequestFormParams(
+        params = mcp.types.ElicitRequestFormParams(
             message=self.message,
             requestedSchema=self.requested_schema,
         )
+        if self.meta is not None:
+            params.meta = mcp.types.RequestParams.Meta(**self.meta)
+        return params
 
     @classmethod
     def from_mcp(
@@ -545,9 +568,11 @@ class McpElicitationFormParams(_McpElicitationBase):
         turn_id: str | None = None,
     ) -> McpElicitationFormParams:
         """Create from MCP ElicitRequestFormParams."""
+        meta = params.meta.model_dump(exclude={"progressToken"}) if params.meta else None
         return cls(
             message=params.message,
             requested_schema=dict(params.requestedSchema),
+            meta=meta,
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,
@@ -562,11 +587,14 @@ class McpElicitationUrlParams(_McpElicitationBase):
     elicitation_id: str
 
     def to_mcp(self) -> mcp.types.ElicitRequestURLParams:
-        return mcp.types.ElicitRequestURLParams(
+        params = mcp.types.ElicitRequestURLParams(
             message=self.message,
             url=self.url,
             elicitationId=self.elicitation_id,
         )
+        if self.meta is not None:
+            params.meta = mcp.types.RequestParams.Meta(**self.meta)
+        return params
 
     @classmethod
     def from_mcp(
@@ -577,10 +605,12 @@ class McpElicitationUrlParams(_McpElicitationBase):
         turn_id: str | None = None,
     ) -> McpElicitationUrlParams:
         """Create from MCP ElicitRequestURLParams."""
+        meta = params.meta.model_dump(exclude={"progressToken"}) if params.meta else None
         return cls(
             message=params.message,
             url=params.url,
             elicitation_id=params.elicitationId,
+            meta=meta,
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,

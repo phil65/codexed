@@ -62,6 +62,14 @@ class McpServerElicitationResponse(CodexBaseModel):
     action: Literal["accept", "decline", "cancel"]
     content: Any | None = None
     meta: Any | None = None
+    """Optional metadata to include in the response.
+
+    For MCP tool approval responses, this can contain:
+
+    - ``persist`` (str): ``"session"`` to remember the approval for
+      the current session, or ``"always"`` to remember permanently.
+      Must be one of the options listed in the request's ``meta.persist``.
+    """
 
     def to_mcp(self) -> mcp.types.ElicitResult:
         return mcp.types.ElicitResult(action=self.action, content=self.content)
