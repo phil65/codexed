@@ -509,6 +509,7 @@ class CodexClient:
             merged.setdefault("features", {})["code_mode"] = code_mode
         merged.setdefault("features", {})["codex_hooks"] = True
         merged.setdefault("features", {})["realtime_conversation"] = True
+        merged.setdefault("features", {})["tool_call_mcp_elicitation"] = True
         if tools is not None:
             from codexed.models.tool_config import tools_to_config_dict
 
