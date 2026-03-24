@@ -105,6 +105,7 @@ from codexed.models import (
     UserInputText,
     codex_event_adapter,
 )
+from codexed.models.tool_config import tools_to_config_dict
 from codexed.request_handlers import (
     SERVER_REQUEST_COMMAND_APPROVAL,
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
@@ -325,8 +326,6 @@ class CodexClient:
         if mcp_elicitation_for_approvals:
             merged.setdefault("features", {})["tool_call_mcp_elicitation"] = True
         if tools is not None:
-            from codexed.models.tool_config import tools_to_config_dict
-
             tool_config = tools_to_config_dict(tools)
             for key, value in tool_config.items():
                 if key not in merged:
@@ -448,6 +447,13 @@ class CodexClient:
         """
         from codexed.session import Session
 
+        cfg = self._merge_config(
+            config,
+            tools,
+            code_mode,
+            mcp_servers,
+            mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+        )
         params = ThreadResumeParams(
             thread_id=thread_id,
             path=path,
@@ -458,13 +464,7 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(
-                config,
-                tools,
-                code_mode,
-                mcp_servers,
-                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
-            ),
+            config=cfg,
             personality=personality,
         )
         result = await self._send_request("thread/resume", params)
@@ -515,6 +515,13 @@ class CodexClient:
         """
         from codexed.session import Session
 
+        cfg = self._merge_config(
+            config,
+            tools,
+            code_mode,
+            mcp_servers,
+            mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+        )
         params = ThreadForkParams(
             thread_id=thread_id,
             path=path,
@@ -525,13 +532,7 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(
-                config,
-                tools,
-                code_mode,
-                mcp_servers,
-                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
-            ),
+            config=cfg,
             personality=personality,
         )
         result = await self._send_request("thread/fork", params)
