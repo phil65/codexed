@@ -13,7 +13,6 @@ from codexed.models.codex_types import (  # noqa: TC001
     InputModality,
     McpAuthStatusValue,
     MergeStrategy,
-    ModelProvider,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
     PlanType,
@@ -209,7 +208,7 @@ class Turn(CodexBaseModel):
 
 
 class Thread(CodexBaseModel):
-    """Thread data structure."""
+    """Thread data structure (matches upstream Codex Thread type)."""
 
     id: str
     preview: str = ""
@@ -222,27 +221,6 @@ class Thread(CodexBaseModel):
     cwd: str = ""
     cli_version: str = ""
     source: SessionSource = "appServer"
-    agent_nickname: str | None = None
-    agent_role: str | None = None
-    git_info: GitInfo | None = None
-    name: str | None = None
-    turns: list[Turn] = Field(default_factory=list)
-
-
-class ThreadData(CodexBaseModel):
-    """Thread data in responses."""
-
-    id: str
-    preview: str = ""
-    ephemeral: bool = False
-    model_provider: ModelProvider = "openai"
-    created_at: int = 0
-    updated_at: int = 0
-    status: ThreadStatusValue | None = None
-    path: str | None = None
-    cwd: str | None = None
-    cli_version: str | None = None
-    source: str | None = None
     agent_nickname: str | None = None
     agent_role: str | None = None
     git_info: GitInfo | None = None

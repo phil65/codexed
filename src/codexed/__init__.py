@@ -21,7 +21,8 @@ __all__ = [
 ]
 
 
-from codexed.client import CodexClient, Session
+from codexed.client import CodexClient
+from codexed.session import Session
 from codexed.exceptions import (
     CodexError,
     CodexProcessError,
@@ -54,7 +55,7 @@ from codexed.models import (
     ReviewStartResponse,
     SkillData,
     ThreadArchivedData,
-    ThreadData,
+    Thread,
     ThreadListResponse,
     ThreadNameUpdatedData,
     ThreadReadResponse,
@@ -142,16 +143,8 @@ from codexed.models.events import (
     TurnPlanUpdatedEvent,
     TurnStartedEvent,
 )
-from codexed.models.mcp_server import (
-    HttpMcpServer,
-    McpServerConfig,
-    StdioMcpServer,
-)
-from codexed.models.tool_config import (
-    BuiltinToolsConfig,
-    ToolConfig,
-    tools_to_config_dict,
-)
+from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
+from codexed.models.tool_config import BuiltinToolsConfig, ToolConfig, tools_to_config_dict
 from codexed.request_handlers import (
     ApprovalHandler,
     ApprovalParams,
@@ -242,11 +235,11 @@ __all__ = [
     "SkillData",
     "SkillScope",
     "StdioMcpServer",
+    "Thread",
     "ThreadActiveFlag",
     "ThreadArchivedData",
     "ThreadArchivedEvent",
     "ThreadCompactedEvent",
-    "ThreadData",
     "ThreadListResponse",
     "ThreadNameUpdatedData",
     "ThreadNameUpdatedEvent",

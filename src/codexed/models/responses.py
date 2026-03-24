@@ -23,7 +23,7 @@ from codexed.models.misc import (  # noqa: TC001
     McpServerStatusEntry,
     ModelData,
     SkillsContainer,
-    ThreadData,
+    Thread,
     ToolRequestUserInputAnswer,
     Turn,
     TurnData,
@@ -83,13 +83,13 @@ class McpServerElicitationResponse(CodexBaseModel):
 class ThreadReadResponse(CodexBaseModel):
     """Response for thread/read request."""
 
-    thread: ThreadData
+    thread: Thread
 
 
 class ThreadResponse(CodexBaseModel):
     """Response for thread/start, thread/resume, and thread/fork."""
 
-    thread: ThreadData
+    thread: Thread
     model: str
     model_provider: str
     cwd: str
@@ -121,7 +121,7 @@ class ReviewStartResponse(CodexBaseModel):
 class ThreadListResponse(CodexBaseModel):
     """Response for thread/list request."""
 
-    data: list[ThreadData]
+    data: list[Thread]
     next_cursor: str | None = None
 
 
@@ -134,14 +134,14 @@ class ThreadLoadedListResponse(CodexBaseModel):
 class ThreadRollbackResponse(CodexBaseModel):
     """Response for thread/rollback request."""
 
-    thread: ThreadData
+    thread: Thread
     turns: list[Turn]
 
 
 class ThreadUnarchiveResponse(CodexBaseModel):
     """Response for thread/unarchive request."""
 
-    thread: ThreadData
+    thread: Thread
 
 
 class SkillsListResponse(CodexBaseModel):

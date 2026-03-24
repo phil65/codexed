@@ -18,7 +18,7 @@ from codexed.models.tool_config import (
     ToolConfig,
     ToolSuggestToolConfig,
     ViewImageToolConfig,
-    WebSearchLocationConfig,
+    WebSearchLocation,
     WebSearchToolConfig,
     tools_to_config_dict,
 )
@@ -71,7 +71,7 @@ def test_web_search_full_config():
             mode="cached",
             context_size="high",
             allowed_domains=["example.com"],
-            location=WebSearchLocationConfig(country="US", city="NYC"),
+            location=WebSearchLocation(country="US", city="NYC"),
         ),
     )
     result = config.to_config_dict()
@@ -192,7 +192,7 @@ def test_roundtrip_model_dump():
         web_search=WebSearchToolConfig(
             mode="live",
             context_size="medium",
-            location=WebSearchLocationConfig(country="DE"),
+            location=WebSearchLocation(country="DE"),
         ),
         js_repl=JsReplToolConfig(),
     )
