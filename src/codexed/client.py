@@ -663,18 +663,12 @@ class CodexClient:
         """
         thread_response = await self.thread_read(thread_id, include_turns=True)
         turns = thread_response.thread.turns
-        turn_index: int | None = None
-        for i, turn in enumerate(turns):
-            if turn.id == turn_id:
-                turn_index = i
-                break
+        turn_index = next((i for i, turn in enumerate(turns) if turn.id == turn_id), None)
         if turn_index is None:
-            msg = f"Turn {turn_id!r} not found in thread {thread_id!r}"
-            raise ValueError(msg)
+            raise ValueError(f"Turn {turn_id!r} not found in thread {thread_id!r}")
         num_turns_to_drop = len(turns) - turn_index - 1
         if num_turns_to_drop < 1:
-            msg = f"Turn {turn_id!r} is already the last turn in thread {thread_id!r}"
-            raise ValueError(msg)
+            raise ValueError(f"Turn {turn_id!r} is already the last turn in thread {thread_id!r}")
         return await self.thread_rollback(thread_id, num_turns_to_drop)
 
     # ========================================================================
@@ -847,22 +841,6 @@ class CodexClient:
         Raises:
             ValidationError: If the agent's response doesn't match the schema
             CodexRequestError: If the turn fails
-
-        Example:
-            class FileInfo(BaseModel):
-                name: str
-                type: str
-
-            class FileList(BaseModel):
-                files: list[FileInfo]
-                total: int
-
-            result = await client.turn_stream_structured(
-                thread.id,
-                "List Python files in current directory",
-                FileList,  # Must be a Pydantic type, not a dict
-            )
-            print(f"Found {result.total} files: {result.files}")
         """
         turn: Turn | None = None
         async for event in self.turn_stream(
@@ -885,12 +863,10 @@ class CodexClient:
                     raise TurnFailedError(error, turn_id="unknown")
 
         if turn is None:
-            msg = "Turn completed without a TurnCompletedEvent"
-            raise CodexRequestError(code=-1, message=msg)
+            raise CodexRequestError(code=-1, message="Turn completed without a TurnCompletedEvent")
         response_text = turn.final_response
         if response_text is None:
-            msg = "Turn completed without a final response"
-            raise CodexRequestError(code=-1, message=msg)
+            raise CodexRequestError(code=-1, message="Turn completed without a final response")
         return result_type.model_validate_json(response_text)
 
     # ========================================================================
@@ -1149,25 +1125,15 @@ class CodexClient:
         params = FsRemoveParams(path=path, recursive=recursive, force=force)
         await self._send_request("fs/remove", params)
 
-    async def fs_copy(
-        self,
-        source_path: str,
-        destination_path: str,
-        *,
-        recursive: bool = False,
-    ) -> None:
+    async def fs_copy(self, source: str, destination: str, *, recursive: bool = False) -> None:
         """Copy a file or directory tree on the host filesystem.
 
         Args:
-            source_path: Absolute source path.
-            destination_path: Absolute destination path.
+            source: Absolute source path.
+            destination: Absolute destination path.
             recursive: Required for directory copies; ignored for file copies.
         """
-        params = FsCopyParams(
-            source_path=source_path,
-            destination_path=destination_path,
-            recursive=recursive,
-        )
+        params = FsCopyParams(source_path=source, destination_path=destination, recursive=recursive)
         await self._send_request("fs/copy", params)
 
     # ========================================================================
@@ -1568,10 +1534,7 @@ class CodexClient:
             message: Raw JSON-RPC message
         """
         match message:
-            case {
-                "method": _,
-                "id": _,
-            }:  # Server request - the server is asking us to do something
+            case {"method": _, "id": _}:  # Server request - the server is asking us to do something
                 await self._handle_server_request(message)
             case {"id": _}:  # Response to one of our requests
                 self._handle_response(message)
@@ -1642,13 +1605,8 @@ class CodexClient:
 
         params_type, _ = type_entry
         handler = self._server_request_handlers.get(method)
-
         if handler is None:
-            logger.warning(
-                "No handler registered for server request: %s (id=%s)",
-                method,
-                request_id,
-            )
+            logger.warning("No handler registered for request: %s (id=%s)", method, request_id)
             await self._send_server_request_error(request_id, -32603, f"No handler for: {method}")
             return
 
@@ -1701,15 +1659,6 @@ class CodexClient:
         Args:
             method: Server request method name (use SERVER_REQUEST_* constants)
             handler: Async callback that processes the request and returns a response
-
-        Example::
-
-            async def handle_approval(
-                params: CommandExecutionRequestApprovalParams,
-            ) -> CommandExecutionRequestApprovalResponse:
-                return CommandExecutionRequestApprovalResponse(decision="allow")
-
-            client.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, handle_approval)
         """
         if method not in SERVER_REQUEST_TYPES:
             msg = (
