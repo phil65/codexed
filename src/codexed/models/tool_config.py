@@ -11,7 +11,7 @@ into the ``config`` dict accepted by ``ThreadStartParams``.
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, assert_never
 
 from pydantic import BaseModel, ConfigDict, Discriminator
 
@@ -340,10 +340,15 @@ def tools_to_config_dict(tools: list[ToolConfig]) -> dict[str, Any]:
 
             case ApplyPatchToolConfig(variant=variant):
                 config["include_apply_patch_tool"] = True
-                if variant == "freeform":
-                    features["apply_patch_freeform"] = True
-                elif variant == "function":
-                    features["apply_patch_freeform"] = False
+                match variant:
+                    case "freeform":
+                        features["apply_patch_freeform"] = True
+                    case "function":
+                        features["apply_patch_freeform"] = False
+                    case None:
+                        pass
+                    case _ as unreachable:
+                        assert_never(unreachable)
 
             case WebSearchToolConfig(
                 mode=mode,
@@ -358,10 +363,8 @@ def tools_to_config_dict(tools: list[ToolConfig]) -> dict[str, Any]:
                     ws_config["context_size"] = context_size
                 if allowed_domains is not None:
                     ws_config["allowed_domains"] = allowed_domains
-                if location is not None:
-                    loc = location.model_dump(exclude_none=True)
-                    if loc:
-                        ws_config["location"] = loc
+                if location is not None and (loc := location.model_dump(exclude_none=True)):
+                    ws_config["location"] = loc
                 if ws_config:
                     tools_section["web_search"] = ws_config
 
