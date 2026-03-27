@@ -48,6 +48,9 @@ from codexed.models import (
     FsReadFileParams,
     FsReadFileResponse,
     FsRemoveParams,
+    FsUnwatchParams,
+    FsWatchParams,
+    FsWatchResponse,
     FsWriteFileParams,
     GetAccountParams,
     GetAccountRateLimitsResponse,
@@ -85,6 +88,7 @@ from codexed.models import (
     ThreadRollbackParams,
     ThreadRollbackResponse,
     ThreadSetNameParams,
+    ThreadShellCommandParams,
     ThreadStartParams,
     ThreadUnarchiveParams,
     ThreadUnarchiveResponse,
@@ -650,6 +654,19 @@ class CodexClient:
         if num_turns_to_drop < 1:
             raise ValueError(f"Turn {turn_id!r} is already the last turn in thread {thread_id!r}")
         return await self.thread_rollback(thread_id, num_turns_to_drop)
+
+    async def thread_shell_command(self, thread_id: str, command: str) -> None:
+        """Run a user-initiated shell command against a thread.
+
+        Executes the command unsandboxed, as if the user typed `!command`
+        in the Codex CLI.
+
+        Args:
+            thread_id: The thread ID.
+            command: Shell command to execute.
+        """
+        params = ThreadShellCommandParams(thread_id=thread_id, command=command)
+        await self._send_request("thread/shellCommand", params)
 
     # ========================================================================
     # Turn methods

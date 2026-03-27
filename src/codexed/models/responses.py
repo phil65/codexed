@@ -366,6 +366,10 @@ class FsCopyResponse(CodexBaseModel):
     """Response for fs/copy request."""
 
 
+class ThreadShellCommandResponse(CodexBaseModel):
+    """Response for thread/shellCommand request."""
+
+
 class FsWatchResponse(CodexBaseModel):
     """Response for fs/watch request."""
 

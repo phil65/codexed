@@ -460,6 +460,13 @@ class FsCopyParams(CodexBaseModel):
     recursive: bool = False
 
 
+class ThreadShellCommandParams(CodexBaseModel):
+    """Parameters for thread/shellCommand request."""
+
+    thread_id: str
+    command: str
+
+
 class FsWatchParams(CodexBaseModel):
     """Parameters for fs/watch request."""
 

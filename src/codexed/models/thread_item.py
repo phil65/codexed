@@ -9,6 +9,7 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (  # noqa: TC001
     CollabAgentStatus,
     CollabAgentTool,
+    CommandExecutionSource,
     CommandExecutionStatus,
     MessagePhase,
     PatchApplyStatus,
@@ -121,6 +122,7 @@ class ThreadItemCommandExecution(BaseThreadItem):
     cwd: str
     process_id: str | None = None
     status: CommandExecutionStatus
+    source: CommandExecutionSource = "agent"
     command_actions: list[CommandAction] = Field(default_factory=list)
     aggregated_output: str | None = None
     exit_code: int | None = None

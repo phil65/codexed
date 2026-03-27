@@ -182,6 +182,10 @@ class Session:
         """Rollback to a specific turn.  See :meth:`CodexClient.thread_rollback_to_turn`."""
         return await self._client.thread_rollback_to_turn(self.thread_id, turn_id)
 
+    async def shell_command(self, command: str) -> None:
+        """Run a user-initiated shell command.  See :meth:`CodexClient.thread_shell_command`."""
+        await self._client.thread_shell_command(self.thread_id, command)
+
     # -- Review --------------------------------------------------------------
 
     async def review_start(

@@ -48,6 +48,9 @@ ThreadSourceKind = Literal[
 MessagePhase = Literal["commentary", "final_answer"]
 PatchApplyStatus = Literal["inProgress", "completed", "failed", "declined"]
 CommandExecutionStatus = Literal["inProgress", "completed", "failed", "declined"]
+CommandExecutionSource = Literal[
+    "agent", "userShell", "unifiedExecStartup", "unifiedExecInteraction"
+]
 ToolCallStatus = Literal["inProgress", "completed", "failed"]
 CollabAgentTool = Literal["spawnAgent", "sendInput", "resumeAgent", "wait", "closeAgent"]
 CollabAgentStatus = Literal[
