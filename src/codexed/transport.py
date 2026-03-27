@@ -187,7 +187,7 @@ class WebSocketTransport:
             return None
         try:
             raw = await self._ws.recv()
-        except Exception:
+        except Exception:  # noqa: BLE001
             return None
         if isinstance(raw, bytes):
             raw = raw.decode()
