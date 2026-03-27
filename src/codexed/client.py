@@ -5,12 +5,9 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Mapping  # noqa: TC003
 import contextlib
-import json
 import logging
-import os
 from typing import TYPE_CHECKING, Any, assert_never
 
-import anyenv
 from pydantic import BaseModel, TypeAdapter
 
 from codexed.exceptions import (
@@ -116,6 +113,7 @@ from codexed.request_handlers import (
     SERVER_REQUEST_USER_INPUT,
     create_auto_approve_dict,
 )
+from codexed.transport import StdioTransport
 
 
 if TYPE_CHECKING:
@@ -158,6 +156,7 @@ if TYPE_CHECKING:
         UserInputHandler,
     )
     from codexed.session import Session
+    from codexed.transport import Transport
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +181,7 @@ class CodexClient:
         on_dynamic_tool_call: DynamicToolCallHandler | None = None,
         on_mcp_elicitation: McpElicitationHandler | None = None,
         mcp_elicitation_for_approvals: bool = False,
+        transport: Transport | None = None,
     ) -> None:
         """Initialize the Codex app-server client.
 
@@ -203,18 +203,26 @@ class CodexClient:
                 to handle approvals (the schema is empty; context is in ``_meta``).
                 Default is False because the default elicitation handler auto-declines,
                 which would break MCP tool approvals.
+            transport: Pre-configured transport instance. If provided,
+                ``codex_command``, ``profile``, ``env_vars``, and ``mcp_servers``
+                are ignored (they are only used to build the default
+                ``StdioTransport``).  Pass a ``WebSocketTransport`` here to
+                connect to a remote app-server.
         """
-        self._codex_command = codex_command
-        self._profile = profile
-        self._mcp_servers = dict(mcp_servers) if mcp_servers else {}
-        self._process: asyncio.subprocess.Process | None = None
+        if transport is not None:
+            self._transport = transport
+        else:
+            self._transport = StdioTransport(
+                codex_command=codex_command,
+                profile=profile,
+                env_vars=env_vars,
+                mcp_servers=mcp_servers,
+            )
         self._request_id = 0
-        self._env_vars = env_vars or {}
         self._pending_requests: dict[int, asyncio.Future[Any]] = {}
         self._event_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._turn_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
         self._reader_task: asyncio.Task[None] | None = None
-        self._writer_lock = asyncio.Lock()
         self._active_threads: set[str] = set()
         self._mcp_elicitation_enabled = on_mcp_elicitation is not None
         self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
@@ -240,47 +248,27 @@ class CodexClient:
         await self.stop()
 
     async def start(self) -> None:
-        """Start the Codex app-server subprocess and initialize connection.
+        """Start the transport and initialize the JSON-RPC connection.
 
         Raises:
-            CodexProcessError: If failed to start the process
+            CodexProcessError: If failed to start the transport
         """
         import codexed
 
-        if self._process is not None:
+        if self._transport.is_connected:
             return
 
-        cmd = [self._codex_command, "app-server"]
-        if self._profile:
-            cmd.extend(["--profile", self._profile])
-        # Add MCP server configurations via --config flags
-        for server_name, server_config in self._mcp_servers.items():
-            config_str = server_config.to_config_toml(server_name)
-            cmd.extend(["--config", config_str])
-
-        logger.info("Starting Codex app-server: %s", " ".join(cmd))
-        try:
-            self._process = await anyenv.create_process(
-                *cmd,
-                stdin="pipe",
-                stdout="pipe",
-                stderr="pipe",
-                env={**os.environ, **self._env_vars},
-            )
-        except FileNotFoundError as exc:
-            raise CodexProcessError(f"Codex binary not found: {self._codex_command}") from exc
-        except Exception as exc:
-            raise CodexProcessError(f"Failed to start Codex app-server: {exc}") from exc
+        await self._transport.start()
         # Start reader task
         self._reader_task = asyncio.create_task(self._read_loop())
         # Initialize connection
         version = codexed.__version__
-        init_params = InitializeParams.create(name="agentpool-codex-adapter", version=version)
+        init_params = InitializeParams.create(name="codexed", version=version)
         await self._send_request("initialize", init_params)
 
     async def stop(self) -> None:
-        """Stop the Codex app-server subprocess."""
-        if self._process is None:
+        """Stop the transport and clean up resources."""
+        if not self._transport.is_connected:
             return
 
         # Cancel reader task
@@ -289,16 +277,7 @@ class CodexClient:
             with contextlib.suppress(asyncio.CancelledError):
                 await self._reader_task
 
-        # Terminate process
-        if self._process.returncode is None:
-            self._process.terminate()
-            try:
-                await asyncio.wait_for(self._process.wait(), timeout=5.0)
-            except TimeoutError:
-                self._process.kill()
-                await self._process.wait()
-
-        self._process = None
+        await self._transport.stop()
         # Reject pending requests
         for future in self._pending_requests.values():
             if not future.done():
@@ -1474,7 +1453,7 @@ class CodexClient:
         Returns:
             Response result (not yet validated - caller should validate)
         """
-        if self._process is None or self._process.stdin is None:
+        if not self._transport.is_connected:
             raise TransportClosedError("Not connected to Codex app-server")
 
         request_id = self._request_id
@@ -1486,7 +1465,7 @@ class CodexClient:
         request = JsonRpcRequest(id=request_id, method=method, params=params_dict)
         try:
             message = request.model_dump(mode="json", by_alias=True, exclude_none=True)
-            await self._write_message(message)
+            await self._transport.send(message)
         except Exception as exc:
             del self._pending_requests[request_id]
             raise CodexProcessError(f"Failed to send request: {exc}") from exc
@@ -1494,25 +1473,14 @@ class CodexClient:
         return await future
 
     async def _read_loop(self) -> None:
-        """Read messages from app-server stdout."""
-        if self._process is None or self._process.stdout is None:
-            return
-
+        """Read messages from the transport."""
         try:
             while True:
-                line_bytes = await self._process.stdout.readline()
-                if not line_bytes:
+                message = await self._transport.receive()
+                if message is None:
                     break
-
-                line = line_bytes.decode().strip()
-                if not line or line == "null":
-                    continue
-
                 try:
-                    message = anyenv.load_json(line, return_type=dict)
                     await self._process_message(message)
-                except json.JSONDecodeError:
-                    logger.warning("Failed to parse JSON: %s", line)
                 except Exception:
                     logger.exception("Error processing message")
 
@@ -1639,13 +1607,8 @@ class CodexClient:
         await self._write_message(response)
 
     async def _write_message(self, message: dict[str, Any]) -> None:
-        """Write a JSON message to the app-server stdin."""
-        if self._process is None or self._process.stdin is None:
-            raise TransportClosedError("Not connected to Codex app-server")
-        async with self._writer_lock:
-            line = json.dumps(message) + "\n"
-            self._process.stdin.write(line.encode())
-            await self._process.stdin.drain()
+        """Write a JSON message via the transport."""
+        await self._transport.send(message)
 
     # ========================================================================
     # Server request handler registration

@@ -140,6 +140,7 @@ from codexed.models.events import (
     TurnStartedEvent,
 )
 from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
+from codexed.transport import StdioTransport, WebSocketTransport
 from codexed.models.tool_config import BuiltinToolsConfig, ToolConfig, tools_to_config_dict
 from codexed.request_handlers import (
     ApprovalHandler,
@@ -231,6 +232,7 @@ __all__ = [
     "SkillData",
     "SkillScope",
     "StdioMcpServer",
+    "StdioTransport",
     "Thread",
     "ThreadActiveFlag",
     "ThreadArchivedData",
@@ -274,6 +276,7 @@ __all__ = [
     "UserInputMention",
     "UserInputSkill",
     "UserInputText",
+    "WebSocketTransport",
     "WorkspaceWriteSandboxPolicy",
     "is_retryable_error",
     "map_jsonrpc_error",

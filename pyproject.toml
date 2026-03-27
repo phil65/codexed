@@ -35,6 +35,9 @@ dependencies = [
   # Only add below (Copier)
 ]
 
+[project.optional-dependencies]
+websocket = ["websockets>=13.0"]
+
 [project.urls]
 "Code coverage" = "https://app.codecov.io/gh/phil65/codexed"
 Discussions = "https://github.com/phil65/codexed/discussions"
