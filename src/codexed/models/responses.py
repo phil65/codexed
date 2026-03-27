@@ -364,3 +364,14 @@ class FsRemoveResponse(CodexBaseModel):
 
 class FsCopyResponse(CodexBaseModel):
     """Response for fs/copy request."""
+
+
+class FsWatchResponse(CodexBaseModel):
+    """Response for fs/watch request."""
+
+    watch_id: str
+    path: str
+
+
+class FsUnwatchResponse(CodexBaseModel):
+    """Response for fs/unwatch request."""

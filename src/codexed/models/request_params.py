@@ -460,6 +460,18 @@ class FsCopyParams(CodexBaseModel):
     recursive: bool = False
 
 
+class FsWatchParams(CodexBaseModel):
+    """Parameters for fs/watch request."""
+
+    path: str
+
+
+class FsUnwatchParams(CodexBaseModel):
+    """Parameters for fs/unwatch request."""
+
+    watch_id: str
+
+
 class CommandExecutionRequestApprovalParams(CodexBaseModel):
     """Parameters for item/commandExecution/requestApproval server request."""
 

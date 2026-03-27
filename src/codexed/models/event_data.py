@@ -299,6 +299,13 @@ class AppListUpdatedData(CodexBaseModel):
     data: list[AppInfo]
 
 
+class FsChangedData(CodexBaseModel):
+    """Payload for fs/changed notification."""
+
+    watch_id: str
+    changed_paths: list[str]
+
+
 class ContextCompactedData(CodexBaseModel):
     """Payload for thread/compacted/v2 notification."""
 

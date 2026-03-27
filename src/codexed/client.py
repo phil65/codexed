@@ -1116,6 +1116,28 @@ class CodexClient:
         params = FsCopyParams(source_path=source, destination_path=destination, recursive=recursive)
         await self._send_request("fs/copy", params)
 
+    async def fs_watch(self, path: str) -> FsWatchResponse:
+        """Start filesystem watch notifications for an absolute path.
+
+        Args:
+            path: Absolute file or directory path to watch.
+
+        Returns:
+            FsWatchResponse with watch_id and canonicalized path.
+        """
+        params = FsWatchParams(path=path)
+        result = await self._send_request("fs/watch", params)
+        return FsWatchResponse.model_validate(result)
+
+    async def fs_unwatch(self, watch_id: str) -> None:
+        """Stop filesystem watch notifications for a prior watch.
+
+        Args:
+            watch_id: Watch identifier returned by fs_watch.
+        """
+        params = FsUnwatchParams(watch_id=watch_id)
+        await self._send_request("fs/unwatch", params)
+
     # ========================================================================
     # MCP server methods
     # ========================================================================

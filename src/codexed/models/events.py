@@ -25,6 +25,7 @@ from codexed.models.event_data import (  # noqa: TC001
     DeprecationNoticeData,
     ErrorEventData,
     FileChangeOutputDeltaData,
+    FsChangedData,
     ItemCompletedData,
     ItemStartedData,
     LoginChatGptCompleteData,
@@ -510,6 +511,13 @@ class AppListUpdatedEvent(CodexBaseModel):
     data: AppListUpdatedData
 
 
+class FsChangedEvent(CodexBaseModel):
+    """Filesystem changed event."""
+
+    event_type: Literal["fs/changed"] = "fs/changed"
+    data: FsChangedData
+
+
 class ContextCompactedEvent(CodexBaseModel):
     """Context compacted event (alias for ThreadCompactedEvent with turnId)."""
 
@@ -596,6 +604,7 @@ CodexEvent = Annotated[
     | ModelReroutedEvent
     | ConfigWarningEvent
     | AppListUpdatedEvent
+    | FsChangedEvent
     | ContextCompactedEvent
     | ServerRequestResolvedEvent,
     Field(discriminator="event_type"),
@@ -678,6 +687,7 @@ EventType = Literal[
     "model/rerouted",
     "configWarning",
     "app/list/updated",
+    "fs/changed",
     "thread/compacted/v2",
     "serverRequest/resolved",
 ]
