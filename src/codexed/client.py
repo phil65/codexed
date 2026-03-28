@@ -204,7 +204,7 @@ class CodexClient:
             self._transport = transport
         else:
             self._transport = StdioTransport(
-                codex_command=codex_command,
+                command=codex_command,
                 profile=profile,
                 env_vars=env_vars,
                 mcp_servers=mcp_servers,

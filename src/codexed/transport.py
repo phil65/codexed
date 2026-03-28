@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import json
 import logging
 import os
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
@@ -59,12 +58,12 @@ class StdioTransport:
 
     def __init__(
         self,
-        codex_command: str = "codex",
+        command: str,
         profile: str | None = None,
         env_vars: dict[str, str] | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
     ) -> None:
-        self._codex_command = codex_command
+        self._command = command
         self._profile = profile
         self._mcp_servers = dict(mcp_servers) if mcp_servers else {}
         self._env_vars = env_vars or {}
@@ -75,7 +74,7 @@ class StdioTransport:
         if self._process is not None:
             return
 
-        cmd = [self._codex_command, "app-server"]
+        cmd = [self._command, "app-server"]
         if self._profile:
             cmd.extend(["--profile", self._profile])
         for server_name, server_config in self._mcp_servers.items():
@@ -92,7 +91,7 @@ class StdioTransport:
                 env={**os.environ, **self._env_vars},
             )
         except FileNotFoundError as exc:
-            raise CodexProcessError(f"Codex binary not found: {self._codex_command}") from exc
+            raise CodexProcessError(f"Codex binary not found: {self._command}") from exc
         except Exception as exc:
             raise CodexProcessError(f"Failed to start Codex app-server: {exc}") from exc
 
@@ -112,7 +111,7 @@ class StdioTransport:
         if self._process is None or self._process.stdin is None:
             raise TransportClosedError("Not connected to Codex app-server")
         async with self._writer_lock:
-            line = json.dumps(message) + "\n"
+            line = anyenv.dump_json(message) + "\n"
             self._process.stdin.write(line.encode())
             await self._process.stdin.drain()
 
@@ -152,17 +151,10 @@ class WebSocketTransport:
         self._writer_lock = asyncio.Lock()
 
     async def start(self) -> None:
+        import websockets
+
         if self._ws is not None:
             return
-        try:
-            import websockets
-        except ImportError as exc:
-            msg = (
-                "WebSocketTransport requires the 'websockets' package. "
-                "Install it with: pip install codexed[websocket]"
-            )
-            raise ImportError(msg) from exc
-
         headers = dict(self._extra_headers)
         if self._auth_token:
             headers["Authorization"] = f"Bearer {self._auth_token}"
@@ -180,7 +172,7 @@ class WebSocketTransport:
         if self._ws is None:
             raise TransportClosedError("WebSocket not connected")
         async with self._writer_lock:
-            await self._ws.send(json.dumps(message))
+            await self._ws.send(anyenv.dump_json(message))
 
     async def receive(self) -> dict[str, Any] | None:
         if self._ws is None:
@@ -194,7 +186,7 @@ class WebSocketTransport:
         raw = raw.strip()
         if not raw or raw == "null":
             return await self.receive()
-        return json.loads(raw)
+        return anyenv.load_json(raw, return_type=dict)
 
     @property
     def is_connected(self) -> bool:
