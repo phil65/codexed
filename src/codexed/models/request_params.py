@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TC003
-from typing import Annotated, Any, Literal, Required, Self, TypedDict
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Required, Self, TypedDict
 
-import mcp.types
 from pydantic import Discriminator, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
@@ -33,6 +32,10 @@ from codexed.models.misc import (  # noqa: TC001
 from codexed.models.response_item import ResponseItem  # noqa: TC001
 from codexed.models.terminal import CommandExecTerminalSize  # noqa: TC001
 from codexed.models.user_input import UserInput  # noqa: TC001
+
+
+if TYPE_CHECKING:
+    from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams
 
 
 LoginType = Literal["apiKey", "chatgpt", "chatgptAuthTokens"]
@@ -576,19 +579,21 @@ class McpElicitationFormParams(_McpElicitationBase):
     mode: Literal["form"] = "form"
     requested_schema: dict[str, Any]
 
-    def to_mcp(self) -> mcp.types.ElicitRequestFormParams:
-        params = mcp.types.ElicitRequestFormParams(
+    def to_mcp(self) -> ElicitRequestFormParams:
+        from mcp.types import ElicitRequestFormParams, RequestParams
+
+        params = ElicitRequestFormParams(
             message=self.message,
             requestedSchema=self.requested_schema,
         )
         if self.meta is not None:
-            params.meta = mcp.types.RequestParams.Meta(**self.meta)
+            params.meta = RequestParams.Meta(**self.meta)
         return params
 
     @classmethod
     def from_mcp(
         cls,
-        params: mcp.types.ElicitRequestFormParams,
+        params: ElicitRequestFormParams,
         thread_id: str,
         server_name: str,
         turn_id: str | None = None,
@@ -612,20 +617,22 @@ class McpElicitationUrlParams(_McpElicitationBase):
     url: str
     elicitation_id: str
 
-    def to_mcp(self) -> mcp.types.ElicitRequestURLParams:
-        params = mcp.types.ElicitRequestURLParams(
+    def to_mcp(self) -> ElicitRequestURLParams:
+        from mcp.types import ElicitRequestURLParams, RequestParams
+
+        params = ElicitRequestURLParams(
             message=self.message,
             url=self.url,
             elicitationId=self.elicitation_id,
         )
         if self.meta is not None:
-            params.meta = mcp.types.RequestParams.Meta(**self.meta)
+            params.meta = RequestParams.Meta(**self.meta)
         return params
 
     @classmethod
     def from_mcp(
         cls,
-        params: mcp.types.ElicitRequestURLParams,
+        params: ElicitRequestURLParams,
         thread_id: str,
         server_name: str,
         turn_id: str | None = None,
