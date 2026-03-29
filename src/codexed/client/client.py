@@ -323,6 +323,13 @@ class CodexClient:
         """
         from codexed.client.session import Session
 
+        cfg = merge_config(
+            config,
+            tools,
+            code_mode,
+            mcp_servers,
+            mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
+        )
         params = ThreadStartParams(
             cwd=cwd,
             model=model,
@@ -331,13 +338,7 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=merge_config(
-                config,
-                tools,
-                code_mode,
-                mcp_servers,
-                mcp_elicitation_for_approvals=self._mcp_elicitation_for_approvals,
-            ),
+            config=cfg,
             service_name=service_name,
             personality=personality,
             ephemeral=ephemeral,

@@ -32,7 +32,6 @@ from codexed.exceptions import (
     TransportClosedError,
     TurnFailedError,
     is_retryable_error,
-    map_jsonrpc_error,
 )
 from codexed.models import (
     AgentMessageDeltaData,
@@ -282,6 +281,5 @@ __all__ = [
     "WebSocketTransport",
     "WorkspaceWriteSandboxPolicy",
     "is_retryable_error",
-    "map_jsonrpc_error",
     "tools_to_config_dict",
 ]
