@@ -17,8 +17,7 @@ __license__ = "MIT"
 __url__ = "https://github.com/phil65/codexed"
 
 
-from codexed.client import CodexClient
-from codexed.session import Session
+from codexed.client import CodexClient, Session
 from codexed.exceptions import (
     CodexError,
     CodexProcessError,
