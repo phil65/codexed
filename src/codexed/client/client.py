@@ -109,6 +109,7 @@ if TYPE_CHECKING:
         CollaborationMode,
         CollaborationModeMask,
         ConfigEdit,
+        ConfigRequirements,
         ExperimentalFeature,
         ExternalAgentConfigMigrationItem,
         McpServerConfig,
@@ -129,6 +130,7 @@ if TYPE_CHECKING:
         UserInput,
     )
     from codexed.models.request_params import HazelnutScope, LoginType, ProductSurface
+    from codexed.models.responses import CancelLoginAccountStatus
     from codexed.request_handlers import (
         ApprovalHandler,
         DynamicToolCallHandler,
@@ -982,7 +984,7 @@ class CodexClient:
         *,
         scopes: list[str] | None = None,
         timeout_secs: int | None = None,
-    ) -> McpServerOauthLoginResponse:
+    ) -> str:
         """Start OAuth login for an MCP server.
 
         Args:
@@ -991,11 +993,12 @@ class CodexClient:
             timeout_secs: Optional timeout in seconds
 
         Returns:
-            Response with authorization URL
+            Authorization URL
         """
         params = McpServerOauthLoginParams(name=name, scopes=scopes, timeout_secs=timeout_secs)
         result = await self.dispatch.send_request("mcpServer/oauth/login", params)
-        return McpServerOauthLoginResponse.model_validate(result)
+        response = McpServerOauthLoginResponse.model_validate(result)
+        return response.authorization_url
 
     # ========================================================================
     # Account methods
@@ -1042,11 +1045,12 @@ class CodexClient:
         result = await self.dispatch.send_request("account/login/start", params)
         return LoginAccountResponse.model_validate(result)
 
-    async def account_login_cancel(self, login_id: str) -> CancelLoginAccountResponse:
+    async def account_login_cancel(self, login_id: str) -> CancelLoginAccountStatus:
         """Cancel an in-progress account login."""
         params = CancelLoginAccountParams(login_id=login_id)
         result = await self.dispatch.send_request("account/login/cancel", params)
-        return CancelLoginAccountResponse.model_validate(result)
+        response = CancelLoginAccountResponse.model_validate(result)
+        return response.status
 
     async def account_logout(self) -> None:
         """Logout from the current account."""
@@ -1136,10 +1140,11 @@ class CodexClient:
         result = await self.dispatch.send_request("config/batchWrite", params)
         return ConfigWriteResponse.model_validate(result)
 
-    async def config_requirements_read(self) -> ConfigRequirementsReadResponse:
+    async def config_requirements_read(self) -> ConfigRequirements | None:
         """Read config requirements."""
         result = await self.dispatch.send_request("configRequirements/read")
-        return ConfigRequirementsReadResponse.model_validate(result)
+        response = ConfigRequirementsReadResponse.model_validate(result)
+        return response.requirements
 
     # ========================================================================
     # Apps methods
@@ -1210,7 +1215,7 @@ class CodexClient:
         thread_id: str | None = None,
         include_logs: bool = False,
         extra_log_files: list[str] | None = None,
-    ) -> FeedbackUploadResponse:
+    ) -> str:
         """Upload feedback.
 
         Args:
@@ -1221,7 +1226,7 @@ class CodexClient:
             extra_log_files: Additional log files to include
 
         Returns:
-            FeedbackUploadResponse with thread ID
+            thread ID
         """
         params = FeedbackUploadParams(
             classification=classification,
@@ -1231,7 +1236,8 @@ class CodexClient:
             extra_log_files=extra_log_files,
         )
         result = await self.dispatch.send_request("feedback/upload", params)
-        return FeedbackUploadResponse.model_validate(result)
+        response = FeedbackUploadResponse.model_validate(result)
+        return response.thread_id
 
     # ========================================================================
     # External agent config methods
@@ -1242,7 +1248,7 @@ class CodexClient:
         *,
         include_home: bool | None = None,
         cwds: list[str] | None = None,
-    ) -> ExternalAgentConfigDetectResponse:
+    ) -> list[ExternalAgentConfigMigrationItem]:
         """Detect external agent configurations.
 
         Args:
@@ -1254,7 +1260,8 @@ class CodexClient:
         """
         params = ExternalAgentConfigDetectParams(include_home=include_home, cwds=cwds)
         result = await self.dispatch.send_request("externalAgentConfig/detect", params)
-        return ExternalAgentConfigDetectResponse.model_validate(result)
+        response = ExternalAgentConfigDetectResponse.model_validate(result)
+        return response.items
 
     async def external_agent_config_import(
         self,
