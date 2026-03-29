@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import ThreadActiveFlag  # noqa: TC001
+from codexed.models.codex_types import ThreadActiveFlag
 
 
 class ThreadStatusNotLoaded(CodexBaseModel):

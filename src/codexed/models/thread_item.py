@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from mcp.types import ContentBlock  # noqa: TC002
+from mcp.types import ContentBlock
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (  # noqa: TC001
+from codexed.models.codex_types import (
     CollabAgentStatus,
     CollabAgentTool,
     CommandExecutionSource,
@@ -15,9 +15,9 @@ from codexed.models.codex_types import (  # noqa: TC001
     PatchApplyStatus,
     ToolCallStatus,
 )
-from codexed.models.command_action import CommandAction  # noqa: TC001
-from codexed.models.user_input import UserInput  # noqa: TC001
-from codexed.models.web_search import WebSearchAction  # noqa: TC001
+from codexed.models.command_action import CommandAction
+from codexed.models.user_input import UserInput
+from codexed.models.web_search import WebSearchAction
 
 
 # ---------------------------------------------------------------------------

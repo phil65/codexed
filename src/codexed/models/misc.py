@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
+from mcp.types import Annotations, Icon, ToolAnnotations
 from pydantic import AnyUrl, Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (  # noqa: TC001
+from codexed.models.codex_types import (
     ExperimentalFeatureStage,
     ExternalAgentConfigMigrationItemType,
     InputModality,
@@ -22,12 +23,12 @@ from codexed.models.codex_types import (  # noqa: TC001
     SkillApprovalDecision,
     SkillScope,
 )
-from codexed.models.thread_item import ThreadItem  # noqa: TC001
-from codexed.models.thread_status import ThreadStatusValue  # noqa: TC001
+from codexed.models.thread_item import ThreadItem
+from codexed.models.thread_status import ThreadStatusValue
 
 
 if TYPE_CHECKING:
-    from mcp.types import Annotations, Icon, Resource, ResourceTemplate, Tool, ToolAnnotations
+    from mcp.types import Resource, ResourceTemplate, Tool
 
 
 # Strict validation in tests to catch schema changes, lenient in production
