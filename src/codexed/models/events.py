@@ -30,6 +30,7 @@ from codexed.models.event_data import (
     ItemStartedData,
     LoginChatGptCompleteData,
     McpServerOAuthLoginCompletedData,
+    McpServerStartupStatusUpdatedData,
     McpToolCallProgressData,
     ModelReroutedData,
     PlanDeltaData,
@@ -412,6 +413,13 @@ class McpToolCallProgressEvent(CodexBaseModel):
 # ============================================================================
 
 
+class McpServerStartupStatusUpdatedEvent(CodexBaseModel):
+    """MCP server startup status updated event."""
+
+    event_type: Literal["mcpServer/startupStatus/updated"] = "mcpServer/startupStatus/updated"
+    data: McpServerStartupStatusUpdatedData
+
+
 class McpServerOAuthLoginCompletedEvent(CodexBaseModel):
     """MCP server OAuth login completed event."""
 
@@ -588,6 +596,8 @@ CodexEvent = Annotated[
     | FileChangeOutputDeltaEvent
     # Item deltas - MCP tool calls
     | McpToolCallProgressEvent
+    # MCP server status
+    | McpServerStartupStatusUpdatedEvent
     # MCP OAuth
     | McpServerOAuthLoginCompletedEvent
     # Account/Auth events
@@ -671,6 +681,8 @@ EventType = Literal[
     "item/fileChange/outputDelta",
     # Item deltas - MCP tool calls
     "item/mcpToolCall/progress",
+    # MCP server status
+    "mcpServer/startupStatus/updated",
     # MCP OAuth
     "mcpServer/oauthLogin/completed",
     # Account/Auth events

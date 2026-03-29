@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import ModelRerouteReason
+from codexed.models.codex_types import McpServerStartupState, ModelRerouteReason
 from codexed.models.misc import (
     AppInfo,
     RateLimitSnapshot,
@@ -123,6 +123,14 @@ class McpToolCallProgressData(CodexBaseModel):
 
 
 # MCP/Account/System notifications
+
+
+class McpServerStartupStatusUpdatedData(CodexBaseModel):
+    """Payload for mcpServer/startupStatus/updated notification."""
+
+    name: str
+    status: McpServerStartupState
+    error: str | None = None
 
 
 class McpServerOAuthLoginCompletedData(CodexBaseModel):
@@ -361,6 +369,8 @@ EventData = (
     | FileChangeOutputDeltaData
     # Item deltas - MCP tool calls
     | McpToolCallProgressData
+    # MCP server status
+    | McpServerStartupStatusUpdatedData
     # MCP OAuth
     | McpServerOAuthLoginCompletedData
     # Account/Auth events

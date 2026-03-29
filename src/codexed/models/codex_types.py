@@ -28,6 +28,7 @@ ItemType = Literal[
 ]
 ItemStatus = Literal["pending", "running", "completed", "error"]
 McpElicitationAction = Literal["accept", "decline", "cancel"]
+McpServerStartupState = Literal["starting", "ready", "failed", "cancelled"]
 """Action taken by the user on an elicitation request."""
 
 # New type aliases
