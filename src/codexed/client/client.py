@@ -110,6 +110,7 @@ from codexed.transport import StdioTransport
 if TYPE_CHECKING:
     from typing import Self
 
+    from codexed.client.session import Session
     from codexed.models import (
         AppInfo,
         ApprovalPolicy,
@@ -145,7 +146,6 @@ if TYPE_CHECKING:
         ServerRequestHandler,
         UserInputHandler,
     )
-    from codexed.session import Session
     from codexed.transport import Transport
 
 logger = logging.getLogger(__name__)
@@ -321,7 +321,7 @@ class CodexClient:
         Returns:
             Session wrapping the new thread
         """
-        from codexed.session import Session
+        from codexed.client.session import Session
 
         params = ThreadStartParams(
             cwd=cwd,
@@ -386,7 +386,7 @@ class CodexClient:
         Returns:
             Session wrapping the resumed thread
         """
-        from codexed.session import Session
+        from codexed.client.session import Session
 
         cfg = merge_config(
             config,
@@ -454,7 +454,7 @@ class CodexClient:
         Returns:
             Session wrapping the new forked thread
         """
-        from codexed.session import Session
+        from codexed.client.session import Session
 
         cfg = merge_config(
             config,
