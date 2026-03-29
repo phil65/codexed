@@ -566,7 +566,7 @@ class _McpElicitationBase(CodexBaseModel):
     turn_id: str | None = None
     server_name: str
     meta: ToolApprovalMeta | Any | None = None
-    """Tool approval metadata when ``tool_call_mcp_elicitation`` is enabled; otherwise server-defined."""
+    """Approval metadata when ``tool_call_mcp_elicitation`` is enabled; otherwise server-defined."""
     message: str
 
 
