@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence  # noqa: TC003
-from typing import Annotated, Any, Literal, Self
+from typing import Annotated, Any, Literal, Required, Self, TypedDict
 
 import mcp.types
 from pydantic import Discriminator, TypeAdapter
@@ -533,33 +533,40 @@ class DynamicToolCallParams(CodexBaseModel):
     arguments: Any
 
 
+PersistOption = Literal["session", "always"]
+
+
+class ToolApprovalParamDisplay(TypedDict):
+    """A rendered tool parameter for display."""
+
+    name: str
+    value: Any
+    display_name: str
+
+
+class ToolApprovalMeta(TypedDict, total=False):
+    """Metadata for MCP tool approval requests."""
+
+    codex_approval_kind: Required[Literal["mcp_tool_call"]]
+    persist: PersistOption | list[PersistOption]
+    tool_title: str
+    tool_description: str
+    tool_params: dict[str, Any]
+    tool_params_display: list[ToolApprovalParamDisplay]
+    source: Literal["connector"]
+    connector_id: str
+    connector_name: str
+    connector_description: str
+
+
 class _McpElicitationBase(CodexBaseModel):
     """Common fields for MCP elicitation requests."""
 
     thread_id: str
     turn_id: str | None = None
     server_name: str
-    meta: Any | None = None
-    """Optional metadata from the server.
-
-    For MCP tool approval requests (when ``tool_call_mcp_elicitation`` is enabled),
-    this contains:
-
-    - ``kind`` (str): Always ``"mcp_tool_call"`` for tool approvals.
-    - ``persist`` (str | list[str]): Allowed persistence options —
-      ``"session"`` (remember for this session) and/or ``"always"``
-      (remember permanently).
-    - ``tool_title`` (str, optional): Human-readable tool name.
-    - ``tool_description`` (str, optional): Tool description.
-    - ``tool_params`` (dict, optional): The tool call arguments.
-    - ``tool_params_display`` (list, optional): Rendered parameter display.
-    - ``source`` (str, optional): ``"connector"`` if from a ChatGPT App.
-    - ``connector_id``, ``connector_name``, ``connector_description``
-      (str, optional): Connector details when source is ``"connector"``.
-
-    For regular MCP server elicitations (auth flows etc.), the meta content
-    is defined by the MCP server itself.
-    """
+    meta: ToolApprovalMeta | Any | None = None
+    """Tool approval metadata when ``tool_call_mcp_elicitation`` is enabled; otherwise server-defined."""
     message: str
 
 
