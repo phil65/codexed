@@ -89,5 +89,3 @@ if __name__ == "__main__":
 
     # Example 3: Multiple MCP servers
     # asyncio.run(example_with_multiple_mcp_servers())
-
-    print("Examples ready to run - uncomment the ones you want to try!")

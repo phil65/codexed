@@ -43,7 +43,7 @@ class CodexFS:
             FsReadFileResponse with base64-encoded file contents.
         """
         params = FsReadFileParams(path=path)
-        result = await self._client._send_request("fs/readFile", params)
+        result = await self._client.dispatch.send_request("fs/readFile", params)
         return FsReadFileResponse.model_validate(result)
 
     async def write_file(self, path: str, data_base64: str) -> None:
@@ -54,7 +54,7 @@ class CodexFS:
             data_base64: File contents encoded as base64.
         """
         params = FsWriteFileParams(path=path, data_base64=data_base64)
-        await self._client._send_request("fs/writeFile", params)
+        await self._client.dispatch.send_request("fs/writeFile", params)
 
     async def create_directory(self, path: str, *, recursive: bool | None = None) -> None:
         """Create a directory on the host filesystem.
@@ -64,7 +64,7 @@ class CodexFS:
             recursive: Whether to create parent directories. Defaults to True server-side.
         """
         params = FsCreateDirectoryParams(path=path, recursive=recursive)
-        await self._client._send_request("fs/createDirectory", params)
+        await self._client.dispatch.send_request("fs/createDirectory", params)
 
     async def get_metadata(self, path: str) -> FsGetMetadataResponse:
         """Get metadata for an absolute path.
@@ -76,7 +76,7 @@ class CodexFS:
             FsGetMetadataResponse with isDirectory, isFile, and timestamps.
         """
         params = FsGetMetadataParams(path=path)
-        result = await self._client._send_request("fs/getMetadata", params)
+        result = await self._client.dispatch.send_request("fs/getMetadata", params)
         return FsGetMetadataResponse.model_validate(result)
 
     async def read_directory(
@@ -95,7 +95,7 @@ class CodexFS:
             List of directory entries with fileName, isDirectory, isFile.
         """
         params = FsReadDirectoryParams(path=path)
-        result = await self._client._send_request("fs/readDirectory", params)
+        result = await self._client.dispatch.send_request("fs/readDirectory", params)
         entries = FsReadDirectoryResponse.model_validate(result).entries
         if not recursive:
             return entries
@@ -122,7 +122,7 @@ class CodexFS:
             force: Whether to ignore missing paths. Defaults to True server-side.
         """
         params = FsRemoveParams(path=path, recursive=recursive, force=force)
-        await self._client._send_request("fs/remove", params)
+        await self._client.dispatch.send_request("fs/remove", params)
 
     async def copy(self, source: str, destination: str, *, recursive: bool = False) -> None:
         """Copy a file or directory tree on the host filesystem.
@@ -133,7 +133,7 @@ class CodexFS:
             recursive: Required for directory copies; ignored for file copies.
         """
         params = FsCopyParams(source_path=source, destination_path=destination, recursive=recursive)
-        await self._client._send_request("fs/copy", params)
+        await self._client.dispatch.send_request("fs/copy", params)
 
     async def watch(self, path: str) -> FsWatchResponse:
         """Start filesystem watch notifications for an absolute path.
@@ -145,7 +145,7 @@ class CodexFS:
             FsWatchResponse with watch_id and canonicalized path.
         """
         params = FsWatchParams(path=path)
-        result = await self._client._send_request("fs/watch", params)
+        result = await self._client.dispatch.send_request("fs/watch", params)
         return FsWatchResponse.model_validate(result)
 
     async def unwatch(self, watch_id: str) -> None:
@@ -155,4 +155,4 @@ class CodexFS:
             watch_id: Watch identifier returned by fs_watch.
         """
         params = FsUnwatchParams(watch_id=watch_id)
-        await self._client._send_request("fs/unwatch", params)
+        await self._client.dispatch.send_request("fs/unwatch", params)

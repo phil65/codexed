@@ -4,20 +4,14 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator, Mapping  # noqa: TC003
-import contextlib
 import logging
 from typing import TYPE_CHECKING, Any, assert_never
 
 from pydantic import BaseModel, TypeAdapter
 
+from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
-from codexed.exceptions import (
-    CodexProcessError,
-    CodexRequestError,
-    TransportClosedError,
-    TurnFailedError,
-    map_jsonrpc_error,
-)
+from codexed.exceptions import CodexRequestError, TurnFailedError
 from codexed.helpers import kebab_to_camel, merge_config
 from codexed.models import (
     AppsListParams,
@@ -43,9 +37,6 @@ from codexed.models import (
     GetAccountParams,
     GetAccountRateLimitsResponse,
     GetAccountResponse,
-    InitializeParams,
-    JsonRpcRequest,
-    JsonRpcResponse,
     ListMcpServerStatusParams,
     ListMcpServerStatusResponse,
     LoginAccountParams,
@@ -199,20 +190,19 @@ class CodexClient:
                 ``StdioTransport``).  Pass a ``WebSocketTransport`` here to
                 connect to a remote app-server.
         """
-        if transport is not None:
-            self._transport = transport
-        else:
-            self._transport = StdioTransport(
-                command=codex_command,
-                profile=profile,
-                env_vars=env_vars,
-                mcp_servers=mcp_servers,
-            )
-        self._request_id = 0
-        self._pending_requests: dict[int, asyncio.Future[Any]] = {}
-        self._event_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
+        tp = transport or StdioTransport(
+            command=codex_command,
+            profile=profile,
+            env_vars=env_vars,
+            mcp_servers=mcp_servers,
+        )
+        self.dispatch = Dispatch(
+            tp,
+            on_notification=self._handle_notification,
+            on_server_request=self._handle_server_request,
+        )
         self._turn_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
-        self._reader_task: asyncio.Task[None] | None = None
+        self._event_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._active_threads: set[str] = set()
         self._mcp_elicitation_enabled = on_mcp_elicitation is not None
         self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
@@ -231,49 +221,18 @@ class CodexClient:
 
     async def __aenter__(self) -> Self:
         """Async context manager entry - starts the app-server."""
-        await self.start()
+        import codexed
+        from codexed.models import InitializeParams
+
+        await self.dispatch.start()
+        version = codexed.__version__
+        init_params = InitializeParams.create(name="codexed", version=version)
+        await self.dispatch.send_request("initialize", init_params)
         return self
 
     async def __aexit__(self, *_args: object) -> None:
         """Async context manager exit - stops the app-server."""
-        await self.stop()
-
-    async def start(self) -> None:
-        """Start the transport and initialize the JSON-RPC connection.
-
-        Raises:
-            CodexProcessError: If failed to start the transport
-        """
-        import codexed
-
-        if self._transport.is_connected:
-            return
-
-        await self._transport.start()
-        # Start reader task
-        self._reader_task = asyncio.create_task(self._read_loop())
-        # Initialize connection
-        version = codexed.__version__
-        init_params = InitializeParams.create(name="codexed", version=version)
-        await self._send_request("initialize", init_params)
-
-    async def stop(self) -> None:
-        """Stop the transport and clean up resources."""
-        if not self._transport.is_connected:
-            return
-
-        # Cancel reader task
-        if self._reader_task:
-            self._reader_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await self._reader_task
-
-        await self._transport.stop()
-        # Reject pending requests
-        for future in self._pending_requests.values():
-            if not future.done():
-                future.set_exception(TransportClosedError("Connection closed"))
-        self._pending_requests.clear()
+        await self.dispatch.stop()
 
     # ========================================================================
     # Thread lifecycle methods
@@ -343,7 +302,7 @@ class CodexClient:
             personality=personality,
             ephemeral=ephemeral,
         )
-        result = await self._send_request("thread/start", params)
+        result = await self.dispatch.send_request("thread/start", params)
         response = ThreadResponse.model_validate(result)
         self._active_threads.add(response.thread.id)
         return Session(self, response)
@@ -409,7 +368,7 @@ class CodexClient:
             config=cfg,
             personality=personality,
         )
-        result = await self._send_request("thread/resume", params)
+        result = await self.dispatch.send_request("thread/resume", params)
         response = ThreadResponse.model_validate(result)
         self._active_threads.add(response.thread.id)
         return Session(self, response)
@@ -477,7 +436,7 @@ class CodexClient:
             config=cfg,
             personality=personality,
         )
-        result = await self._send_request("thread/fork", params)
+        result = await self.dispatch.send_request("thread/fork", params)
         response = ThreadResponse.model_validate(result)
         self._active_threads.add(response.thread.id)
         session = Session(self, response)
@@ -522,7 +481,7 @@ class CodexClient:
             cwd=cwd,
             search_term=search_term,
         )
-        result = await self._send_request("thread/list", params)
+        result = await self.dispatch.send_request("thread/list", params)
         return ThreadListResponse.model_validate(result)
 
     async def thread_read(
@@ -530,12 +489,12 @@ class CodexClient:
     ) -> ThreadReadResponse:
         """Read a thread's data."""
         params = ThreadReadParams(thread_id=thread_id, include_turns=include_turns)
-        result = await self._send_request("thread/read", params)
+        result = await self.dispatch.send_request("thread/read", params)
         return ThreadReadResponse.model_validate(result)
 
     async def thread_loaded_list(self) -> list[str]:
         """List thread IDs currently loaded in memory."""
-        result = await self._send_request("thread/loaded/list")
+        result = await self.dispatch.send_request("thread/loaded/list")
         response = ThreadLoadedListResponse.model_validate(result)
         return response.data
 
@@ -549,30 +508,30 @@ class CodexClient:
             ThreadUnsubscribeResponse with status (notLoaded/notSubscribed/unsubscribed)
         """
         params = ThreadUnsubscribeParams(thread_id=thread_id)
-        result = await self._send_request("thread/unsubscribe", params)
+        result = await self.dispatch.send_request("thread/unsubscribe", params)
         return ThreadUnsubscribeResponse.model_validate(result)
 
     async def thread_archive(self, thread_id: str) -> None:
         """Archive a thread (move to archived directory)."""
         params = ThreadArchiveParams(thread_id=thread_id)
-        await self._send_request("thread/archive", params)
+        await self.dispatch.send_request("thread/archive", params)
         self._active_threads.discard(thread_id)
 
     async def thread_unarchive(self, thread_id: str) -> ThreadUnarchiveResponse:
         """Unarchive a previously archived thread. Returns unarchived thread data."""
         params = ThreadUnarchiveParams(thread_id=thread_id)
-        result = await self._send_request("thread/unarchive", params)
+        result = await self.dispatch.send_request("thread/unarchive", params)
         return ThreadUnarchiveResponse.model_validate(result)
 
     async def thread_set_name(self, thread_id: str, name: str) -> None:
         """Set a user-facing name for a thread."""
         params = ThreadSetNameParams(thread_id=thread_id, name=name)
-        await self._send_request("thread/name/set", params)
+        await self.dispatch.send_request("thread/name/set", params)
 
     async def thread_compact_start(self, thread_id: str) -> None:
         """Trigger context compaction for a thread."""
         params = ThreadCompactStartParams(thread_id=thread_id)
-        await self._send_request("thread/compact/start", params)
+        await self.dispatch.send_request("thread/compact/start", params)
 
     async def thread_rollback(self, thread_id: str, turns: int) -> ThreadRollbackResponse:
         """Rollback the last N turns from a thread.
@@ -585,7 +544,7 @@ class CodexClient:
             Updated thread object with turns populated
         """
         params = ThreadRollbackParams(thread_id=thread_id, turns=turns)
-        result = await self._send_request("thread/rollback", params)
+        result = await self.dispatch.send_request("thread/rollback", params)
         return ThreadRollbackResponse.model_validate(result)
 
     async def thread_rollback_to_turn(self, thread_id: str, turn_id: str) -> ThreadRollbackResponse:
@@ -625,7 +584,7 @@ class CodexClient:
             command: Shell command to execute.
         """
         params = ThreadShellCommandParams(thread_id=thread_id, command=command)
-        await self._send_request("thread/shellCommand", params)
+        await self.dispatch.send_request("thread/shellCommand", params)
 
     # ========================================================================
     # Turn methods
@@ -700,7 +659,7 @@ class CodexClient:
             collaboration_mode=collaboration_mode,
         )
         # Start turn (non-blocking request)
-        turn_result = await self._send_request("turn/start", params)
+        turn_result = await self.dispatch.send_request("turn/start", params)
         response = TurnStartResponse.model_validate(turn_result)
         turn_id = response.turn.id
         # Create per-turn event queue for proper routing
@@ -747,13 +706,13 @@ class CodexClient:
             input=[UserInputText(text=user_input)] if isinstance(user_input, str) else user_input,
             expected_turn_id=expected_turn_id,
         )
-        result = await self._send_request("turn/steer", params)
+        result = await self.dispatch.send_request("turn/steer", params)
         return TurnSteerResponse.model_validate(result)
 
     async def turn_interrupt(self, thread_id: str, turn_id: str) -> None:
         """Interrupt a running turn."""
         params = TurnInterruptParams(thread_id=thread_id, turn_id=turn_id)
-        await self._send_request("turn/interrupt", params)
+        await self.dispatch.send_request("turn/interrupt", params)
 
     async def turn_stream_structured[ResultType: BaseModel](
         self,
@@ -847,7 +806,7 @@ class CodexClient:
             ReviewStartResponse with turn and review thread ID
         """
         params = ReviewStartParams(thread_id=thread_id, target=target, delivery=delivery)
-        result = await self._send_request("review/start", params)
+        result = await self.dispatch.send_request("review/start", params)
         return ReviewStartResponse.model_validate(result)
 
     # ========================================================================
@@ -870,7 +829,7 @@ class CodexClient:
             List of skills with metadata
         """
         params = SkillsListParams(cwds=cwds, force_reload=force_reload)
-        result = await self._send_request("skills/list", params)
+        result = await self.dispatch.send_request("skills/list", params)
         response = SkillsListResponse.model_validate(result)
         # Return skills from first container (usually only one)
         if response.data:
@@ -885,7 +844,7 @@ class CodexClient:
             enabled: Whether the skill is enabled
         """
         params = SkillsConfigWriteParams(path=path, enabled=enabled)
-        await self._send_request("skills/config/write", params)
+        await self.dispatch.send_request("skills/config/write", params)
 
     async def skills_remote_list(
         self,
@@ -909,7 +868,7 @@ class CodexClient:
             product_surface=product_surface,
             enabled=enabled,
         )
-        result = await self._send_request("skills/remote/list", params)
+        result = await self.dispatch.send_request("skills/remote/list", params)
         response = SkillsRemoteListResponse.model_validate(result)
         return response.data
 
@@ -923,7 +882,7 @@ class CodexClient:
             SkillsRemoteExportResponse with id and local path
         """
         params = SkillsRemoteExportParams(hazelnut_id=hazelnut_id)
-        result = await self._send_request("skills/remote/export", params)
+        result = await self.dispatch.send_request("skills/remote/export", params)
         return SkillsRemoteExportResponse.model_validate(result)
 
     # ========================================================================
@@ -940,7 +899,7 @@ class CodexClient:
             List of available models
         """
         params = ModelListParams(include_hidden=include_hidden)
-        result = await self._send_request("model/list", params)
+        result = await self.dispatch.send_request("model/list", params)
         response = ModelListResponse.model_validate(result)
         return response.data
 
@@ -950,7 +909,7 @@ class CodexClient:
         Returns:
             List of collaboration mode presets with name, mode, model, and effort
         """
-        result = await self._send_request("collaborationMode/list")
+        result = await self.dispatch.send_request("collaborationMode/list")
         response = CollaborationModeListResponse.model_validate(result)
         return response.data
 
@@ -983,7 +942,7 @@ class CodexClient:
             sandbox_policy=sandbox_policy,
             timeout_ms=timeout_ms,
         )
-        result = await self._send_request("command/exec", params)
+        result = await self.dispatch.send_request("command/exec", params)
         return CommandExecResponse.model_validate(result)
 
     # ========================================================================
@@ -996,7 +955,7 @@ class CodexClient:
         Triggers all threads to rebuild their MCP connections on the next turn
         using the latest config file.
         """
-        await self._send_request("config/mcpServer/reload")
+        await self.dispatch.send_request("config/mcpServer/reload")
 
     async def mcp_server_status_list(
         self,
@@ -1014,7 +973,7 @@ class CodexClient:
             Response with server status entries and optional next_cursor
         """
         params = ListMcpServerStatusParams(cursor=cursor, limit=limit)
-        result = await self._send_request("mcpServerStatus/list", params)
+        result = await self.dispatch.send_request("mcpServerStatus/list", params)
         return ListMcpServerStatusResponse.model_validate(result)
 
     async def mcp_server_oauth_login(
@@ -1035,7 +994,7 @@ class CodexClient:
             Response with authorization URL
         """
         params = McpServerOauthLoginParams(name=name, scopes=scopes, timeout_secs=timeout_secs)
-        result = await self._send_request("mcpServer/oauth/login", params)
+        result = await self.dispatch.send_request("mcpServer/oauth/login", params)
         return McpServerOauthLoginResponse.model_validate(result)
 
     # ========================================================================
@@ -1052,7 +1011,7 @@ class CodexClient:
             GetAccountResponse with account info
         """
         params = GetAccountParams(refresh_token=refresh_token)
-        result = await self._send_request("account/read", params)
+        result = await self.dispatch.send_request("account/read", params)
         return GetAccountResponse.model_validate(result)
 
     async def account_login_start(
@@ -1080,22 +1039,22 @@ class CodexClient:
             access_token=access_token,
             chatgpt_account_id=chatgpt_account_id,
         )
-        result = await self._send_request("account/login/start", params)
+        result = await self.dispatch.send_request("account/login/start", params)
         return LoginAccountResponse.model_validate(result)
 
     async def account_login_cancel(self, login_id: str) -> CancelLoginAccountResponse:
         """Cancel an in-progress account login."""
         params = CancelLoginAccountParams(login_id=login_id)
-        result = await self._send_request("account/login/cancel", params)
+        result = await self.dispatch.send_request("account/login/cancel", params)
         return CancelLoginAccountResponse.model_validate(result)
 
     async def account_logout(self) -> None:
         """Logout from the current account."""
-        await self._send_request("account/logout")
+        await self.dispatch.send_request("account/logout")
 
     async def account_rate_limits_read(self) -> GetAccountRateLimitsResponse:
         """Read account rate limits."""
-        result = await self._send_request("account/rateLimits/read")
+        result = await self.dispatch.send_request("account/rateLimits/read")
         return GetAccountRateLimitsResponse.model_validate(result)
 
     # ========================================================================
@@ -1118,7 +1077,7 @@ class CodexClient:
             ConfigReadResponse with config data
         """
         params = ConfigReadParams(include_layers=include_layers, cwd=cwd)
-        result = await self._send_request("config/read", params)
+        result = await self.dispatch.send_request("config/read", params)
         return ConfigReadResponse.model_validate(result)
 
     async def config_value_write(
@@ -1149,7 +1108,7 @@ class CodexClient:
             file_path=file_path,
             expected_version=expected_version,
         )
-        result = await self._send_request("config/value/write", params)
+        result = await self.dispatch.send_request("config/value/write", params)
         return ConfigWriteResponse.model_validate(result)
 
     async def config_batch_write(
@@ -1174,12 +1133,12 @@ class CodexClient:
             file_path=file_path,
             expected_version=expected_version,
         )
-        result = await self._send_request("config/batchWrite", params)
+        result = await self.dispatch.send_request("config/batchWrite", params)
         return ConfigWriteResponse.model_validate(result)
 
     async def config_requirements_read(self) -> ConfigRequirementsReadResponse:
         """Read config requirements."""
-        result = await self._send_request("configRequirements/read")
+        result = await self.dispatch.send_request("configRequirements/read")
         return ConfigRequirementsReadResponse.model_validate(result)
 
     # ========================================================================
@@ -1211,7 +1170,7 @@ class CodexClient:
             thread_id=thread_id,
             force_refetch=force_refetch,
         )
-        result = await self._send_request("app/list", params)
+        result = await self.dispatch.send_request("app/list", params)
         response = AppsListResponse.model_validate(result)
         return response.data
 
@@ -1235,7 +1194,7 @@ class CodexClient:
             List of ExperimentalFeature objects
         """
         params = ExperimentalFeatureListParams(cursor=cursor, limit=limit)
-        result = await self._send_request("experimentalFeature/list", params)
+        result = await self.dispatch.send_request("experimentalFeature/list", params)
         response = ExperimentalFeatureListResponse.model_validate(result)
         return response.data
 
@@ -1271,7 +1230,7 @@ class CodexClient:
             include_logs=include_logs,
             extra_log_files=extra_log_files,
         )
-        result = await self._send_request("feedback/upload", params)
+        result = await self.dispatch.send_request("feedback/upload", params)
         return FeedbackUploadResponse.model_validate(result)
 
     # ========================================================================
@@ -1294,7 +1253,7 @@ class CodexClient:
             ExternalAgentConfigDetectResponse with migration items
         """
         params = ExternalAgentConfigDetectParams(include_home=include_home, cwds=cwds)
-        result = await self._send_request("externalAgentConfig/detect", params)
+        result = await self.dispatch.send_request("externalAgentConfig/detect", params)
         return ExternalAgentConfigDetectResponse.model_validate(result)
 
     async def external_agent_config_import(
@@ -1307,178 +1266,60 @@ class CodexClient:
             migration_items: List of migration items to import
         """
         params = ExternalAgentConfigImportParams(migration_items=migration_items)
-        await self._send_request("externalAgentConfig/import", params)
+        await self.dispatch.send_request("externalAgentConfig/import", params)
 
     # ========================================================================
-    # Internal transport methods
+    # Internal: JSON-RPC dispatch callbacks
     # ========================================================================
 
-    async def _send_request(self, method: str, params: BaseModel | None = None) -> Any:
-        """Send a JSON-RPC request and wait for response.
-
-        Args:
-            method: JSON-RPC method name
-            params: Pydantic model with request parameters (will be serialized)
-
-        Returns:
-            Response result (not yet validated - caller should validate)
-        """
-        if not self._transport.is_connected:
-            raise TransportClosedError("Not connected to Codex app-server")
-
-        request_id = self._request_id
-        self._request_id += 1
-        future: asyncio.Future[Any] = asyncio.Future()
-        self._pending_requests[request_id] = future
-        # Serialize params to dict if provided
-        params_dict = params.model_dump(by_alias=True, exclude_none=True) if params else {}
-        request = JsonRpcRequest(id=request_id, method=method, params=params_dict)
-        try:
-            message = request.model_dump(mode="json", by_alias=True, exclude_none=True)
-            await self._transport.send(message)
-        except Exception as exc:
-            del self._pending_requests[request_id]
-            raise CodexProcessError(f"Failed to send request: {exc}") from exc
-
-        return await future
-
-    async def _read_loop(self) -> None:
-        """Read messages from the transport."""
-        try:
-            while True:
-                message = await self._transport.receive()
-                if message is None:
-                    break
-                try:
-                    await self._process_message(message)
-                except Exception:
-                    logger.exception("Error processing message")
-
-        except asyncio.CancelledError:
-            pass
-        except Exception:
-            logger.exception("Reader loop failed")
-        finally:
-            await self._event_queue.put(None)
-
-    async def _process_message(self, message: dict[str, Any]) -> None:
-        """Process a message from the app-server.
-
-        Messages are one of:
-        - Server request: has both "method" and "id" -> needs a response
-        - Response to our request: has "id" but no "method" -> resolves pending future
-        - Notification: has "method" but no "id" -> routed as event
-
-        Args:
-            message: Raw JSON-RPC message
-        """
-        match message:
-            case {"method": _, "id": _}:  # Server request - the server is asking us to do something
-                await self._handle_server_request(message)
-            case {"id": _}:  # Response to one of our requests
-                self._handle_response(message)
-            case {"method": _}:  # Notification - one-way event
-                await self._handle_notification(message)
-            case _:
-                raise TypeError(f"Unknown message shape {message}")
-
-    def _handle_response(self, message: dict[str, Any]) -> None:
-        """Handle a JSON-RPC response to one of our pending requests."""
-        msg_id = message["id"]
-        try:
-            response = JsonRpcResponse.model_validate(message)
-            future = self._pending_requests.pop(response.id, None)
-            if future and not future.done():
-                if err := response.error:
-                    future.set_exception(map_jsonrpc_error(err.code, err.message, err.data))
-                else:
-                    future.set_result(response.result)
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Failed to parse response: %s", exc)
-            if isinstance(msg_id, int):
-                future = self._pending_requests.pop(msg_id, None)
-                if future and not future.done():
-                    future.set_result(message.get("result"))
-
-    async def _handle_notification(self, message: dict[str, Any]) -> None:
-        """Handle a JSON-RPC notification (one-way event)."""
-        method = message["method"]
-        params = message.get("params") or {}
-
+    async def _handle_notification(self, method: str, params: dict[str, Any]) -> None:
+        """Route a JSON-RPC notification to the appropriate event queue."""
         if method.startswith("codex/event/"):
             return
 
-        event_data = {"event_type": method, "data": params or {}}
-        event = codex_event_adapter.validate_python(event_data)
-        # Route event to appropriate turn queue
+        event_data = {"event_type": method, "data": params}
+        event: CodexEvent = codex_event_adapter.validate_python(event_data)
+
         thread_id = params.get("threadId")
         turn_id = params.get("turnId")
-        # Also check nested turn object (some events have it there)
         if not turn_id and "turn" in params:
-            turn_data = params.get("turn", {})
-            turn_id = turn_data.get("id")
+            turn_id = params.get("turn", {}).get("id")
 
         if thread_id and turn_id:
-            # Turn-specific event - route to turn queue
             turn_key = f"{thread_id}:{turn_id}"
-            if turn_key in self._turn_queues:
-                await self._turn_queues[turn_key].put(event)
-            else:
-                # Turn queue not found (might be old event) - put in global queue
-                await self._event_queue.put(event)
+            queue = self._turn_queues.get(turn_key)
+            await (queue or self._event_queue).put(event)
         else:
-            # Global event (account, MCP, etc.) - put in global queue
             await self._event_queue.put(event)
 
-    async def _handle_server_request(self, message: dict[str, Any]) -> None:
-        """Handle a JSON-RPC request from the server that expects a response."""
-        method: str = message["method"]
-        request_id = message["id"]
-        params = message.get("params") or {}
-
+    async def _handle_server_request(
+        self, method: str, request_id: int | str, params: dict[str, Any]
+    ) -> None:
+        """Handle a server-initiated JSON-RPC request."""
         type_entry = SERVER_REQUEST_TYPES.get(method)
         if type_entry is None:
             logger.warning("Unhandled server request method: %s (id=%s)", method, request_id)
-            await self._send_server_request_error(request_id, -32601, f"Method not found: {method}")
+            await self.dispatch.send_error(request_id, -32601, f"Method not found: {method}")
             return
 
-        params_type, _ = type_entry
         handler = self._server_request_handlers.get(method)
         if handler is None:
             logger.warning("No handler registered for request: %s (id=%s)", method, request_id)
-            await self._send_server_request_error(request_id, -32603, f"No handler for: {method}")
+            await self.dispatch.send_error(request_id, -32603, f"No handler for: {method}")
             return
 
+        params_type, _ = type_entry
         try:
             if isinstance(params_type, TypeAdapter):
                 parsed_params = params_type.validate_python(params)
             else:
                 parsed_params = params_type.model_validate(params)
             response_model = await handler(parsed_params)
-            await self._send_server_request_response(request_id, response_model)
+            result = response_model.model_dump(by_alias=True, exclude_none=True)
+            await self.dispatch.send_response(request_id, result)
         except Exception:
             logger.exception("Error handling server request %s (id=%s)", method, request_id)
-            await self._send_server_request_error(
-                request_id, -32603, f"Internal error handling {method}"
-            )
-
-    async def _send_server_request_response(self, request_id: int | str, result: BaseModel) -> None:
-        """Send a JSON-RPC response to a server request."""
-        dct = result.model_dump(by_alias=True, exclude_none=True)
-        response = {"jsonrpc": "2.0", "id": request_id, "result": dct}
-        await self._write_message(response)
-
-    async def _send_server_request_error(
-        self, request_id: int | str, code: int, message: str
-    ) -> None:
-        """Send a JSON-RPC error response to a server request."""
-        error = {"code": code, "message": message}
-        response = {"jsonrpc": "2.0", "id": request_id, "error": error}
-        await self._write_message(response)
-
-    async def _write_message(self, message: dict[str, Any]) -> None:
-        """Write a JSON message via the transport."""
-        await self._transport.send(message)
+            await self.dispatch.send_error(request_id, -32603, f"Internal error handling {method}")
 
     # ========================================================================
     # Server request handler registration
