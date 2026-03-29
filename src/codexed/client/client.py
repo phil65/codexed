@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, assert_never
 
 from pydantic import BaseModel, TypeAdapter
 
+from codexed.client.fs import CodexFS
 from codexed.exceptions import (
     CodexProcessError,
     CodexRequestError,
@@ -17,8 +18,7 @@ from codexed.exceptions import (
     TurnFailedError,
     map_jsonrpc_error,
 )
-from codexed.fs import CodexFS
-from codexed.helpers import kebab_to_camel
+from codexed.helpers import kebab_to_camel, merge_config
 from codexed.models import (
     AppsListParams,
     AppsListResponse,
@@ -94,7 +94,6 @@ from codexed.models import (
     UserInputText,
     codex_event_adapter,
 )
-from codexed.models.tool_config import tools_to_config_dict
 from codexed.request_handlers import (
     SERVER_REQUEST_COMMAND_APPROVAL,
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
@@ -280,35 +279,6 @@ class CodexClient:
     # Thread lifecycle methods
     # ========================================================================
 
-    @staticmethod
-    def _merge_config(
-        config: dict[str, Any] | None,
-        tools: list[ToolConfig] | None,
-        code_mode: bool | None,
-        mcp_servers: Mapping[str, McpServerConfig] | None = None,
-        mcp_elicitation_for_approvals: bool = False,
-    ) -> dict[str, Any] | None:
-        """Merge tools, code_mode, and mcp_servers into a config dict."""
-        merged = dict(config) if config else {}
-        if code_mode is not None:
-            merged.setdefault("features", {})["code_mode"] = code_mode
-        merged.setdefault("features", {})["codex_hooks"] = True
-        merged.setdefault("features", {})["realtime_conversation"] = True
-        if mcp_elicitation_for_approvals:
-            merged.setdefault("features", {})["tool_call_mcp_elicitation"] = True
-        if tools is not None:
-            tool_config = tools_to_config_dict(tools)
-            for key, value in tool_config.items():
-                if key not in merged:
-                    merged[key] = value
-                elif isinstance(value, dict) and isinstance(merged[key], dict):
-                    merged[key] = {**value, **merged[key]}
-        if mcp_servers:
-            servers = merged.setdefault("mcp_servers", {})
-            for name, srv in mcp_servers.items():
-                servers.setdefault(name, srv.model_dump(exclude_none=True))
-        return merged or None
-
     async def thread_start(
         self,
         *,
@@ -361,7 +331,7 @@ class CodexClient:
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
             sandbox=sandbox,
-            config=self._merge_config(
+            config=merge_config(
                 config,
                 tools,
                 code_mode,
@@ -418,7 +388,7 @@ class CodexClient:
         """
         from codexed.session import Session
 
-        cfg = self._merge_config(
+        cfg = merge_config(
             config,
             tools,
             code_mode,
@@ -486,7 +456,7 @@ class CodexClient:
         """
         from codexed.session import Session
 
-        cfg = self._merge_config(
+        cfg = merge_config(
             config,
             tools,
             code_mode,
