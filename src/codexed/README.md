@@ -53,7 +53,7 @@ from codexed.models import (
     TurnErrorEvent,
 )
 
-async for event in client.turn_stream(thread_id, message):
+async for event in session.turn_stream(message):
     match event:
         case AgentMessageDeltaEvent(data=data) | CommandExecutionOutputDeltaEvent(data=data):
             print(data.delta, end="")

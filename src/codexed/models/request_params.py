@@ -9,13 +9,16 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
     ApprovalDecision,
     ApprovalPolicy,
+    ApprovalsReviewer,
     CollaborationMode,
+    DynamicToolSpec,
     MergeStrategy,
     Personality,
     ReasoningEffort,
     ReasoningSummary,
     ReviewDelivery,
     SandboxMode,
+    ServiceTier,
     ThreadSortKey,
     ThreadSourceKind,
 )
@@ -60,11 +63,14 @@ class ThreadStartParams(CodexBaseModel):
     base_instructions: str | None = None
     developer_instructions: str | None = None
     approval_policy: ApprovalPolicy | None = None
+    approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None
     service_name: str | None = None
+    service_tier: ServiceTier | None = None
     personality: Personality | None = None
     ephemeral: bool | None = None
+    dynamic_tools: list[DynamicToolSpec] | None = None
     experimental_raw_events: bool = False
     persist_extended_history: bool = False
 
@@ -81,8 +87,10 @@ class ThreadResumeParams(CodexBaseModel):
     base_instructions: str | None = None
     developer_instructions: str | None = None
     approval_policy: ApprovalPolicy | None = None
+    approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None
+    service_tier: ServiceTier | None = None
     personality: Personality | None = None
     persist_extended_history: bool = False
 
@@ -98,9 +106,12 @@ class ThreadForkParams(CodexBaseModel):
     base_instructions: str | None = None
     developer_instructions: str | None = None
     approval_policy: ApprovalPolicy | None = None
+    approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None
+    service_tier: ServiceTier | None = None
     personality: Personality | None = None
+    ephemeral: bool | None = None
     persist_extended_history: bool = False
 
 
@@ -174,8 +185,10 @@ class TurnStartParams(CodexBaseModel):
     model: str | None = None
     effort: ReasoningEffort | None = None
     approval_policy: ApprovalPolicy | None = None
+    approvals_reviewer: ApprovalsReviewer | None = None
     cwd: str | None = None
     sandbox_policy: dict[str, Any] | None = None  # Sandbox config - flexible structure
+    service_tier: ServiceTier | None = None
     summary: ReasoningSummary | None = None
     output_schema: dict[str, Any] | None = None  # JSON Schema - arbitrary structure
     personality: Personality | None = None

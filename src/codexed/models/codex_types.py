@@ -10,6 +10,8 @@ from codexed.models.base import CodexBaseModel
 
 
 # Type aliases for Codex types
+ServiceTier = Literal["fast", "flex"]
+ApprovalsReviewer = Literal["user", "guardian_subagent"]
 ModelProvider = Literal["openai", "anthropic", "google", "mistral"]
 ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
 ReasoningSummary = Literal["auto", "concise", "detailed", "none"]
@@ -239,3 +241,12 @@ class CollaborationMode(CodexBaseModel):
 
     mode: ModeKind
     settings: CollaborationModeSettings
+
+
+class DynamicToolSpec(CodexBaseModel):
+    """Specification for a dynamic tool."""
+
+    name: str
+    description: str
+    input_schema: Any
+    defer_loading: bool | None = None

@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator, Mapping  # noqa: TC003
+from collections.abc import Mapping  # noqa: TC003
 import logging
-from typing import TYPE_CHECKING, Any, assert_never
+from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import TypeAdapter
 
 from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
-from codexed.exceptions import CodexRequestError, TurnFailedError
-from codexed.helpers import kebab_to_camel, merge_config
+from codexed.helpers import merge_config
 from codexed.models import (
     AppsListParams,
     AppsListResponse,
@@ -45,8 +44,6 @@ from codexed.models import (
     McpServerOauthLoginResponse,
     ModelListParams,
     ModelListResponse,
-    ReviewStartParams,
-    ReviewStartResponse,
     SkillsConfigWriteParams,
     SkillsListParams,
     SkillsListResponse,
@@ -54,35 +51,13 @@ from codexed.models import (
     SkillsRemoteExportResponse,
     SkillsRemoteListParams,
     SkillsRemoteListResponse,
-    ThreadArchiveParams,
-    ThreadCompactStartParams,
     ThreadForkParams,
     ThreadListParams,
     ThreadListResponse,
     ThreadLoadedListResponse,
-    ThreadReadParams,
-    ThreadReadResponse,
     ThreadResponse,
     ThreadResumeParams,
-    ThreadRollbackParams,
-    ThreadRollbackResponse,
-    ThreadSetNameParams,
-    ThreadShellCommandParams,
     ThreadStartParams,
-    ThreadUnarchiveParams,
-    ThreadUnarchiveResponse,
-    ThreadUnsubscribeParams,
-    ThreadUnsubscribeResponse,
-    TurnCompletedData,
-    TurnCompletedEvent,
-    TurnErrorData,
-    TurnErrorEvent,
-    TurnInterruptParams,
-    TurnStartParams,
-    TurnStartResponse,
-    TurnSteerParams,
-    TurnSteerResponse,
-    UserInputText,
     codex_event_adapter,
 )
 from codexed.request_handlers import (
@@ -105,29 +80,25 @@ if TYPE_CHECKING:
     from codexed.models import (
         AppInfo,
         ApprovalPolicy,
+        ApprovalsReviewer,
         CodexEvent,
-        CollaborationMode,
         CollaborationModeMask,
         ConfigEdit,
         ConfigRequirements,
+        DynamicToolSpec,
         ExperimentalFeature,
         ExternalAgentConfigMigrationItem,
         McpServerConfig,
         MergeStrategy,
         ModelData,
         Personality,
-        ReasoningEffort,
-        ReasoningSummary,
         RemoteSkillSummary,
-        ReviewDelivery,
-        ReviewTarget,
         SandboxMode,
+        ServiceTier,
         SkillData,
         ThreadSortKey,
         ThreadSourceKind,
         ToolConfig,
-        Turn,
-        UserInput,
     )
     from codexed.models.request_params import HazelnutScope, LoginType, ProductSurface
     from codexed.models.responses import CancelLoginAccountStatus
@@ -249,14 +220,19 @@ class CodexClient:
         base_instructions: str | None = None,
         developer_instructions: str | None = None,
         approval_policy: ApprovalPolicy | None = None,
+        approvals_reviewer: ApprovalsReviewer | None = None,
         sandbox: SandboxMode | None = None,
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
         service_name: str | None = None,
+        service_tier: ServiceTier | None = None,
         personality: Personality | None = None,
         ephemeral: bool | None = None,
+        dynamic_tools: list[DynamicToolSpec] | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
+        experimental_raw_events: bool = False,
+        persist_extended_history: bool = False,
     ) -> Session:
         """Start a new conversation thread.
 
@@ -267,6 +243,7 @@ class CodexClient:
             base_instructions: Base system instructions for the thread
             developer_instructions: Developer-provided instructions
             approval_policy: Tool approval policy
+            approvals_reviewer: Where approval requests are routed for review
             sandbox: Sandbox mode for file operations
             config: Additional configuration overrides
             tools: Builtin tool configurations. ``None`` uses server defaults,
@@ -274,10 +251,14 @@ class CodexClient:
                 exactly those tools. Merged into ``config``.
             code_mode: Enable experimental code mode feature flag
             service_name: Optional service name
+            service_tier: Service tier (fast/flex)
             personality: Personality preset (none, friendly, pragmatic)
             ephemeral: If true, thread is not persisted to disk
+            dynamic_tools: Dynamic tool specifications
             mcp_servers: Per-thread MCP server configurations.
                 Merged into ``config`` under the ``mcp_servers`` key.
+            experimental_raw_events: Emit raw Responses API items (internal)
+            persist_extended_history: Persist full history for resume/fork/read
 
         Returns:
             Session wrapping the new thread
@@ -298,11 +279,16 @@ class CodexClient:
             base_instructions=base_instructions,
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
+            approvals_reviewer=approvals_reviewer,
             sandbox=sandbox,
             config=cfg,
             service_name=service_name,
+            service_tier=service_tier,
             personality=personality,
             ephemeral=ephemeral,
+            dynamic_tools=dynamic_tools,
+            experimental_raw_events=experimental_raw_events,
+            persist_extended_history=persist_extended_history,
         )
         result = await self.dispatch.send_request("thread/start", params)
         response = ThreadResponse.model_validate(result)
@@ -320,12 +306,15 @@ class CodexClient:
         base_instructions: str | None = None,
         developer_instructions: str | None = None,
         approval_policy: ApprovalPolicy | None = None,
+        approvals_reviewer: ApprovalsReviewer | None = None,
         sandbox: SandboxMode | None = None,
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
+        service_tier: ServiceTier | None = None,
         personality: Personality | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
+        persist_extended_history: bool = False,
     ) -> Session:
         """Resume an existing thread by ID.
 
@@ -338,12 +327,15 @@ class CodexClient:
             base_instructions: Base system instructions override
             developer_instructions: Developer instructions override
             approval_policy: Tool approval policy override
+            approvals_reviewer: Where approval requests are routed for review
             sandbox: Sandbox mode override
             config: Additional configuration overrides
             tools: Builtin tool configurations override
             code_mode: Enable experimental code mode feature flag
+            service_tier: Service tier (fast/flex)
             personality: Personality override
             mcp_servers: Per-thread MCP server configurations
+            persist_extended_history: Persist full history for resume/fork/read
 
         Returns:
             Session wrapping the resumed thread
@@ -366,9 +358,12 @@ class CodexClient:
             base_instructions=base_instructions,
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
+            approvals_reviewer=approvals_reviewer,
             sandbox=sandbox,
             config=cfg,
+            service_tier=service_tier,
             personality=personality,
+            persist_extended_history=persist_extended_history,
         )
         result = await self.dispatch.send_request("thread/resume", params)
         response = ThreadResponse.model_validate(result)
@@ -386,13 +381,17 @@ class CodexClient:
         base_instructions: str | None = None,
         developer_instructions: str | None = None,
         approval_policy: ApprovalPolicy | None = None,
+        approvals_reviewer: ApprovalsReviewer | None = None,
         sandbox: SandboxMode | None = None,
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
+        service_tier: ServiceTier | None = None,
         personality: Personality | None = None,
+        ephemeral: bool | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         turn_id: str | None = None,
+        persist_extended_history: bool = False,
     ) -> Session:
         """Fork an existing thread into a new thread with copied history.
 
@@ -405,13 +404,17 @@ class CodexClient:
             base_instructions: Base system instructions for forked thread
             developer_instructions: Developer instructions for forked thread
             approval_policy: Tool approval policy for forked thread
+            approvals_reviewer: Where approval requests are routed for review
             sandbox: Sandbox mode for forked thread
             config: Additional configuration overrides
             tools: Builtin tool configurations for forked thread
             code_mode: Enable experimental code mode feature flag
+            service_tier: Service tier (fast/flex)
             personality: Personality for forked thread
+            ephemeral: If true, forked thread is not persisted
             mcp_servers: Per-thread MCP server configurations
             turn_id: If provided, rollback the forked thread to this turn
+            persist_extended_history: Persist full history for resume/fork/read
 
         Returns:
             Session wrapping the new forked thread
@@ -434,9 +437,13 @@ class CodexClient:
             base_instructions=base_instructions,
             developer_instructions=developer_instructions,
             approval_policy=approval_policy,
+            approvals_reviewer=approvals_reviewer,
             sandbox=sandbox,
             config=cfg,
+            service_tier=service_tier,
             personality=personality,
+            ephemeral=ephemeral,
+            persist_extended_history=persist_extended_history,
         )
         result = await self.dispatch.send_request("thread/fork", params)
         response = ThreadResponse.model_validate(result)
@@ -486,330 +493,11 @@ class CodexClient:
         result = await self.dispatch.send_request("thread/list", params)
         return ThreadListResponse.model_validate(result)
 
-    async def thread_read(
-        self, thread_id: str, *, include_turns: bool = False
-    ) -> ThreadReadResponse:
-        """Read a thread's data."""
-        params = ThreadReadParams(thread_id=thread_id, include_turns=include_turns)
-        result = await self.dispatch.send_request("thread/read", params)
-        return ThreadReadResponse.model_validate(result)
-
     async def thread_loaded_list(self) -> list[str]:
         """List thread IDs currently loaded in memory."""
         result = await self.dispatch.send_request("thread/loaded/list")
         response = ThreadLoadedListResponse.model_validate(result)
         return response.data
-
-    async def thread_unsubscribe(self, thread_id: str) -> ThreadUnsubscribeResponse:
-        """Stop listening to a thread's events.
-
-        Args:
-            thread_id: The thread ID to unsubscribe from
-
-        Returns:
-            ThreadUnsubscribeResponse with status (notLoaded/notSubscribed/unsubscribed)
-        """
-        params = ThreadUnsubscribeParams(thread_id=thread_id)
-        result = await self.dispatch.send_request("thread/unsubscribe", params)
-        return ThreadUnsubscribeResponse.model_validate(result)
-
-    async def thread_archive(self, thread_id: str) -> None:
-        """Archive a thread (move to archived directory)."""
-        params = ThreadArchiveParams(thread_id=thread_id)
-        await self.dispatch.send_request("thread/archive", params)
-        self._active_threads.discard(thread_id)
-
-    async def thread_unarchive(self, thread_id: str) -> ThreadUnarchiveResponse:
-        """Unarchive a previously archived thread. Returns unarchived thread data."""
-        params = ThreadUnarchiveParams(thread_id=thread_id)
-        result = await self.dispatch.send_request("thread/unarchive", params)
-        return ThreadUnarchiveResponse.model_validate(result)
-
-    async def thread_set_name(self, thread_id: str, name: str) -> None:
-        """Set a user-facing name for a thread."""
-        params = ThreadSetNameParams(thread_id=thread_id, name=name)
-        await self.dispatch.send_request("thread/name/set", params)
-
-    async def thread_compact_start(self, thread_id: str) -> None:
-        """Trigger context compaction for a thread."""
-        params = ThreadCompactStartParams(thread_id=thread_id)
-        await self.dispatch.send_request("thread/compact/start", params)
-
-    async def thread_rollback(self, thread_id: str, turns: int) -> ThreadRollbackResponse:
-        """Rollback the last N turns from a thread.
-
-        Args:
-            thread_id: The thread ID
-            turns: Number of turns to rollback
-
-        Returns:
-            Updated thread object with turns populated
-        """
-        params = ThreadRollbackParams(thread_id=thread_id, turns=turns)
-        result = await self.dispatch.send_request("thread/rollback", params)
-        return ThreadRollbackResponse.model_validate(result)
-
-    async def thread_rollback_to_turn(self, thread_id: str, turn_id: str) -> ThreadRollbackResponse:
-        """Rollback a thread to a specific turn, keeping that turn and removing all after it.
-
-        This is a convenience method that reads the thread to find the turn index,
-        then calls thread_rollback with the computed number of turns to drop.
-
-        Args:
-            thread_id: The thread ID
-            turn_id: The turn ID to roll back to (this turn will be kept)
-
-        Returns:
-            Updated thread object with turns populated
-
-        Raises:
-            ValueError: If the turn_id is not found in the thread
-        """
-        thread_response = await self.thread_read(thread_id, include_turns=True)
-        turns = thread_response.thread.turns
-        turn_index = next((i for i, turn in enumerate(turns) if turn.id == turn_id), None)
-        if turn_index is None:
-            raise ValueError(f"Turn {turn_id!r} not found in thread {thread_id!r}")
-        num_turns_to_drop = len(turns) - turn_index - 1
-        if num_turns_to_drop < 1:
-            raise ValueError(f"Turn {turn_id!r} is already the last turn in thread {thread_id!r}")
-        return await self.thread_rollback(thread_id, num_turns_to_drop)
-
-    async def thread_shell_command(self, thread_id: str, command: str) -> None:
-        """Run a user-initiated shell command against a thread.
-
-        Executes the command unsandboxed, as if the user typed `!command`
-        in the Codex CLI.
-
-        Args:
-            thread_id: The thread ID.
-            command: Shell command to execute.
-        """
-        params = ThreadShellCommandParams(thread_id=thread_id, command=command)
-        await self.dispatch.send_request("thread/shellCommand", params)
-
-    # ========================================================================
-    # Turn methods
-    # ========================================================================
-
-    async def turn_stream(
-        self,
-        thread_id: str,
-        user_input: str | list[UserInput],
-        *,
-        model: str | None = None,
-        effort: ReasoningEffort | None = None,
-        approval_policy: ApprovalPolicy | None = None,
-        cwd: str | None = None,
-        sandbox_policy: SandboxMode | dict[str, Any] | None = None,
-        output_schema: dict[str, Any] | type[Any] | None = None,
-        personality: Personality | None = None,
-        summary: ReasoningSummary | None = None,
-        collaboration_mode: CollaborationMode | None = None,
-    ) -> AsyncIterator[CodexEvent]:
-        """Start a turn and stream events.
-
-        Args:
-            thread_id: The thread ID to send the turn to
-            user_input: User input as string or list of input items (text/image)
-            model: Optional model override for this turn
-            effort: Optional reasoning effort override
-            approval_policy: Optional approval policy
-            cwd: Optional working directory override for this and subsequent turns
-            sandbox_policy: Optional sandbox mode or policy dict
-            output_schema: Optional JSON Schema dict or Pydantic type to constrain output
-            personality: Optional personality override
-            summary: Optional reasoning summary mode
-            collaboration_mode: Optional collaboration mode preset (experimental)
-
-        Yields:
-            CodexEvent: Streaming events from the turn
-        """
-        # Handle output_schema - convert type to JSON Schema if needed
-        match output_schema:
-            case None:
-                schema_dict: dict[str, Any] | None = None
-            case dict():
-                schema_dict = output_schema
-            case type():  # It's a type - use TypeAdapter to extract schema
-                schema_dict = TypeAdapter(output_schema).json_schema()
-            case _ as unreachable:
-                assert_never(unreachable)
-        # Handle sandbox_policy - convert string to dict if needed
-        # Turn-level API uses camelCase (workspaceWrite), thread-level uses kebab-case
-        match sandbox_policy:
-            case None:
-                sandbox_dict: dict[str, Any] | None = None
-            case str():
-                # Convert kebab-case to camelCase for turn API
-                sandbox_dict = {"type": kebab_to_camel(sandbox_policy)}
-            case dict():
-                sandbox_dict = sandbox_policy
-            case _:
-                assert_never(sandbox_policy)
-        params = TurnStartParams(
-            thread_id=thread_id,
-            input=[UserInputText(text=user_input)] if isinstance(user_input, str) else user_input,
-            model=model,
-            effort=effort,
-            approval_policy=approval_policy,
-            cwd=cwd,
-            sandbox_policy=sandbox_dict,
-            output_schema=schema_dict,
-            personality=personality,
-            summary=summary,
-            collaboration_mode=collaboration_mode,
-        )
-        # Start turn (non-blocking request)
-        turn_result = await self.dispatch.send_request("turn/start", params)
-        response = TurnStartResponse.model_validate(turn_result)
-        turn_id = response.turn.id
-        # Create per-turn event queue for proper routing
-        turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
-        turn_key = f"{thread_id}:{turn_id}"
-        self._turn_queues[turn_key] = turn_queue
-        try:  # Stream events until turn completes
-            while True:
-                event = await turn_queue.get()
-                match event:
-                    case None:
-                        break
-                    case TurnCompletedEvent():
-                        yield event
-                        break
-                    case TurnErrorEvent(data=TurnErrorData(error=error)):
-                        yield event
-                        raise TurnFailedError(error, turn_id=turn_id)
-                    case _:
-                        yield event
-        finally:  # Cleanup turn queue
-            if turn_key in self._turn_queues:
-                del self._turn_queues[turn_key]
-
-    async def turn_steer(
-        self,
-        thread_id: str,
-        user_input: str | list[UserInput],
-        *,
-        expected_turn_id: str,
-    ) -> TurnSteerResponse:
-        """Steer a running turn with additional input.
-
-        Args:
-            thread_id: The thread ID
-            user_input: Additional user input
-            expected_turn_id: The expected active turn ID (precondition)
-
-        Returns:
-            TurnSteerResponse with the turn ID
-        """
-        params = TurnSteerParams(
-            thread_id=thread_id,
-            input=[UserInputText(text=user_input)] if isinstance(user_input, str) else user_input,
-            expected_turn_id=expected_turn_id,
-        )
-        result = await self.dispatch.send_request("turn/steer", params)
-        return TurnSteerResponse.model_validate(result)
-
-    async def turn_interrupt(self, thread_id: str, turn_id: str) -> None:
-        """Interrupt a running turn."""
-        params = TurnInterruptParams(thread_id=thread_id, turn_id=turn_id)
-        await self.dispatch.send_request("turn/interrupt", params)
-
-    async def turn_stream_structured[ResultType: BaseModel](
-        self,
-        thread_id: str,
-        user_input: str | list[UserInput],
-        result_type: type[ResultType],
-        *,
-        model: str | None = None,
-        effort: ReasoningEffort | None = None,
-        approval_policy: ApprovalPolicy | None = None,
-        cwd: str | None = None,
-        sandbox_policy: SandboxMode | dict[str, Any] | None = None,
-        personality: Personality | None = None,
-        summary: ReasoningSummary | None = None,
-        collaboration_mode: CollaborationMode | None = None,
-    ) -> ResultType:
-        """Start a turn with structured output and return the parsed result.
-
-        This is a convenience method that combines turn_stream with automatic
-        schema generation and result parsing. Similar to PydanticAI's approach.
-
-        Note: This method only accepts Pydantic types (not raw dict schemas).
-        For dict schemas, use turn_stream() with output_schema and parse manually.
-
-        Args:
-            thread_id: The thread ID to send the turn to
-            user_input: User input as string or list of items
-            result_type: Pydantic model class for the expected result (not a dict!)
-            model: Optional model override for this turn
-            effort: Optional reasoning effort override
-            approval_policy: Optional approval policy
-            cwd: Optional working directory override for this and subsequent turns
-            sandbox_policy: Optional sandbox mode or policy dict
-            personality: Optional personality override
-            summary: Optional reasoning summary mode
-            collaboration_mode: Optional collaboration mode preset (experimental)
-
-        Returns:
-            Parsed Pydantic model instance of type result_type
-
-        Raises:
-            ValidationError: If the agent's response doesn't match the schema
-            CodexRequestError: If the turn fails
-        """
-        turn: Turn | None = None
-        async for event in self.turn_stream(
-            thread_id,
-            user_input,
-            model=model,
-            effort=effort,
-            approval_policy=approval_policy,
-            cwd=cwd,
-            sandbox_policy=sandbox_policy,
-            output_schema=result_type,  # Auto-generate schema from type
-            personality=personality,
-            summary=summary,
-            collaboration_mode=collaboration_mode,
-        ):
-            match event:
-                case TurnCompletedEvent(data=TurnCompletedData(turn=t)):
-                    turn = t
-                case TurnErrorEvent(data=TurnErrorData(error=error)):
-                    raise TurnFailedError(error, turn_id="unknown")
-
-        if turn is None:
-            raise CodexRequestError(code=-1, message="Turn completed without a TurnCompletedEvent")
-        response_text = turn.final_response
-        if response_text is None:
-            raise CodexRequestError(code=-1, message="Turn completed without a final response")
-        return result_type.model_validate_json(response_text)
-
-    # ========================================================================
-    # Review methods
-    # ========================================================================
-
-    async def review_start(
-        self,
-        thread_id: str,
-        target: ReviewTarget,
-        *,
-        delivery: ReviewDelivery | None = None,
-    ) -> ReviewStartResponse:
-        """Start a code review.
-
-        Args:
-            thread_id: The thread ID to start the review on
-            target: Review target (uncommittedChanges, baseBranch, commit, or custom)
-            delivery: Where to run the review (inline or detached)
-
-        Returns:
-            ReviewStartResponse with turn and review thread ID
-        """
-        params = ReviewStartParams(thread_id=thread_id, target=target, delivery=delivery)
-        result = await self.dispatch.send_request("review/start", params)
-        return ReviewStartResponse.model_validate(result)
 
     # ========================================================================
     # Skills methods
@@ -833,7 +521,6 @@ class CodexClient:
         params = SkillsListParams(cwds=cwds, force_reload=force_reload)
         result = await self.dispatch.send_request("skills/list", params)
         response = SkillsListResponse.model_validate(result)
-        # Return skills from first container (usually only one)
         if response.data:
             return response.data[0].skills
         return []
@@ -952,11 +639,7 @@ class CodexClient:
     # ========================================================================
 
     async def mcp_server_refresh(self) -> None:
-        """Reload MCP server configurations from disk.
-
-        Triggers all threads to rebuild their MCP connections on the next turn
-        using the latest config file.
-        """
+        """Reload MCP server configurations from disk."""
         await self.dispatch.send_request("config/mcpServer/reload")
 
     async def mcp_server_status_list(
@@ -1366,5 +1049,7 @@ if __name__ == "__main__":
             session = await client.thread_start()
             async for e in session.turn_stream("Show available tools"):
                 print(e)
+
+    import asyncio
 
     asyncio.run(main())
