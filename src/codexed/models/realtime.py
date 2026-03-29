@@ -27,7 +27,7 @@ RealtimeConversationVersion = Literal["v1", "v2"]
 # ============================================================================
 
 
-class RealtimeAudioChunk(CodexBaseModel):
+class ThreadRealtimeAudioChunk(CodexBaseModel):
     """Audio chunk for realtime streaming (base64-encoded PCM data)."""
 
     data: str
@@ -58,7 +58,7 @@ class RealtimeAppendAudioParams(CodexBaseModel):
     """Params for thread/realtime/appendAudio request."""
 
     thread_id: str
-    audio: RealtimeAudioChunk
+    audio: ThreadRealtimeAudioChunk
 
 
 class RealtimeAppendAudioResponse(CodexBaseModel):

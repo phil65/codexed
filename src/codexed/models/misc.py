@@ -55,6 +55,7 @@ class ClientInfo(CodexBaseModel):
     """Client information for initialization."""
 
     name: str
+    title: str | None = None
     version: str
 
 
