@@ -20,8 +20,8 @@ from codexed.models.v2_protocol import (
     McpToolCallStatus,
     MessagePhase,
     PatchApplyStatus,
+    WebSearchAction,
 )
-from codexed.models.web_search import WebSearchAction
 
 
 class PatchChangeKind(CodexBaseModel):

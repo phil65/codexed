@@ -11,7 +11,6 @@ from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
 
 
 # Type aliases for Codex types
-ModelProvider = Literal["openai", "anthropic", "google", "mistral"]
 ApprovalPolicy = Literal["untrusted", "on-failure", "on-request", "never"]
 ItemStatus = Literal["pending", "running", "completed", "error"]
 McpElicitationAction = Literal["accept", "decline", "cancel"]

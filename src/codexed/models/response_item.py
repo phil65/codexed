@@ -124,7 +124,7 @@ LocalShellAction = LocalShellExecAction  # Currently only one variant
 # --- Web search action ---
 
 
-class WebSearchActionSearch(CodexBaseModel):
+class SearchWebSearchAction(CodexBaseModel):
     """Web search action."""
 
     type: Literal["search"] = "search"
@@ -132,14 +132,14 @@ class WebSearchActionSearch(CodexBaseModel):
     queries: list[str] | None = None
 
 
-class WebSearchActionOpenPage(CodexBaseModel):
+class OpenPageWebSearchAction(CodexBaseModel):
     """Open page action."""
 
     type: Literal["open_page"] = "open_page"
     url: str | None = None
 
 
-class WebSearchActionFindInPage(CodexBaseModel):
+class FindInPageWebSearchAction(CodexBaseModel):
     """Find in page action."""
 
     type: Literal["find_in_page"] = "find_in_page"
@@ -147,17 +147,17 @@ class WebSearchActionFindInPage(CodexBaseModel):
     pattern: str | None = None
 
 
-class WebSearchActionOther(CodexBaseModel):
+class OtherWebSearchAction(CodexBaseModel):
     """Other web search action."""
 
     type: Literal["other"] = "other"
 
 
 WebSearchAction = Annotated[
-    WebSearchActionSearch
-    | WebSearchActionOpenPage
-    | WebSearchActionFindInPage
-    | WebSearchActionOther,
+    SearchWebSearchAction
+    | OpenPageWebSearchAction
+    | FindInPageWebSearchAction
+    | OtherWebSearchAction,
     Discriminator("type"),
 ]
 
