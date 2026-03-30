@@ -248,20 +248,3 @@ ThreadItem = (
     | ThreadItemExitedReviewMode
     | ThreadItemContextCompaction
 )
-
-ThreadItemType = Literal[
-    "userMessage",
-    "agentMessage",
-    "plan",
-    "reasoning",
-    "commandExecution",
-    "fileChange",
-    "mcpToolCall",
-    "dynamicToolCall",
-    "collabAgentToolCall",
-    "webSearch",
-    "imageView",
-    "enteredReviewMode",
-    "exitedReviewMode",
-    "contextCompaction",
-]
