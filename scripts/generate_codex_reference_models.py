@@ -155,6 +155,11 @@ def post_process() -> None:
         content = re.sub(r"constr,\s*", "", content)
         content = content.replace("from pydantic import constr\n", "")
 
+    # Rename Notification1 envelope classes to Message.
+    # datamodel-codegen appends "1" when a name clashes with the params class.
+    # We rename FooNotification1 -> FooMessage (the envelope with method + params).
+    content = re.sub(r"\b(\w+)Notification1\b", r"\1Message", content)
+
     if content != original:
         OUTPUT_FILE.write_text(content)
         print("  Applied post-processing fixes")
