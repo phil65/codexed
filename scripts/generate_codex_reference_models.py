@@ -164,22 +164,34 @@ def post_process() -> None:
     # so datamodel-codegen didn't append "1". Rename explicitly.
     content = content.replace("ThreadCompactedNotification", "ThreadCompactedMessage")
 
-    # Inline method type aliases so Pydantic can use them as discriminators.
-    # Replaces: type FooMethod = Annotated[Literal["x"], Field("x", ...)] (4 lines)
-    # And:      method: FooMethod = Field(...)
-    # With:     method: Literal["x"] = "x"
-    method_aliases: dict[str, str] = {}
+    # Inline simple Annotated[Literal["x"], Field(...)] type aliases so Pydantic
+    # can resolve them as plain Literals (needed for discriminators, etc.).
+    # Only matches aliases that are exactly one Literal + one Field, nothing else.
+    literal_aliases: dict[str, str] = {}
+    # Multi-line: type X = Annotated[\n  Literal["x"], Field(...)\n]
     for m in re.finditer(
-        r'^type (\w+Method) = Annotated\[.+?Literal\["([^"]+)"\].+?^\]\n',
+        r"^type (\w+) = Annotated\[\n"
+        r'\s+Literal\["([^"]+)"\],?\s*'
+        r"Field\([^)]*\),?\n"
+        r"\]\n",
         content,
-        re.MULTILINE | re.DOTALL,
+        re.MULTILINE,
     ):
-        method_aliases[m.group(1)] = m.group(2)
+        literal_aliases[m.group(1)] = m.group(2)
         content = content.replace(m.group(0), "")
-    for alias_name, literal_value in method_aliases.items():
+    # Single-line: type X = Annotated[Literal["x"], Field(...)]
+    for m in re.finditer(
+        r'^type (\w+) = Annotated\[Literal\["([^"]+)"\], Field\([^)]*\)\]\n',
+        content,
+        re.MULTILINE,
+    ):
+        literal_aliases[m.group(1)] = m.group(2)
+        content = content.replace(m.group(0), "")
+    for alias_name, literal_value in literal_aliases.items():
+        # Replace field annotations: `field: AliasName = Field(...)`
         content = re.sub(
-            rf"method: {alias_name} = Field\([^)]+\)",
-            f'method: Literal["{literal_value}"] = "{literal_value}"',
+            rf"(\w+): {alias_name} = Field\([^)]+\)",
+            rf'\1: Literal["{literal_value}"] = "{literal_value}"',
             content,
         )
 
