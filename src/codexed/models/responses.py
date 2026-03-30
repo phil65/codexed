@@ -8,26 +8,25 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
     ApprovalDecision,
     AskForApproval,
-    ModeKind,
     ReasoningEffort,
     SandboxPolicy,
-    WriteStatus,
 )
 from codexed.models.misc import (
     ConfigLayer,
     ConfigLayerMetadata,
-    ExperimentalFeature,
     ExternalAgentConfigMigrationItem,
     McpServerStatusEntry,
-    ModelData,
-    SkillsContainer,
     Thread,
     ToolRequestUserInputAnswer,
     Turn,
     TurnData,
 )
-from codexed.models.thread_item import DynamicToolCallOutputContentItem
-from codexed.models.v2_protocol import AppInfo, ConfigRequirements
+from codexed.models.v2_protocol import (
+    AuthMode,
+    ConfigRequirements,
+    DynamicToolCallOutputContentItem,
+    Model,
+)
 
 
 class CommandExecutionRequestApprovalResponse(CodexBaseModel):
@@ -104,12 +103,6 @@ class TurnStartResponse(CodexBaseModel):
     turn: TurnData
 
 
-class TurnSteerResponse(CodexBaseModel):
-    """Response for turn/steer request."""
-
-    turn_id: str
-
-
 class ReviewStartResponse(CodexBaseModel):
     """Response for review/start request."""
 
@@ -124,12 +117,6 @@ class ThreadListResponse(CodexBaseModel):
     next_cursor: str | None = None
 
 
-class ThreadLoadedListResponse(CodexBaseModel):
-    """Response for thread/loaded/list request."""
-
-    data: list[str]
-
-
 class ThreadRollbackResponse(CodexBaseModel):
     """Response for thread/rollback request."""
 
@@ -141,16 +128,6 @@ class ThreadUnarchiveResponse(CodexBaseModel):
     """Response for thread/unarchive request."""
 
     thread: Thread
-
-
-class SkillsListResponse(CodexBaseModel):
-    """Response for skills/list request."""
-
-    data: list[SkillsContainer]
-
-
-class SkillsConfigWriteResponse(CodexBaseModel):
-    """Response for skills/config/write request."""
 
 
 class RemoteSkillSummary(CodexBaseModel):
@@ -177,16 +154,8 @@ class SkillsRemoteExportResponse(CodexBaseModel):
 class ModelListResponse(CodexBaseModel):
     """Response for model/list request."""
 
-    data: list[ModelData]
+    data: list[Model]
     next_cursor: str | None = None
-
-
-class CommandExecResponse(CodexBaseModel):
-    """Response for command/exec request."""
-
-    exit_code: int
-    stdout: str = ""
-    stderr: str = ""
 
 
 class ListMcpServerStatusResponse(CodexBaseModel):
@@ -196,50 +165,17 @@ class ListMcpServerStatusResponse(CodexBaseModel):
     next_cursor: str | None = None
 
 
-class McpServerOauthLoginResponse(CodexBaseModel):
-    """Response for mcpServer/oauth/login request."""
-
-    authorization_url: str
-
-
-class McpServerRefreshResponse(CodexBaseModel):
-    """Response for config/mcpServer/reload request."""
-
-
 # ============================================================================
 # Account models
 # ============================================================================
 
 
-class GetAccountResponse(CodexBaseModel):
-    """Response for account/read request."""
-
-    account: dict[str, Any] | None = None  # Account enum - flexible
-    requires_openai_auth: bool = False
-
-
 class LoginAccountResponse(CodexBaseModel):
     """Response for account/login/start request."""
 
-    type: Literal["apiKey", "chatgpt", "chatgptAuthTokens"]
+    type: AuthMode
     login_id: str | None = None
     auth_url: str | None = None
-
-
-CancelLoginAccountStatus = Literal["canceled", "notFound"]
-
-
-class CancelLoginAccountResponse(CodexBaseModel):
-    """Response for account/login/cancel request."""
-
-    status: CancelLoginAccountStatus
-
-
-class GetAccountRateLimitsResponse(CodexBaseModel):
-    """Response for account/rateLimits/read request."""
-
-    rate_limits: dict[str, Any]  # RateLimitSnapshot - flexible
-    rate_limits_by_limit_id: dict[str, Any] | None = None
 
 
 class ConfigReadResponse(CodexBaseModel):
@@ -250,33 +186,10 @@ class ConfigReadResponse(CodexBaseModel):
     layers: list[ConfigLayer] | None = None
 
 
-class ConfigWriteResponse(CodexBaseModel):
-    """Response for config/value/write and config/batchWrite requests."""
-
-    status: WriteStatus
-    version: str
-    file_path: str
-    overridden_metadata: dict[str, Any] | None = None
-
-
 class ConfigRequirementsReadResponse(CodexBaseModel):
     """Response for configRequirements/read request."""
 
     requirements: ConfigRequirements | None = None
-
-
-class AppsListResponse(CodexBaseModel):
-    """Response for app/list request."""
-
-    data: list[AppInfo]
-    next_cursor: str | None = None
-
-
-class ExperimentalFeatureListResponse(CodexBaseModel):
-    """Response for experimentalFeature/list request."""
-
-    data: list[ExperimentalFeature]
-    next_cursor: str | None = None
 
 
 class FeedbackUploadResponse(CodexBaseModel):
@@ -285,96 +198,7 @@ class FeedbackUploadResponse(CodexBaseModel):
     thread_id: str
 
 
-ThreadUnsubscribeStatus = Literal["notLoaded", "notSubscribed", "unsubscribed"]
-
-
-class ThreadUnsubscribeResponse(CodexBaseModel):
-    """Response for thread/unsubscribe request."""
-
-    status: ThreadUnsubscribeStatus
-
-
-class CollaborationModeMask(CodexBaseModel):
-    """Collaboration mode preset metadata."""
-
-    name: str
-    mode: ModeKind | None = None
-    model: str | None = None
-    reasoning_effort: ReasoningEffort | None = None
-
-
-class CollaborationModeListResponse(CodexBaseModel):
-    """Response for collaborationMode/list request."""
-
-    data: list[CollaborationModeMask]
-
-
 class ExternalAgentConfigDetectResponse(CodexBaseModel):
     """Response for externalAgentConfig/detect request."""
 
     items: list[ExternalAgentConfigMigrationItem]
-
-
-# ============================================================================
-# Filesystem responses
-# ============================================================================
-
-
-class FsReadFileResponse(CodexBaseModel):
-    """Response for fs/readFile request."""
-
-    data_base64: str
-
-
-class FsWriteFileResponse(CodexBaseModel):
-    """Response for fs/writeFile request."""
-
-
-class FsCreateDirectoryResponse(CodexBaseModel):
-    """Response for fs/createDirectory request."""
-
-
-class FsGetMetadataResponse(CodexBaseModel):
-    """Response for fs/getMetadata request."""
-
-    is_directory: bool
-    is_file: bool
-    created_at_ms: int
-    modified_at_ms: int
-
-
-class FsReadDirectoryEntry(CodexBaseModel):
-    """A directory entry returned by fs/readDirectory."""
-
-    file_name: str
-    is_directory: bool
-    is_file: bool
-
-
-class FsReadDirectoryResponse(CodexBaseModel):
-    """Response for fs/readDirectory request."""
-
-    entries: list[FsReadDirectoryEntry]
-
-
-class FsRemoveResponse(CodexBaseModel):
-    """Response for fs/remove request."""
-
-
-class FsCopyResponse(CodexBaseModel):
-    """Response for fs/copy request."""
-
-
-class ThreadShellCommandResponse(CodexBaseModel):
-    """Response for thread/shellCommand request."""
-
-
-class FsWatchResponse(CodexBaseModel):
-    """Response for fs/watch request."""
-
-    watch_id: str
-    path: str
-
-
-class FsUnwatchResponse(CodexBaseModel):
-    """Response for fs/unwatch request."""

@@ -15,9 +15,7 @@ ServiceTier = Literal["fast", "flex"]
 ApprovalsReviewer = Literal["user", "guardian_subagent"]
 ModelProvider = Literal["openai", "anthropic", "google", "mistral"]
 ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
-ReasoningSummary = Literal["auto", "concise", "detailed", "none"]
 ApprovalPolicy = Literal["untrusted", "on-failure", "on-request", "never"]
-SandboxMode = Literal["read-only", "workspace-write", "danger-full-access"]
 NetworkAccess = Literal["restricted", "enabled"]
 Personality = Literal["none", "friendly", "pragmatic"]
 TurnStatus = Literal["pending", "inProgress", "completed", "error", "interrupted"]
@@ -36,7 +34,6 @@ McpServerStartupState = Literal["starting", "ready", "failed", "cancelled"]
 
 # New type aliases
 SessionSource = Literal["cli", "vscode", "exec", "appServer", "unknown"]
-ThreadSortKey = Literal["created_at", "updated_at"]
 ThreadSourceKind = Literal[
     "cli",
     "vscode",
@@ -49,33 +46,13 @@ ThreadSourceKind = Literal[
     "subAgentOther",
     "unknown",
 ]
-MessagePhase = Literal["commentary", "final_answer"]
-PatchApplyStatus = Literal["inProgress", "completed", "failed", "declined"]
-CommandExecutionStatus = Literal["inProgress", "completed", "failed", "declined"]
-CommandExecutionSource = Literal[
-    "agent", "userShell", "unifiedExecStartup", "unifiedExecInteraction"
-]
 ToolCallStatus = Literal["inProgress", "completed", "failed"]
-CollabAgentTool = Literal["spawnAgent", "sendInput", "resumeAgent", "wait", "closeAgent"]
-CollabAgentStatus = Literal[
-    "pendingInit", "running", "completed", "errored", "shutdown", "notFound"
-]
-InputModality = Literal["text", "image"]
-SkillScope = Literal["user", "repo", "system", "admin"]
-McpAuthStatusValue = Literal["unsupported", "notLoggedIn", "bearerToken", "oAuth"]
-ReviewDelivery = Literal["inline", "detached"]
-ThreadActiveFlag = Literal["waitingOnApproval", "waitingOnUserInput"]
 ApprovalDecision = Literal["allow", "allowForSession", "deny", "denyForSession"]
 SkillApprovalDecision = Literal["allow", "deny"]
-ModelRerouteReason = Literal["rateLimited", "contextWindowExceeded", "other"]
-WriteStatus = Literal["ok", "conflict"]
-MergeStrategy = Literal["replace", "merge"]
-ExperimentalFeatureStage = Literal["alpha", "beta"]
 ElicitationAction = Literal["accept", "decline", "cancel"]
 NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
 NetworkPolicyRuleAction = Literal["allow", "deny"]
 ExternalAgentConfigMigrationItemType = Literal["AGENTS_MD", "CONFIG", "SKILLS", "MCP_SERVER_CONFIG"]
-PlanType = Literal["free", "go", "plus", "pro", "team", "business", "enterprise", "edu", "unknown"]
 ModeKind = Literal["plan", "default"]
 
 

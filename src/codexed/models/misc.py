@@ -9,28 +9,15 @@ from pydantic import AnyUrl, Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
-    ExperimentalFeatureStage,
     ExternalAgentConfigMigrationItemType,
-    InputModality,
-    McpAuthStatusValue,
-    MergeStrategy,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
-    ReasoningEffort,
     SessionSource,
     SkillApprovalDecision,
-    SkillScope,
 )
 from codexed.models.thread_item import ThreadItem
 from codexed.models.thread_status import ThreadStatusValue
-from codexed.models.v2_protocol import (
-    GitInfo,
-    ModelAvailabilityNux,
-    SkillErrorInfo,
-    SkillInterface,
-    SkillToolDependency,
-    TurnError,
-)
+from codexed.models.v2_protocol import GitInfo, McpAuthStatus, TurnError
 
 
 if TYPE_CHECKING:
@@ -41,14 +28,6 @@ if TYPE_CHECKING:
 
 TurnStatusValue = Literal["completed", "interrupted", "failed", "inProgress"]
 PlanStepStatus = Literal["pending", "inProgress", "completed"]
-
-
-class ConfigEdit(CodexBaseModel):
-    """A single config edit operation."""
-
-    key_path: str
-    value: Any
-    merge_strategy: MergeStrategy
 
 
 # ============================================================================
@@ -138,13 +117,6 @@ class SkillRequestApprovalResponse(CodexBaseModel):
     decision: SkillApprovalDecision
 
 
-class TurnStatus(CodexBaseModel):
-    """Turn status enumeration."""
-
-    # This is actually an enum in Rust but sent as string
-    status: TurnStatusValue
-
-
 class Turn(CodexBaseModel):
     """Turn data structure."""
 
@@ -204,69 +176,6 @@ class TurnData(CodexBaseModel):
     thread_id: str | None = None
     items: list[ThreadItem] = Field(default_factory=list)
     error: str | None = None
-
-
-class SkillDependencies(CodexBaseModel):
-    """Skill dependencies."""
-
-    tools: list[SkillToolDependency] = Field(default_factory=list)
-
-
-class SkillData(CodexBaseModel):
-    """A single skill definition (SkillMetadata in upstream)."""
-
-    name: str
-    description: str | None = None
-    short_description: str | None = None
-    interface: SkillInterface | None = None
-    dependencies: SkillDependencies | None = None
-    path: str | None = None
-    scope: SkillScope | None = None
-    enabled: bool | None = None
-
-
-class SkillsContainer(CodexBaseModel):
-    """Container for skills with cwd (SkillsListEntry in upstream)."""
-
-    cwd: str
-    skills: list[SkillData]
-    errors: list[SkillErrorInfo] = Field(default_factory=list)
-
-
-class ReasoningEffortOption(CodexBaseModel):
-    """A reasoning effort option with metadata."""
-
-    reasoning_effort: ReasoningEffort
-    description: str
-
-
-class ModelUpgradeInfo(CodexBaseModel):
-    """Model upgrade information."""
-
-    model: str
-    upgrade_copy: str | None = None
-    model_link: str | None = None
-    migration_markdown: str | None = None
-
-
-class ModelData(CodexBaseModel):
-    """A single model definition."""
-
-    id: str
-    model: str
-    upgrade: str | None = None
-    upgrade_info: ModelUpgradeInfo | None = None
-    availability_nux: ModelAvailabilityNux | None = None
-    display_name: str
-    description: str
-    hidden: bool
-    is_default: bool
-    supported_reasoning_efforts: list[ReasoningEffortOption]
-    default_reasoning_effort: ReasoningEffort
-    input_modalities: list[InputModality] = Field(
-        default_factory=lambda: list[InputModality](["text", "image"])
-    )
-    supports_personality: bool | None = None
 
 
 class McpTool(CodexBaseModel):
@@ -350,7 +259,7 @@ class McpServerStatusEntry(CodexBaseModel):
     tools: dict[str, McpTool] = Field(default_factory=dict)
     resources: list[McpResource] = Field(default_factory=list)
     resource_templates: list[McpResourceTemplate] = Field(default_factory=list)
-    auth_status: McpAuthStatusValue = "unsupported"
+    auth_status: McpAuthStatus = "unsupported"
 
 
 # ============================================================================
@@ -371,14 +280,6 @@ class ConfigLayer(CodexBaseModel):
     source: str
     path: str | None = None
     config: dict[str, Any] = Field(default_factory=dict)
-
-
-class ExperimentalFeature(CodexBaseModel):
-    """An experimental feature."""
-
-    name: str
-    stage: ExperimentalFeatureStage
-    description: str | None = None
 
 
 class ExternalAgentConfigMigrationItem(CodexBaseModel):

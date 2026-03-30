@@ -81,6 +81,8 @@ if TYPE_CHECKING:
         AppInfo,
         ApprovalPolicy,
         ApprovalsReviewer,
+        AuthMode,
+        CancelLoginAccountStatus,
         CodexEvent,
         CollaborationModeMask,
         ConfigEdit,
@@ -88,20 +90,20 @@ if TYPE_CHECKING:
         DynamicToolSpec,
         ExperimentalFeature,
         ExternalAgentConfigMigrationItem,
+        HazelnutScope,
         McpServerConfig,
         MergeStrategy,
-        ModelData,
+        Model,
         Personality,
+        ProductSurface,
         RemoteSkillSummary,
         SandboxMode,
         ServiceTier,
-        SkillData,
+        SkillMetadata,
         ThreadSortKey,
         ThreadSourceKind,
         ToolConfig,
     )
-    from codexed.models.request_params import HazelnutScope, LoginType, ProductSurface
-    from codexed.models.responses import CancelLoginAccountStatus
     from codexed.request_handlers import (
         ApprovalHandler,
         DynamicToolCallHandler,
@@ -508,7 +510,7 @@ class CodexClient:
         *,
         cwds: list[str] | None = None,
         force_reload: bool | None = None,
-    ) -> list[SkillData]:
+    ) -> list[SkillMetadata]:
         """List available skills.
 
         Args:
@@ -578,7 +580,7 @@ class CodexClient:
     # Model methods
     # ========================================================================
 
-    async def model_list(self, *, include_hidden: bool | None = None) -> list[ModelData]:
+    async def model_list(self, *, include_hidden: bool | None = None) -> list[Model]:
         """List available models with reasoning effort options.
 
         Args:
@@ -587,7 +589,7 @@ class CodexClient:
         Returns:
             List of available models
         """
-        params = ModelListParams(include_hidden=include_hidden)
+        params = ModelListParams(include_hidden=include_hidden, limit=None)
         result = await self.dispatch.send_request("model/list", params)
         response = ModelListResponse.model_validate(result)
         return response.data
@@ -702,7 +704,7 @@ class CodexClient:
 
     async def account_login_start(
         self,
-        login_type: LoginType,
+        login_type: AuthMode,
         *,
         api_key: str | None = None,
         access_token: str | None = None,

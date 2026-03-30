@@ -16,22 +16,19 @@ from codexed.models.event_data import (
     AccountRateLimitsUpdatedNotification,
     AccountUpdatedNotification,
     AgentMessageDeltaNotification,
-    AppListUpdatedData,
-    AuthStatusChangeData,
+    AppListUpdatedNotification,
     CommandExecutionOutputDeltaNotification,
-    CommandExecutionTerminalInteractionData,
-    ConfigWarningData,
+    ConfigWarningNotification,
     ContextCompactedNotification,
-    DeprecationNoticeData,
-    ErrorEventData,
+    DeprecationNoticeNotification,
+    ErrorNotification,
     FileChangeOutputDeltaNotification,
     ItemCompletedData,
     ItemStartedData,
-    LoginChatGptCompleteData,
-    McpServerOAuthLoginCompletedData,
-    McpServerStartupStatusUpdatedData,
-    McpToolCallProgressData,
-    ModelReroutedData,
+    McpServerOauthLoginCompletedNotification,
+    McpServerStatusUpdatedNotification,
+    McpToolCallProgressNotification,
+    ModelReroutedNotification,
     PlanDeltaNotification,
     RawResponseItemCompletedData,
     ReasoningSummaryPartAddedNotification,
@@ -39,45 +36,45 @@ from codexed.models.event_data import (
     ReasoningTextDeltaNotification,
     ServerRequestResolvedNotification,
     SessionConfiguredData,
-    ThreadArchivedData,
-    ThreadNameUpdatedData,
+    TerminalInteractionNotification,
+    ThreadArchivedNotification,
+    ThreadNameUpdatedNotification,
     ThreadStartedData,
     ThreadStatusChangedData,
     ThreadTokenUsageUpdatedData,
     ThreadUnarchiveParams,
     TurnCompletedData,
-    TurnDiffUpdatedData,
+    TurnDiffUpdatedNotification,
     TurnErrorData,
     TurnPlanUpdatedData,
     TurnStartedData,
-    WindowsWorldWritableWarningData,
+    WindowsWorldWritableWarningNotification,
 )
-from codexed.models.fuzzy_search import (
+from codexed.models.v2_protocol import (
+    CommandExecOutputDeltaNotification,
+    FsChangedNotification,
     FuzzyFileSearchSessionCompletedNotification,
     FuzzyFileSearchSessionUpdatedNotification,
-)
-from codexed.models.hooks import HookCompletedData, HookStartedData
-from codexed.models.realtime import (
-    RealtimeClosedData,
-    RealtimeErrorData,
-    RealtimeItemAddedData,
-    RealtimeStartedData,
-    RealtimeTranscriptUpdatedData,
+    HookCompletedNotification,
+    HookStartedNotification,
+    ThreadRealtimeClosedNotification,
+    ThreadRealtimeErrorNotification,
+    ThreadRealtimeItemAddedNotification,
     ThreadRealtimeOutputAudioDeltaNotification,
+    ThreadRealtimeStartedNotification,
+    ThreadRealtimeTranscriptUpdatedNotification,
 )
-from codexed.models.terminal import CommandExecOutputDeltaData
-from codexed.models.v2_protocol import FsChangedNotification
 
 
 if TYPE_CHECKING:
-    from codexed import TokenUsageBreakdown
+    from codexed.models import TokenUsageBreakdown
 
 
 class ErrorEvent(CodexBaseModel):
     """Error event from the Codex server."""
 
     event_type: Literal["error"] = "error"
-    data: ErrorEventData
+    data: ErrorNotification
 
 
 # ============================================================================
@@ -103,7 +100,7 @@ class ThreadArchivedEvent(CodexBaseModel):
     """Thread archived event."""
 
     event_type: Literal["thread/archived"] = "thread/archived"
-    data: ThreadArchivedData
+    data: ThreadArchivedNotification
 
 
 class ThreadUnarchivedEvent(CodexBaseModel):
@@ -117,7 +114,7 @@ class ThreadNameUpdatedEvent(CodexBaseModel):
     """Thread name updated event."""
 
     event_type: Literal["thread/name/updated"] = "thread/name/updated"
-    data: ThreadNameUpdatedData
+    data: ThreadNameUpdatedNotification
 
 
 class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
@@ -179,7 +176,7 @@ class TurnDiffUpdatedEvent(CodexBaseModel):
     """Turn diff updated event."""
 
     event_type: Literal["turn/diff/updated"] = "turn/diff/updated"
-    data: TurnDiffUpdatedData
+    data: TurnDiffUpdatedNotification
 
 
 class TurnPlanUpdatedEvent(CodexBaseModel):
@@ -198,14 +195,14 @@ class HookStartedEvent(CodexBaseModel):
     """Hook started event."""
 
     event_type: Literal["hook/started"] = "hook/started"
-    data: HookStartedData
+    data: HookStartedNotification
 
 
 class HookCompletedEvent(CodexBaseModel):
     """Hook completed event."""
 
     event_type: Literal["hook/completed"] = "hook/completed"
-    data: HookCompletedData
+    data: HookCompletedNotification
 
 
 # ============================================================================
@@ -217,21 +214,21 @@ class RealtimeStartedEvent(CodexBaseModel):
     """Realtime session started event."""
 
     event_type: Literal["thread/realtime/started"] = "thread/realtime/started"
-    data: RealtimeStartedData
+    data: ThreadRealtimeStartedNotification
 
 
 class RealtimeItemAddedEvent(CodexBaseModel):
     """Realtime item added event."""
 
     event_type: Literal["thread/realtime/itemAdded"] = "thread/realtime/itemAdded"
-    data: RealtimeItemAddedData
+    data: ThreadRealtimeItemAddedNotification
 
 
 class RealtimeTranscriptUpdatedEvent(CodexBaseModel):
     """Realtime transcript updated event."""
 
     event_type: Literal["thread/realtime/transcriptUpdated"] = "thread/realtime/transcriptUpdated"
-    data: RealtimeTranscriptUpdatedData
+    data: ThreadRealtimeTranscriptUpdatedNotification
 
 
 class RealtimeOutputAudioDeltaEvent(CodexBaseModel):
@@ -245,14 +242,14 @@ class RealtimeErrorEvent(CodexBaseModel):
     """Realtime error event."""
 
     event_type: Literal["thread/realtime/error"] = "thread/realtime/error"
-    data: RealtimeErrorData
+    data: ThreadRealtimeErrorNotification
 
 
 class RealtimeClosedEvent(CodexBaseModel):
     """Realtime session closed event."""
 
     event_type: Literal["thread/realtime/closed"] = "thread/realtime/closed"
-    data: RealtimeClosedData
+    data: ThreadRealtimeClosedNotification
 
 
 # ============================================================================
@@ -264,7 +261,7 @@ class CommandExecOutputDeltaEvent(CodexBaseModel):
     """Command exec output delta event (streaming stdout/stderr)."""
 
     event_type: Literal["command/exec/outputDelta"] = "command/exec/outputDelta"
-    data: CommandExecOutputDeltaData
+    data: CommandExecOutputDeltaNotification
 
 
 # ============================================================================
@@ -380,7 +377,7 @@ class CommandExecutionTerminalInteractionEvent(CodexBaseModel):
     event_type: Literal["item/commandExecution/terminalInteraction"] = (
         "item/commandExecution/terminalInteraction"
     )
-    data: CommandExecutionTerminalInteractionData
+    data: TerminalInteractionNotification
 
 
 # ============================================================================
@@ -404,7 +401,7 @@ class McpToolCallProgressEvent(CodexBaseModel):
     """MCP tool call progress event."""
 
     event_type: Literal["item/mcpToolCall/progress"] = "item/mcpToolCall/progress"
-    data: McpToolCallProgressData
+    data: McpToolCallProgressNotification
 
 
 # ============================================================================
@@ -416,14 +413,14 @@ class McpServerStartupStatusUpdatedEvent(CodexBaseModel):
     """MCP server startup status updated event."""
 
     event_type: Literal["mcpServer/startupStatus/updated"] = "mcpServer/startupStatus/updated"
-    data: McpServerStartupStatusUpdatedData
+    data: McpServerStatusUpdatedNotification
 
 
 class McpServerOAuthLoginCompletedEvent(CodexBaseModel):
     """MCP server OAuth login completed event."""
 
     event_type: Literal["mcpServer/oauthLogin/completed"] = "mcpServer/oauthLogin/completed"
-    data: McpServerOAuthLoginCompletedData
+    data: McpServerOauthLoginCompletedNotification
 
 
 # ============================================================================
@@ -452,20 +449,6 @@ class AccountLoginCompletedEvent(CodexBaseModel):
     data: AccountLoginCompletedNotification
 
 
-class AuthStatusChangeEvent(CodexBaseModel):
-    """Auth status change event (legacy v1)."""
-
-    event_type: Literal["authStatusChange"] = "authStatusChange"
-    data: AuthStatusChangeData
-
-
-class LoginChatGptCompleteEvent(CodexBaseModel):
-    """Login ChatGPT complete event (legacy v1)."""
-
-    event_type: Literal["loginChatGptComplete"] = "loginChatGptComplete"
-    data: LoginChatGptCompleteData
-
-
 # ============================================================================
 # System events
 # ============================================================================
@@ -482,14 +465,14 @@ class DeprecationNoticeEvent(CodexBaseModel):
     """Deprecation notice event."""
 
     event_type: Literal["deprecationNotice"] = "deprecationNotice"
-    data: DeprecationNoticeData
+    data: DeprecationNoticeNotification
 
 
 class WindowsWorldWritableWarningEvent(CodexBaseModel):
     """Windows world writable warning event."""
 
     event_type: Literal["windows/worldWritableWarning"] = "windows/worldWritableWarning"
-    data: WindowsWorldWritableWarningData
+    data: WindowsWorldWritableWarningNotification
 
 
 # ============================================================================
@@ -501,21 +484,21 @@ class ModelReroutedEvent(CodexBaseModel):
     """Model rerouted event."""
 
     event_type: Literal["model/rerouted"] = "model/rerouted"
-    data: ModelReroutedData
+    data: ModelReroutedNotification
 
 
 class ConfigWarningEvent(CodexBaseModel):
     """Config warning event."""
 
     event_type: Literal["configWarning"] = "configWarning"
-    data: ConfigWarningData
+    data: ConfigWarningNotification
 
 
 class AppListUpdatedEvent(CodexBaseModel):
     """App list updated event."""
 
     event_type: Literal["app/list/updated"] = "app/list/updated"
-    data: AppListUpdatedData
+    data: AppListUpdatedNotification
 
 
 class FsChangedEvent(CodexBaseModel):
@@ -603,8 +586,6 @@ CodexEvent = Annotated[
     | AccountUpdatedEvent
     | AccountRateLimitsUpdatedEvent
     | AccountLoginCompletedEvent
-    | AuthStatusChangeEvent
-    | LoginChatGptCompleteEvent
     # System events
     | SessionConfiguredEvent
     | DeprecationNoticeEvent

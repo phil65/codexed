@@ -6,41 +6,20 @@ from mcp.types import ContentBlock
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (
+from codexed.models.codex_types import ToolCallStatus
+from codexed.models.user_input import UserInput
+from codexed.models.v2_protocol import (
+    CollabAgentState,
     CollabAgentTool,
+    CommandAction,
     CommandExecutionSource,
     CommandExecutionStatus,
+    DynamicToolCallOutputContentItem,
+    McpToolCallError,
     MessagePhase,
     PatchApplyStatus,
-    ToolCallStatus,
 )
-from codexed.models.command_action import CommandAction
-from codexed.models.user_input import UserInput
-from codexed.models.v2_protocol import CollabAgentState, McpToolCallError
 from codexed.models.web_search import WebSearchAction
-
-
-# ---------------------------------------------------------------------------
-# Types shared with misc.py — defined here to avoid circular imports.
-# misc.py re-imports these from this module.
-# ---------------------------------------------------------------------------
-
-
-class DynamicToolCallOutputTextItem(CodexBaseModel):
-    """Text output content item for dynamic tool call response."""
-
-    type: Literal["inputText"] = "inputText"
-    text: str
-
-
-class DynamicToolCallOutputImageItem(CodexBaseModel):
-    """Image output content item for dynamic tool call response."""
-
-    type: Literal["inputImage"] = "inputImage"
-    image_url: str
-
-
-DynamicToolCallOutputContentItem = DynamicToolCallOutputTextItem | DynamicToolCallOutputImageItem
 
 
 class PatchChangeKind(CodexBaseModel):

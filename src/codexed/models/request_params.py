@@ -12,19 +12,12 @@ from codexed.models.codex_types import (
     ApprovalsReviewer,
     CollaborationMode,
     DynamicToolSpec,
-    MergeStrategy,
     Personality,
     ReasoningEffort,
-    ReasoningSummary,
-    ReviewDelivery,
-    SandboxMode,
     ServiceTier,
-    ThreadSortKey,
     ThreadSourceKind,
 )
-from codexed.models.command_action import CommandAction
 from codexed.models.misc import (
-    ConfigEdit,
     ExecPolicyAmendment,
     ExternalAgentConfigMigrationItem,
     NetworkApprovalContext,
@@ -33,14 +26,27 @@ from codexed.models.misc import (
 )
 from codexed.models.response_item import ResponseItem
 from codexed.models.user_input import UserInput
-from codexed.models.v2_protocol import ClientInfo, CommandExecTerminalSize
+from codexed.models.v2_protocol import (
+    AuthMode,
+    BaseBranchReviewTarget,
+    ClientInfo,
+    CommandAction,
+    CommandExecTerminalSize,
+    CommitReviewTarget,
+    ConfigEdit,
+    CustomReviewTarget,
+    MergeStrategy,
+    ReasoningSummary,
+    ReviewDelivery,
+    SandboxMode,
+    SkillsListExtraRootsForCwd,
+    ThreadSortKey,
+    UncommittedChangesReviewTarget,
+)
 
 
 if TYPE_CHECKING:
     from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams
-
-
-LoginType = Literal["apiKey", "chatgpt", "chatgptAuthTokens"]
 
 
 class InitializeParams(CodexBaseModel):
@@ -127,43 +133,11 @@ class ThreadListParams(CodexBaseModel):
     search_term: str | None = None
 
 
-class ThreadReadParams(CodexBaseModel):
-    """Parameters for thread/read request."""
-
-    thread_id: str
-    include_turns: bool = False
-
-
-class ThreadArchiveParams(CodexBaseModel):
-    """Parameters for thread/archive request."""
-
-    thread_id: str
-
-
-class ThreadSetNameParams(CodexBaseModel):
-    """Parameters for thread/name/set request."""
-
-    thread_id: str
-    name: str
-
-
-class ThreadCompactStartParams(CodexBaseModel):
-    """Parameters for thread/compact/start request."""
-
-    thread_id: str
-
-
 class ThreadRollbackParams(CodexBaseModel):
     """Parameters for thread/rollback request."""
 
     thread_id: str
     turns: int
-
-
-class ThreadUnsubscribeParams(CodexBaseModel):
-    """Parameters for thread/unsubscribe request."""
-
-    thread_id: str
 
 
 class ThreadLoadedListParams(CodexBaseModel):
@@ -196,42 +170,12 @@ class TurnSteerParams(CodexBaseModel):
     expected_turn_id: str
 
 
-class TurnInterruptParams(CodexBaseModel):
-    """Parameters for turn/interrupt request."""
-
-    thread_id: str
-    turn_id: str
-
-
-class UncommittedChangesTarget(CodexBaseModel):
-    """Review the working tree: staged, unstaged, and untracked files."""
-
-    type: Literal["uncommittedChanges"] = "uncommittedChanges"
-
-
-class BaseBranchTarget(CodexBaseModel):
-    """Review changes between the current branch and a base branch."""
-
-    type: Literal["baseBranch"] = "baseBranch"
-    branch: str
-
-
-class CommitTarget(CodexBaseModel):
-    """Review the changes introduced by a specific commit."""
-
-    type: Literal["commit"] = "commit"
-    sha: str
-    title: str | None = None
-
-
-class CustomTarget(CodexBaseModel):
-    """Arbitrary instructions provided by the user."""
-
-    type: Literal["custom"] = "custom"
-    instructions: str
-
-
-ReviewTarget = UncommittedChangesTarget | BaseBranchTarget | CommitTarget | CustomTarget
+ReviewTarget = (
+    UncommittedChangesReviewTarget
+    | BaseBranchReviewTarget
+    | CommitReviewTarget
+    | CustomReviewTarget
+)
 
 
 class ReviewStartParams(CodexBaseModel):
@@ -242,26 +186,12 @@ class ReviewStartParams(CodexBaseModel):
     delivery: ReviewDelivery | None = None
 
 
-class SkillsListExtraRootsForCwd(CodexBaseModel):
-    """Extra user roots to scan for a specific cwd."""
-
-    cwd: str
-    extra_user_roots: list[str]
-
-
 class SkillsListParams(CodexBaseModel):
     """Parameters for skills/list request."""
 
     cwds: list[str] | None = None
     force_reload: bool | None = None
     per_cwd_extra_user_roots: list[SkillsListExtraRootsForCwd] | None = None
-
-
-class SkillsConfigWriteParams(CodexBaseModel):
-    """Parameters for skills/config/write request."""
-
-    path: str
-    enabled: bool
 
 
 HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
@@ -304,62 +234,6 @@ class CommandExecParams(CodexBaseModel):
     sandbox_policy: dict[str, Any] | None = None
 
 
-class ModelListParams(CodexBaseModel):
-    """Parameters for model/list request."""
-
-    cursor: str | None = None
-    limit: int | None = None
-    include_hidden: bool | None = None
-
-
-class McpServerOauthLoginParams(CodexBaseModel):
-    """Parameters for mcpServer/oauth/login request."""
-
-    name: str
-    scopes: list[str] | None = None
-    timeout_secs: int | None = None
-
-
-class ListMcpServerStatusParams(CodexBaseModel):
-    """Parameters for mcpServerStatus/list request."""
-
-    cursor: str | None = None
-    limit: int | None = None
-
-
-class AppsListParams(CodexBaseModel):
-    """Parameters for app/list request."""
-
-    cursor: str | None = None
-    limit: int | None = None
-    thread_id: str | None = None
-    force_refetch: bool | None = None
-
-
-class ExperimentalFeatureListParams(CodexBaseModel):
-    """Parameters for experimentalFeature/list request."""
-
-    cursor: str | None = None
-    limit: int | None = None
-
-
-class FeedbackUploadParams(CodexBaseModel):
-    """Parameters for feedback/upload request."""
-
-    classification: str
-    reason: str | None = None
-    thread_id: str | None = None
-    include_logs: bool = False
-    extra_log_files: list[str] | None = None
-
-
-class ConfigReadParams(CodexBaseModel):
-    """Parameters for config/read request."""
-
-    include_layers: bool
-    cwd: str | None = None
-
-
 class ConfigValueWriteParams(CodexBaseModel):
     """Parameters for config/value/write request."""
 
@@ -378,36 +252,17 @@ class ConfigBatchWriteParams(CodexBaseModel):
     expected_version: str | None = None
 
 
-class GetAccountParams(CodexBaseModel):
-    """Parameters for account/read request."""
-
-    refresh_token: bool
-
-
 class LoginAccountParams(CodexBaseModel):
     """Parameters for account/login/start request.
 
     This is a discriminated union - use type field.
     """
 
-    type: LoginType
+    type: AuthMode
     api_key: str | None = None
     access_token: str | None = None
     chatgpt_account_id: str | None = None
     chatgpt_plan_type: str | None = None
-
-
-class CancelLoginAccountParams(CodexBaseModel):
-    """Parameters for account/login/cancel request."""
-
-    login_id: str
-
-
-class ExternalAgentConfigDetectParams(CodexBaseModel):
-    """Parameters for externalAgentConfig/detect request."""
-
-    include_home: bool | None = None
-    cwds: list[str] | None = None
 
 
 class ExternalAgentConfigImportParams(CodexBaseModel):
@@ -419,73 +274,6 @@ class ExternalAgentConfigImportParams(CodexBaseModel):
 # ============================================================================
 # Filesystem params
 # ============================================================================
-
-
-class FsReadFileParams(CodexBaseModel):
-    """Parameters for fs/readFile request."""
-
-    path: str
-
-
-class FsWriteFileParams(CodexBaseModel):
-    """Parameters for fs/writeFile request."""
-
-    path: str
-    data_base64: str
-
-
-class FsCreateDirectoryParams(CodexBaseModel):
-    """Parameters for fs/createDirectory request."""
-
-    path: str
-    recursive: bool | None = None
-
-
-class FsGetMetadataParams(CodexBaseModel):
-    """Parameters for fs/getMetadata request."""
-
-    path: str
-
-
-class FsReadDirectoryParams(CodexBaseModel):
-    """Parameters for fs/readDirectory request."""
-
-    path: str
-
-
-class FsRemoveParams(CodexBaseModel):
-    """Parameters for fs/remove request."""
-
-    path: str
-    recursive: bool | None = None
-    force: bool | None = None
-
-
-class FsCopyParams(CodexBaseModel):
-    """Parameters for fs/copy request."""
-
-    source_path: str
-    destination_path: str
-    recursive: bool = False
-
-
-class ThreadShellCommandParams(CodexBaseModel):
-    """Parameters for thread/shellCommand request."""
-
-    thread_id: str
-    command: str
-
-
-class FsWatchParams(CodexBaseModel):
-    """Parameters for fs/watch request."""
-
-    path: str
-
-
-class FsUnwatchParams(CodexBaseModel):
-    """Parameters for fs/unwatch request."""
-
-    watch_id: str
 
 
 class CommandExecutionRequestApprovalParams(CodexBaseModel):
@@ -593,7 +381,7 @@ class McpElicitationFormParams(_McpElicitationBase):
             requestedSchema=self.requested_schema,
         )
         if self.meta is not None:
-            params.meta = RequestParams.Meta(**self.meta)
+            params.meta = RequestParams.Meta(**self.meta)  # pyright: ignore[reportArgumentType]
         return params
 
     @classmethod
@@ -632,7 +420,7 @@ class McpElicitationUrlParams(_McpElicitationBase):
             elicitationId=self.elicitation_id,
         )
         if self.meta is not None:
-            params.meta = RequestParams.Meta(**self.meta)
+            params.meta = RequestParams.Meta(**self.meta)  # pyright: ignore[reportArgumentType]
         return params
 
     @classmethod
