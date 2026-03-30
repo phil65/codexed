@@ -8,68 +8,33 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import Discriminator, Field
+from pydantic import Discriminator
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.v2_protocol import (
     ContentItem,
+    ExecLocalShellAction,
     FindInPageResponsesApiWebSearchAction,
+    GhostCommit,
+    InputImageFunctionCallOutputContentItem,
+    InputTextFunctionCallOutputContentItem,
     OpenPageResponsesApiWebSearchAction,
     OtherResponsesApiWebSearchAction,
+    ReasoningTextReasoningItemContent,
     SearchResponsesApiWebSearchAction,
+    SummaryTextReasoningItemReasoningSummary,
+    TextReasoningItemContent,
 )
 
 
-# --- Reasoning ---
-
-
-class ReasoningTextContent(CodexBaseModel):
-    """Reasoning text content."""
-
-    type: Literal["reasoning_text"] = "reasoning_text"
-    text: str
-
-
-class ReasoningPlainTextContent(CodexBaseModel):
-    """Plain text reasoning content."""
-
-    type: Literal["text"] = "text"
-    text: str
-
-
 ReasoningItemContent = Annotated[
-    ReasoningTextContent | ReasoningPlainTextContent,
+    ReasoningTextReasoningItemContent | TextReasoningItemContent,
     Discriminator("type"),
 ]
 
 
-class ReasoningSummaryText(CodexBaseModel):
-    """Reasoning summary text."""
-
-    type: Literal["summary_text"] = "summary_text"
-    text: str
-
-
-# --- Function call output ---
-
-
-class FunctionCallOutputTextItem(CodexBaseModel):
-    """Text content in function call output."""
-
-    type: Literal["input_text"] = "input_text"
-    text: str
-
-
-class FunctionCallOutputImageItem(CodexBaseModel):
-    """Image content in function call output."""
-
-    type: Literal["input_image"] = "input_image"
-    image_url: str
-    detail: Literal["auto", "low", "high"] | None = None
-
-
 FunctionCallOutputContentItem = Annotated[
-    FunctionCallOutputTextItem | FunctionCallOutputImageItem,
+    InputTextFunctionCallOutputContentItem | InputImageFunctionCallOutputContentItem,
     Discriminator("type"),
 ]
 
@@ -84,18 +49,7 @@ class FunctionCallOutputPayload(CodexBaseModel):
 # --- Shell action ---
 
 
-class LocalShellExecAction(CodexBaseModel):
-    """Shell exec action details."""
-
-    type: Literal["exec"] = "exec"
-    command: list[str]
-    timeout_ms: int | None = None
-    working_directory: str | None = None
-    env: dict[str, str] | None = None
-    user: str | None = None
-
-
-LocalShellAction = LocalShellExecAction  # Currently only one variant
+LocalShellAction = ExecLocalShellAction  # Currently only one variant
 
 
 # --- Web search action (re-exported from v2_protocol) ---
@@ -107,18 +61,6 @@ WebSearchAction = Annotated[
     | OtherResponsesApiWebSearchAction,
     Discriminator("type"),
 ]
-
-
-# --- Ghost commit ---
-
-
-class GhostCommit(CodexBaseModel):
-    """Details of a ghost commit created from a repository state."""
-
-    id: str
-    parent: str | None = None
-    preexisting_untracked_files: list[str] = Field(default_factory=list)
-    preexisting_untracked_dirs: list[str] = Field(default_factory=list)
 
 
 # --- ResponseItem variants ---
@@ -138,7 +80,7 @@ class ReasoningResponseItem(CodexBaseModel):
     """Reasoning response item."""
 
     type: Literal["reasoning"] = "reasoning"
-    summary: list[ReasoningSummaryText]
+    summary: list[SummaryTextReasoningItemReasoningSummary]
     content: list[ReasoningItemContent] | None = None
     encrypted_content: str | None = None
 
