@@ -24,13 +24,10 @@ from codexed.models.codex_types import (
 )
 
 from codexed.models.event_data import (
-    EventData,
     ItemCompletedData,
     ItemStartedData,
     RawResponseItemCompletedData,
-    SessionConfiguredData,
     ThreadStartedData,
-    ThreadTokenUsageUpdatedData,
     TurnErrorData,
     TurnStartedData,
     TurnCompletedData,
@@ -211,7 +208,6 @@ from codexed.models.thread_item import (
     ThreadItemWebSearch,
 )
 
-from codexed.models.token_usage import Usage
 from codexed.models.tool_config import (
     AgentJobsToolsConfig,
     ApplyPatchToolConfig,
@@ -255,6 +251,7 @@ from codexed.models.v2_protocol import (
     NotLoadedThreadStatus,
     SystemErrorThreadStatus,
     TurnPlanStepStatus,
+    ThreadTokenUsageUpdatedNotification,
     ConfigRequirementsReadResponse,
     DynamicToolCallOutputContentItem,
     ThreadTokenUsage,
@@ -563,7 +560,6 @@ __all__ = [
     "ElicitationAction",
     "ErrorMessage",
     "ErrorNotification",
-    "EventData",
     "EventType",
     "ExecPolicyAmendment",
     "ExperimentalFeature",
@@ -751,7 +747,6 @@ __all__ = [
     "ServerRequestResolvedMessage",
     "ServerRequestResolvedNotification",
     "ServiceTier",
-    "SessionConfiguredData",
     "SessionSource",
     "Settings",
     "ShellToolConfig",
@@ -850,8 +845,8 @@ __all__ = [
     "ThreadStatusChangedNotification",
     "ThreadStatusUnion",
     "ThreadTokenUsage",
-    "ThreadTokenUsageUpdatedData",
     "ThreadTokenUsageUpdatedEvent",
+    "ThreadTokenUsageUpdatedNotification",
     "ThreadUnarchiveParams",
     "ThreadUnarchiveParams",
     "ThreadUnarchiveResponse",
@@ -889,7 +884,6 @@ __all__ = [
     "TurnSteerResponse",
     "UncommittedChangesReviewTarget",
     "UnknownCommandAction",
-    "Usage",
     "UserInput",
     "UserInputImage",
     "UserInputLocalImage",

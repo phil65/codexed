@@ -24,8 +24,8 @@ from codexed.models import (
     ThreadRollbackResponse,
     ThreadSetNameParams,
     ThreadShellCommandParams,
-    ThreadTokenUsageUpdatedData,
     ThreadTokenUsageUpdatedEvent,
+    ThreadTokenUsageUpdatedNotification,
     ThreadUnarchiveParams,
     ThreadUnarchiveResponse,
     ThreadUnsubscribeParams,
@@ -186,7 +186,7 @@ class Session:
                     case _:
                         match event:
                             case ThreadTokenUsageUpdatedEvent(
-                                data=ThreadTokenUsageUpdatedData(token_usage=usage)
+                                data=ThreadTokenUsageUpdatedNotification(token_usage=usage)
                             ):
                                 self.usage = usage
                         yield event

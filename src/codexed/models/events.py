@@ -16,7 +16,6 @@ from codexed.models.event_data import (
     ItemStartedData,
     RawResponseItemCompletedData,
     ThreadStartedData,
-    ThreadTokenUsageUpdatedData,
     TurnCompletedData,
     TurnStartedData,
 )
@@ -57,6 +56,7 @@ from codexed.models.v2_protocol import (
     ThreadRealtimeStartedMessage,
     ThreadRealtimeTranscriptUpdatedMessage,
     ThreadStatusChangedMessage,
+    ThreadTokenUsageUpdatedNotification,
     ThreadUnarchivedMessage,
     TurnDiffUpdatedMessage,
     TurnPlanUpdatedMessage,
@@ -84,7 +84,7 @@ class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
     """Thread token usage updated event."""
 
     method: Literal["thread/tokenUsage/updated"] = "thread/tokenUsage/updated"
-    params: ThreadTokenUsageUpdatedData
+    params: ThreadTokenUsageUpdatedNotification
 
     @property
     def total(self) -> TokenUsageBreakdown:
