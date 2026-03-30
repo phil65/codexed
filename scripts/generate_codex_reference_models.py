@@ -160,6 +160,29 @@ def post_process() -> None:
     # We rename FooNotification1 -> FooMessage (the envelope with method + params).
     content = re.sub(r"\b(\w+)Notification1\b", r"\1Message", content)
 
+    # Envelope classes where the params class has a different prefix,
+    # so datamodel-codegen didn't append "1". Rename explicitly.
+    content = content.replace("ThreadCompactedNotification", "ThreadCompactedMessage")
+
+    # Inline method type aliases so Pydantic can use them as discriminators.
+    # Replaces: type FooMethod = Annotated[Literal["x"], Field("x", ...)] (4 lines)
+    # And:      method: FooMethod = Field(...)
+    # With:     method: Literal["x"] = "x"
+    method_aliases: dict[str, str] = {}
+    for m in re.finditer(
+        r'^type (\w+Method) = Annotated\[.+?Literal\["([^"]+)"\].+?^\]\n',
+        content,
+        re.MULTILINE | re.DOTALL,
+    ):
+        method_aliases[m.group(1)] = m.group(2)
+        content = content.replace(m.group(0), "")
+    for alias_name, literal_value in method_aliases.items():
+        content = re.sub(
+            rf"method: {alias_name} = Field\([^)]+\)",
+            f'method: Literal["{literal_value}"] = "{literal_value}"',
+            content,
+        )
+
     if content != original:
         OUTPUT_FILE.write_text(content)
         print("  Applied post-processing fixes")
