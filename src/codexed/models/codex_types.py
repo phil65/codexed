@@ -7,53 +7,21 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Discriminator, Field, Tag
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.v2_protocol import RestrictedReadOnlyAccess
+from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
 
 
 # Type aliases for Codex types
-ServiceTier = Literal["fast", "flex"]
-ApprovalsReviewer = Literal["user", "guardian_subagent"]
 ModelProvider = Literal["openai", "anthropic", "google", "mistral"]
-ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
 ApprovalPolicy = Literal["untrusted", "on-failure", "on-request", "never"]
-NetworkAccess = Literal["restricted", "enabled"]
-Personality = Literal["none", "friendly", "pragmatic"]
-TurnStatus = Literal["pending", "inProgress", "completed", "error", "interrupted"]
-ItemType = Literal[
-    "reasoning",
-    "agent_message",
-    "command_execution",
-    "user_message",
-    "file_change",
-    "mcp_tool_call",
-]
 ItemStatus = Literal["pending", "running", "completed", "error"]
 McpElicitationAction = Literal["accept", "decline", "cancel"]
 McpServerStartupState = Literal["starting", "ready", "failed", "cancelled"]
 """Action taken by the user on an elicitation request."""
-
-# New type aliases
-SessionSource = Literal["cli", "vscode", "exec", "appServer", "unknown"]
-ThreadSourceKind = Literal[
-    "cli",
-    "vscode",
-    "exec",
-    "appServer",
-    "subAgent",
-    "subAgentReview",
-    "subAgentCompact",
-    "subAgentThreadSpawn",
-    "subAgentOther",
-    "unknown",
-]
-ToolCallStatus = Literal["inProgress", "completed", "failed"]
 ApprovalDecision = Literal["allow", "allowForSession", "deny", "denyForSession"]
 SkillApprovalDecision = Literal["allow", "deny"]
 ElicitationAction = Literal["accept", "decline", "cancel"]
 NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
 NetworkPolicyRuleAction = Literal["allow", "deny"]
-ExternalAgentConfigMigrationItemType = Literal["AGENTS_MD", "CONFIG", "SKILLS", "MCP_SERVER_CONFIG"]
-ModeKind = Literal["plan", "default"]
 
 
 # ============================================================================
@@ -188,35 +156,3 @@ SandboxPolicy = Annotated[
     Discriminator(_sandbox_policy_discriminator),
 ]
 """Discriminated union for sandbox execution restrictions."""
-
-
-# ============================================================================
-# CollaborationMode (experimental per-turn preset)
-# ============================================================================
-
-
-class CollaborationModeSettings(CodexBaseModel):
-    """Settings within a collaboration mode preset."""
-
-    model: str
-    reasoning_effort: ReasoningEffort | None = None
-    developer_instructions: str | None = None
-
-
-class CollaborationMode(CodexBaseModel):
-    """Collaboration mode preset for a turn (experimental).
-
-    Overrides model, reasoning effort, and developer instructions when set.
-    """
-
-    mode: ModeKind
-    settings: CollaborationModeSettings
-
-
-class DynamicToolSpec(CodexBaseModel):
-    """Specification for a dynamic tool."""
-
-    name: str
-    description: str
-    input_schema: Any
-    defer_loading: bool | None = None

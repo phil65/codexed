@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.misc import Thread, Turn, TurnPlanStep
+from codexed.models.misc import Thread, Turn
 from codexed.models.thread_item import ThreadItem
-from codexed.models.thread_status import ThreadStatusValue
 from codexed.models.v2_protocol import (
     AccountLoginCompletedNotification,
     AccountRateLimitsUpdatedNotification,
@@ -30,20 +29,13 @@ from codexed.models.v2_protocol import (
     TerminalInteractionNotification,
     ThreadArchivedNotification,
     ThreadNameUpdatedNotification,
+    ThreadStatus,
     ThreadTokenUsage,
     ThreadUnarchiveParams,
     TurnDiffUpdatedNotification,
+    TurnPlanUpdatedNotification,
     WindowsWorldWritableWarningNotification,
 )
-
-
-class TurnPlanUpdatedData(CodexBaseModel):
-    """Payload for turn/plan/updated notification."""
-
-    thread_id: str
-    turn_id: str
-    explanation: str | None = None
-    plan: list[TurnPlanStep]
 
 
 # Item lifecycle notifications
@@ -88,7 +80,7 @@ class ThreadStatusChangedData(CodexBaseModel):
     """Payload for thread/status/changed notification."""
 
     thread_id: str
-    status: ThreadStatusValue
+    status: ThreadStatus
 
 
 class ThreadTokenUsageUpdatedData(CodexBaseModel):
@@ -145,7 +137,7 @@ EventData = (
     | TurnCompletedData
     | TurnErrorData
     | TurnDiffUpdatedNotification
-    | TurnPlanUpdatedData
+    | TurnPlanUpdatedNotification
     # Item lifecycle
     | ItemStartedData
     | ItemCompletedData

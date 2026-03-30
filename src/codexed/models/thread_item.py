@@ -6,16 +6,18 @@ from mcp.types import ContentBlock
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import ToolCallStatus
 from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
     CollabAgentState,
     CollabAgentTool,
+    CollabAgentToolCallStatus,
     CommandAction,
     CommandExecutionSource,
     CommandExecutionStatus,
     DynamicToolCallOutputContentItem,
+    DynamicToolCallStatus,
     McpToolCallError,
+    McpToolCallStatus,
     MessagePhase,
     PatchApplyStatus,
 )
@@ -126,7 +128,7 @@ class ThreadItemMcpToolCall(BaseThreadItem):
     type: Literal["mcpToolCall"] = "mcpToolCall"
     server: str
     tool: str
-    status: ToolCallStatus
+    status: McpToolCallStatus
     arguments: dict[str, Any] | None = None
     result: McpToolCallResult | None = None
     error: McpToolCallError | None = None
@@ -148,7 +150,7 @@ class ThreadItemDynamicToolCall(BaseThreadItem):
     type: Literal["dynamicToolCall"] = "dynamicToolCall"
     tool: str
     arguments: dict[str, Any] | None = None
-    status: ToolCallStatus
+    status: DynamicToolCallStatus
     content_items: list[DynamicToolCallOutputContentItem] | None = None
     success: bool | None = None
     duration_ms: int | None = None
@@ -214,7 +216,7 @@ class ThreadItemCollabAgentToolCall(BaseThreadItem):
 
     type: Literal["collabAgentToolCall"] = "collabAgentToolCall"
     tool: CollabAgentTool
-    status: ToolCallStatus
+    status: CollabAgentToolCallStatus
     sender_thread_id: str
     receiver_thread_ids: list[str] = Field(default_factory=list)
     prompt: str | None = None

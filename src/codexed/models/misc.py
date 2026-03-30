@@ -9,15 +9,13 @@ from pydantic import AnyUrl, Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
-    ExternalAgentConfigMigrationItemType,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
-    SessionSource,
     SkillApprovalDecision,
 )
 from codexed.models.thread_item import ThreadItem
-from codexed.models.thread_status import ThreadStatusValue
-from codexed.models.v2_protocol import GitInfo, McpAuthStatus, TurnError
+from codexed.models.thread_status import ThreadStatus
+from codexed.models.v2_protocol import GitInfo, McpAuthStatus, SessionSource, TurnError
 
 
 if TYPE_CHECKING:
@@ -156,7 +154,7 @@ class Thread(CodexBaseModel):
     model_provider: str = "openai"
     created_at: int = 0
     updated_at: int = 0
-    status: ThreadStatusValue | None = None
+    status: ThreadStatus | None = None
     path: str | None = None
     cwd: str = ""
     cli_version: str = ""
@@ -260,38 +258,3 @@ class McpServerStatusEntry(CodexBaseModel):
     resources: list[McpResource] = Field(default_factory=list)
     resource_templates: list[McpResourceTemplate] = Field(default_factory=list)
     auth_status: McpAuthStatus = "unsupported"
-
-
-# ============================================================================
-# Config models
-# ============================================================================
-
-
-class ConfigLayerMetadata(CodexBaseModel):
-    """Config layer metadata."""
-
-    source: str
-    path: str | None = None
-
-
-class ConfigLayer(CodexBaseModel):
-    """A single config layer."""
-
-    source: str
-    path: str | None = None
-    config: dict[str, Any] = Field(default_factory=dict)
-
-
-class ExternalAgentConfigMigrationItem(CodexBaseModel):
-    """External agent config migration item."""
-
-    item_type: ExternalAgentConfigMigrationItemType
-    description: str
-    cwd: str | None = None
-
-
-class TurnPlanStep(CodexBaseModel):
-    """A single step in a turn plan."""
-
-    step: str
-    status: PlanStepStatus

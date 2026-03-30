@@ -8,7 +8,7 @@ import pytest
 
 from codexed import CodexClient, HttpMcpServer, StdioMcpServer
 from codexed.exceptions import CodexProcessError, CodexRequestError
-from codexed.models.events import AgentMessageDeltaEvent
+from codexed.models.events import ItemAgentMessageDeltaNotification
 
 
 async def test_process_message_routes_response_to_future():
@@ -44,7 +44,7 @@ async def test_process_message_notification_queued():
     })
 
     event = await asyncio.wait_for(client._event_queue.get(), timeout=1.0)
-    assert isinstance(event, AgentMessageDeltaEvent)
+    assert isinstance(event, ItemAgentMessageDeltaNotification)
     assert event.data.delta == "Hello"
 
 

@@ -8,10 +8,9 @@ from typing import TYPE_CHECKING, Any
 
 from codexed import CodexClient
 from codexed.models.events import (
-    AgentMessageDeltaEvent,
-    CommandExecutionOutputDeltaEvent,
+    ItemAgentMessageDeltaNotification,
+    ItemCommandExecutionOutputDeltaNotification,
     TurnCompletedEvent,
-    TurnErrorEvent,
 )
 
 
@@ -35,15 +34,12 @@ async def simple_chat() -> None:
         async for event in session.turn_stream(message):
             # Print agent messages
             match event:
-                case AgentMessageDeltaEvent():
+                case ItemAgentMessageDeltaNotification():
                     print(event.data.delta, end="", flush=True)
-                case CommandExecutionOutputDeltaEvent():
+                case ItemCommandExecutionOutputDeltaNotification():
                     print(f"\n[Command output]\n{event.data.delta}", flush=True)
                 case TurnCompletedEvent():
                     print("\n\n[Turn completed]")
-                    break
-                case TurnErrorEvent(data=data):
-                    print(f"\n\n[Error: {data.error}]", file=sys.stderr)
                     break
 
 
@@ -66,7 +62,7 @@ async def multi_turn_chat() -> None:
 
             async for event in session.turn_stream(message):
                 match event:
-                    case AgentMessageDeltaEvent(data=data):
+                    case ItemAgentMessageDeltaNotification(data=data):
                         print(data.delta, end="", flush=True)
                     case TurnCompletedEvent():
                         print("\n")
@@ -86,7 +82,7 @@ async def model_override_example() -> None:
 
         async for event in session.turn_stream("Write a hello world function"):
             match event:
-                case AgentMessageDeltaEvent(data=data):
+                case ItemAgentMessageDeltaNotification(data=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     print("\n")
@@ -102,7 +98,7 @@ async def model_override_example() -> None:
             effort="high",
         ):
             match event:
-                case AgentMessageDeltaEvent(data=data):
+                case ItemAgentMessageDeltaNotification(data=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     print("\n")

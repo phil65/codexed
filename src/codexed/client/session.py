@@ -12,6 +12,8 @@ from pydantic import BaseModel, TypeAdapter
 from codexed.exceptions import CodexRequestError, TurnFailedError
 from codexed.helpers import kebab_to_camel
 from codexed.models import (
+    ErrorMessage,
+    ErrorNotification,
     ReviewStartParams,
     ReviewStartResponse,
     ThreadArchiveParams,
@@ -30,8 +32,6 @@ from codexed.models import (
     ThreadUnsubscribeResponse,
     TurnCompletedData,
     TurnCompletedEvent,
-    TurnErrorData,
-    TurnErrorEvent,
     TurnInterruptParams,
     TurnStartParams,
     TurnStartResponse,
@@ -180,9 +180,9 @@ class Session:
                     case TurnCompletedEvent():
                         yield event
                         break
-                    case TurnErrorEvent(data=TurnErrorData(error=error)):
+                    case ErrorMessage(data=ErrorNotification(error=error)):
                         yield event
-                        raise TurnFailedError(error, turn_id=turn_id)
+                        raise TurnFailedError(error.message, turn_id=turn_id)
                     case _:
                         match event:
                             case ThreadTokenUsageUpdatedEvent(
@@ -275,8 +275,8 @@ class Session:
             match event:
                 case TurnCompletedEvent(data=TurnCompletedData(turn=t)):
                     turn = t
-                case TurnErrorEvent(data=TurnErrorData(error=error)):
-                    raise TurnFailedError(error, turn_id="unknown")
+                case ErrorMessage(data=ErrorNotification(error=error)):
+                    raise TurnFailedError(error.message, turn_id="unknown")
 
         if turn is None:
             raise CodexRequestError(code=-1, message="Turn completed without a TurnCompletedEvent")
@@ -330,7 +330,7 @@ class Session:
         Returns:
             Updated thread object with turns populated
         """
-        params = ThreadRollbackParams(thread_id=self.thread_id, turns=turns)
+        params = ThreadRollbackParams(thread_id=self.thread_id, num_turns=turns)
         result = await self._client.dispatch.send_request("thread/rollback", params)
         return ThreadRollbackResponse.model_validate(result)
 

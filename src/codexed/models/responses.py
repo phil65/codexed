@@ -5,16 +5,8 @@ from typing import Any, Literal
 import mcp.types
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (
-    ApprovalDecision,
-    AskForApproval,
-    ReasoningEffort,
-    SandboxPolicy,
-)
+from codexed.models.codex_types import ApprovalDecision, AskForApproval, SandboxPolicy
 from codexed.models.misc import (
-    ConfigLayer,
-    ConfigLayerMetadata,
-    ExternalAgentConfigMigrationItem,
     McpServerStatusEntry,
     Thread,
     ToolRequestUserInputAnswer,
@@ -25,7 +17,9 @@ from codexed.models.v2_protocol import (
     AuthMode,
     ConfigRequirements,
     DynamicToolCallOutputContentItem,
+    ExternalAgentConfigMigrationItem,
     Model,
+    ReasoningEffort,
 )
 
 
@@ -176,14 +170,6 @@ class LoginAccountResponse(CodexBaseModel):
     type: AuthMode
     login_id: str | None = None
     auth_url: str | None = None
-
-
-class ConfigReadResponse(CodexBaseModel):
-    """Response for config/read request."""
-
-    config: dict[str, Any]
-    origins: dict[str, ConfigLayerMetadata] | None = None
-    layers: list[ConfigLayer] | None = None
 
 
 class ConfigRequirementsReadResponse(CodexBaseModel):

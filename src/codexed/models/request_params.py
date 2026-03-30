@@ -6,20 +6,9 @@ from typing import TYPE_CHECKING, Annotated, Any, Literal, Required, Self, Typed
 from pydantic import Discriminator, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (
-    ApprovalDecision,
-    ApprovalPolicy,
-    ApprovalsReviewer,
-    CollaborationMode,
-    DynamicToolSpec,
-    Personality,
-    ReasoningEffort,
-    ServiceTier,
-    ThreadSourceKind,
-)
+from codexed.models.codex_types import ApprovalDecision, ApprovalPolicy
 from codexed.models.misc import (
     ExecPolicyAmendment,
-    ExternalAgentConfigMigrationItem,
     NetworkApprovalContext,
     NetworkPolicyAmendment,
     ToolRequestUserInputQuestion,
@@ -27,20 +16,28 @@ from codexed.models.misc import (
 from codexed.models.response_item import ResponseItem
 from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
+    ApprovalsReviewer,
     AuthMode,
     BaseBranchReviewTarget,
     ClientInfo,
+    CollaborationMode,
     CommandAction,
     CommandExecTerminalSize,
     CommitReviewTarget,
     ConfigEdit,
     CustomReviewTarget,
+    DynamicToolSpec,
+    ExternalAgentConfigMigrationItem,
     MergeStrategy,
+    Personality,
+    ReasoningEffort,
     ReasoningSummary,
     ReviewDelivery,
     SandboxMode,
+    ServiceTier,
     SkillsListExtraRootsForCwd,
     ThreadSortKey,
+    ThreadSourceKind,
     UncommittedChangesReviewTarget,
 )
 
@@ -131,13 +128,6 @@ class ThreadListParams(CodexBaseModel):
     archived: bool | None = None
     cwd: str | None = None
     search_term: str | None = None
-
-
-class ThreadRollbackParams(CodexBaseModel):
-    """Parameters for thread/rollback request."""
-
-    thread_id: str
-    turns: int
 
 
 class ThreadLoadedListParams(CodexBaseModel):

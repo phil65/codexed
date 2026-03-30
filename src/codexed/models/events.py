@@ -19,62 +19,53 @@ from codexed.models.event_data import (
     ThreadStatusChangedData,
     ThreadTokenUsageUpdatedData,
     TurnCompletedData,
-    TurnErrorData,
-    TurnPlanUpdatedData,
     TurnStartedData,
 )
 from codexed.models.v2_protocol import (
     AccountLoginCompletedMessage,
     AccountRateLimitsUpdatedMessage,
-    AccountUpdatedNotification,
-    AgentMessageDeltaNotification,
+    AccountUpdatedMessage,
     AppListUpdatedMessage,
-    CommandExecOutputDeltaNotification,
-    CommandExecutionOutputDeltaNotification,
+    CommandExecOutputDeltaMessage,
     ConfigWarningMessage,
-    ContextCompactedNotification,
     DeprecationNoticeMessage,
-    ErrorNotification,
-    FileChangeOutputDeltaNotification,
+    ErrorMessage,
     FsChangedMessage,
-    FuzzyFileSearchSessionCompletedNotification,
-    FuzzyFileSearchSessionUpdatedNotification,
-    HookCompletedNotification,
-    HookStartedNotification,
-    McpServerOauthLoginCompletedNotification,
-    McpServerStatusUpdatedNotification,
-    McpToolCallProgressNotification,
+    FuzzyFileSearchSessionCompletedMessage,
+    FuzzyFileSearchSessionUpdatedMessage,
+    HookCompletedMessage,
+    HookStartedMessage,
+    ItemAgentMessageDeltaNotification,
+    ItemCommandExecutionOutputDeltaNotification,
+    ItemCommandExecutionTerminalInteractionNotification,
+    ItemFileChangeOutputDeltaNotification,
+    ItemMcpToolCallProgressNotification,
+    ItemPlanDeltaNotification,
+    ItemReasoningSummaryPartAddedNotification,
+    ItemReasoningSummaryTextDeltaNotification,
+    ItemReasoningTextDeltaNotification,
+    McpServerOauthLoginCompletedMessage,
+    McpServerStartupStatusUpdatedNotification,
     ModelReroutedMessage,
-    PlanDeltaNotification,
-    ReasoningSummaryPartAddedNotification,
-    ReasoningSummaryTextDeltaNotification,
-    ReasoningTextDeltaNotification,
     ServerRequestResolvedMessage,
-    TerminalInteractionNotification,
     ThreadArchivedNotification,
     ThreadCompactedNotification,
     ThreadNameUpdatedNotification,
-    ThreadRealtimeClosedNotification,
-    ThreadRealtimeErrorNotification,
-    ThreadRealtimeItemAddedNotification,
-    ThreadRealtimeOutputAudioDeltaNotification,
-    ThreadRealtimeStartedNotification,
-    ThreadRealtimeTranscriptUpdatedNotification,
+    ThreadRealtimeClosedMessage,
+    ThreadRealtimeErrorMessage,
+    ThreadRealtimeItemAddedMessage,
+    ThreadRealtimeOutputAudioDeltaMessage,
+    ThreadRealtimeStartedMessage,
+    ThreadRealtimeTranscriptUpdatedMessage,
     ThreadUnarchiveParams,
     TurnDiffUpdatedNotification,
+    TurnPlanUpdatedNotification,
     WindowsWorldWritableWarningMessage,
 )
 
 
 if TYPE_CHECKING:
     from codexed.models import TokenUsageBreakdown
-
-
-class ErrorEvent(CodexBaseModel):
-    """Error event from the Codex server."""
-
-    event_type: Literal["error"] = "error"
-    data: ErrorNotification
 
 
 # ============================================================================
@@ -139,13 +130,6 @@ class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
         return self.data.token_usage.model_context_window
 
 
-class ThreadCompactedEvent(CodexBaseModel):
-    """Thread compacted event."""
-
-    event_type: Literal["thread/compacted"] = "thread/compacted"
-    data: ContextCompactedNotification
-
-
 # ============================================================================
 # Turn lifecycle events
 # ============================================================================
@@ -165,13 +149,6 @@ class TurnCompletedEvent(CodexBaseModel):
     data: TurnCompletedData
 
 
-class TurnErrorEvent(CodexBaseModel):
-    """Turn error event."""
-
-    event_type: Literal["turn/error"] = "turn/error"
-    data: TurnErrorData
-
-
 class TurnDiffUpdatedEvent(CodexBaseModel):
     """Turn diff updated event."""
 
@@ -183,104 +160,7 @@ class TurnPlanUpdatedEvent(CodexBaseModel):
     """Turn plan updated event."""
 
     event_type: Literal["turn/plan/updated"] = "turn/plan/updated"
-    data: TurnPlanUpdatedData
-
-
-# ============================================================================
-# Hook events
-# ============================================================================
-
-
-class HookStartedEvent(CodexBaseModel):
-    """Hook started event."""
-
-    event_type: Literal["hook/started"] = "hook/started"
-    data: HookStartedNotification
-
-
-class HookCompletedEvent(CodexBaseModel):
-    """Hook completed event."""
-
-    event_type: Literal["hook/completed"] = "hook/completed"
-    data: HookCompletedNotification
-
-
-# ============================================================================
-# Realtime voice events (EXPERIMENTAL)
-# ============================================================================
-
-
-class RealtimeStartedEvent(CodexBaseModel):
-    """Realtime session started event."""
-
-    event_type: Literal["thread/realtime/started"] = "thread/realtime/started"
-    data: ThreadRealtimeStartedNotification
-
-
-class RealtimeItemAddedEvent(CodexBaseModel):
-    """Realtime item added event."""
-
-    event_type: Literal["thread/realtime/itemAdded"] = "thread/realtime/itemAdded"
-    data: ThreadRealtimeItemAddedNotification
-
-
-class RealtimeTranscriptUpdatedEvent(CodexBaseModel):
-    """Realtime transcript updated event."""
-
-    event_type: Literal["thread/realtime/transcriptUpdated"] = "thread/realtime/transcriptUpdated"
-    data: ThreadRealtimeTranscriptUpdatedNotification
-
-
-class RealtimeOutputAudioDeltaEvent(CodexBaseModel):
-    """Realtime output audio delta event."""
-
-    event_type: Literal["thread/realtime/outputAudio/delta"] = "thread/realtime/outputAudio/delta"
-    data: ThreadRealtimeOutputAudioDeltaNotification
-
-
-class RealtimeErrorEvent(CodexBaseModel):
-    """Realtime error event."""
-
-    event_type: Literal["thread/realtime/error"] = "thread/realtime/error"
-    data: ThreadRealtimeErrorNotification
-
-
-class RealtimeClosedEvent(CodexBaseModel):
-    """Realtime session closed event."""
-
-    event_type: Literal["thread/realtime/closed"] = "thread/realtime/closed"
-    data: ThreadRealtimeClosedNotification
-
-
-# ============================================================================
-# Terminal control events
-# ============================================================================
-
-
-class CommandExecOutputDeltaEvent(CodexBaseModel):
-    """Command exec output delta event (streaming stdout/stderr)."""
-
-    event_type: Literal["command/exec/outputDelta"] = "command/exec/outputDelta"
-    data: CommandExecOutputDeltaNotification
-
-
-# ============================================================================
-# Fuzzy file search events (EXPERIMENTAL)
-# ============================================================================
-
-
-class FuzzyFileSearchSessionUpdatedEvent(CodexBaseModel):
-    """Fuzzy file search session updated with results."""
-
-    event_type: Literal["fuzzyFileSearch/sessionUpdated"] = "fuzzyFileSearch/sessionUpdated"
-    data: FuzzyFileSearchSessionUpdatedNotification
-
-
-class FuzzyFileSearchSessionCompletedEvent(CodexBaseModel):
-    """Fuzzy file search session completed."""
-
-    event_type: Literal["fuzzyFileSearch/sessionCompleted"] = "fuzzyFileSearch/sessionCompleted"
-    data: FuzzyFileSearchSessionCompletedNotification
+    data: TurnPlanUpdatedNotification
 
 
 # ============================================================================
@@ -310,139 +190,13 @@ class RawResponseItemCompletedEvent(CodexBaseModel):
 
 
 # ============================================================================
-# Item delta events - Agent messages
-# ============================================================================
-
-
-class AgentMessageDeltaEvent(CodexBaseModel):
-    """Agent message delta event (streaming text)."""
-
-    event_type: Literal["item/agentMessage/delta"] = "item/agentMessage/delta"
-    data: AgentMessageDeltaNotification
-
-
-# ============================================================================
-# Item delta events - Plan
-# ============================================================================
-
-
-class PlanDeltaEvent(CodexBaseModel):
-    """Plan delta event (streaming plan text)."""
-
-    event_type: Literal["item/plan/delta"] = "item/plan/delta"
-    data: PlanDeltaNotification
-
-
-# ============================================================================
-# Item delta events - Reasoning
-# ============================================================================
-
-
-class ReasoningSummaryTextDeltaEvent(CodexBaseModel):
-    """Reasoning summary text delta event."""
-
-    event_type: Literal["item/reasoning/summaryTextDelta"] = "item/reasoning/summaryTextDelta"
-    data: ReasoningSummaryTextDeltaNotification
-
-
-class ReasoningSummaryPartAddedEvent(CodexBaseModel):
-    """Reasoning summary part added event."""
-
-    event_type: Literal["item/reasoning/summaryPartAdded"] = "item/reasoning/summaryPartAdded"
-    data: ReasoningSummaryPartAddedNotification
-
-
-class ReasoningTextDeltaEvent(CodexBaseModel):
-    """Reasoning text delta event."""
-
-    event_type: Literal["item/reasoning/textDelta"] = "item/reasoning/textDelta"
-    data: ReasoningTextDeltaNotification
-
-
-# ============================================================================
-# Item delta events - Command execution
-# ============================================================================
-
-
-class CommandExecutionOutputDeltaEvent(CodexBaseModel):
-    """Command execution output delta event."""
-
-    event_type: Literal["item/commandExecution/outputDelta"] = "item/commandExecution/outputDelta"
-    data: CommandExecutionOutputDeltaNotification
-
-
-class CommandExecutionTerminalInteractionEvent(CodexBaseModel):
-    """Command execution terminal interaction event."""
-
-    event_type: Literal["item/commandExecution/terminalInteraction"] = (
-        "item/commandExecution/terminalInteraction"
-    )
-    data: TerminalInteractionNotification
-
-
-# ============================================================================
-# Item delta events - File changes
-# ============================================================================
-
-
-class FileChangeOutputDeltaEvent(CodexBaseModel):
-    """File change output delta event."""
-
-    event_type: Literal["item/fileChange/outputDelta"] = "item/fileChange/outputDelta"
-    data: FileChangeOutputDeltaNotification
-
-
-# ============================================================================
-# Item delta events - MCP tool calls
-# ============================================================================
-
-
-class McpToolCallProgressEvent(CodexBaseModel):
-    """MCP tool call progress event."""
-
-    event_type: Literal["item/mcpToolCall/progress"] = "item/mcpToolCall/progress"
-    data: McpToolCallProgressNotification
-
-
-# ============================================================================
-# MCP OAuth events
-# ============================================================================
-
-
-class McpServerStartupStatusUpdatedEvent(CodexBaseModel):
-    """MCP server startup status updated event."""
-
-    event_type: Literal["mcpServer/startupStatus/updated"] = "mcpServer/startupStatus/updated"
-    data: McpServerStatusUpdatedNotification
-
-
-class McpServerOAuthLoginCompletedEvent(CodexBaseModel):
-    """MCP server OAuth login completed event."""
-
-    event_type: Literal["mcpServer/oauthLogin/completed"] = "mcpServer/oauthLogin/completed"
-    data: McpServerOauthLoginCompletedNotification
-
-
-# ============================================================================
-# Account/Auth events
-# ============================================================================
-
-
-class AccountUpdatedEvent(CodexBaseModel):
-    """Account updated event."""
-
-    event_type: Literal["account/updated"] = "account/updated"
-    data: AccountUpdatedNotification
-
-
-# ============================================================================
 # Discriminated union of all event types
 # ============================================================================
 
 
 CodexEvent = Annotated[
     # Error events
-    ErrorEvent
+    ErrorMessage
     # Thread lifecycle
     | ThreadStartedEvent
     | ThreadStatusChangedEvent
@@ -450,53 +204,51 @@ CodexEvent = Annotated[
     | ThreadUnarchivedEvent
     | ThreadNameUpdatedEvent
     | ThreadTokenUsageUpdatedEvent
-    | ThreadCompactedEvent
     # Turn lifecycle
     | TurnStartedEvent
     | TurnCompletedEvent
-    | TurnErrorEvent
     | TurnDiffUpdatedEvent
     | TurnPlanUpdatedEvent
     # Hook events
-    | HookStartedEvent
-    | HookCompletedEvent
+    | HookStartedMessage
+    | HookCompletedMessage
     # Realtime voice events (EXPERIMENTAL)
-    | RealtimeStartedEvent
-    | RealtimeItemAddedEvent
-    | RealtimeTranscriptUpdatedEvent
-    | RealtimeOutputAudioDeltaEvent
-    | RealtimeErrorEvent
-    | RealtimeClosedEvent
+    | ThreadRealtimeStartedMessage
+    | ThreadRealtimeItemAddedMessage
+    | ThreadRealtimeTranscriptUpdatedMessage
+    | ThreadRealtimeOutputAudioDeltaMessage
+    | ThreadRealtimeErrorMessage
+    | ThreadRealtimeClosedMessage
     # Terminal control events
-    | CommandExecOutputDeltaEvent
+    | CommandExecOutputDeltaMessage
     # Fuzzy file search events (EXPERIMENTAL)
-    | FuzzyFileSearchSessionUpdatedEvent
-    | FuzzyFileSearchSessionCompletedEvent
+    | FuzzyFileSearchSessionUpdatedMessage
+    | FuzzyFileSearchSessionCompletedMessage
     # Item lifecycle
     | ItemStartedEvent
     | ItemCompletedEvent
     | RawResponseItemCompletedEvent
     # Item deltas - agent messages
-    | AgentMessageDeltaEvent
+    | ItemAgentMessageDeltaNotification
     # Item deltas - plan
-    | PlanDeltaEvent
+    | ItemPlanDeltaNotification
     # Item deltas - reasoning
-    | ReasoningSummaryTextDeltaEvent
-    | ReasoningSummaryPartAddedEvent
-    | ReasoningTextDeltaEvent
+    | ItemReasoningSummaryTextDeltaNotification
+    | ItemReasoningSummaryPartAddedNotification
+    | ItemReasoningTextDeltaNotification
     # Item deltas - command execution
-    | CommandExecutionOutputDeltaEvent
-    | CommandExecutionTerminalInteractionEvent
+    | ItemCommandExecutionOutputDeltaNotification
+    | ItemCommandExecutionTerminalInteractionNotification
     # Item deltas - file changes
-    | FileChangeOutputDeltaEvent
+    | ItemFileChangeOutputDeltaNotification
     # Item deltas - MCP tool calls
-    | McpToolCallProgressEvent
+    | ItemMcpToolCallProgressNotification
     # MCP server status
-    | McpServerStartupStatusUpdatedEvent
+    | McpServerStartupStatusUpdatedNotification
     # MCP OAuth
-    | McpServerOAuthLoginCompletedEvent
+    | McpServerOauthLoginCompletedMessage
     # Account/Auth events
-    | AccountUpdatedEvent
+    | AccountUpdatedMessage
     | AccountRateLimitsUpdatedMessage
     | AccountLoginCompletedMessage
     # System events
@@ -599,10 +351,10 @@ EventType = Literal[
 
 # Type alias for all delta events
 DeltaEvent = (
-    AgentMessageDeltaEvent
-    | PlanDeltaEvent
-    | ReasoningTextDeltaEvent
-    | ReasoningSummaryTextDeltaEvent
-    | CommandExecutionOutputDeltaEvent
-    | FileChangeOutputDeltaEvent
+    ItemAgentMessageDeltaNotification
+    | ItemPlanDeltaNotification
+    | ItemReasoningTextDeltaNotification
+    | ItemReasoningSummaryTextDeltaNotification
+    | ItemCommandExecutionOutputDeltaNotification
+    | ItemFileChangeOutputDeltaNotification
 )

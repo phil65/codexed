@@ -7,7 +7,7 @@ Python adapter for the [Codex](https://github.com/openai/codex) app-server JSON-
 ```python
 import asyncio
 from codexed import CodexClient
-from codexed.models import AgentMessageDeltaEvent, TurnCompletedEvent
+from codexed.models import ItemAgentMessageDeltaNotification, TurnCompletedEvent
 
 async def main():
     async with CodexClient() as client:
@@ -15,7 +15,7 @@ async def main():
         
         async for event in session.turn_stream("Help me refactor this code"):
             match event:
-                case AgentMessageDeltaEvent(data=data):
+                case ItemAgentMessageDeltaNotification(data=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     break
@@ -47,20 +47,18 @@ Events are a discriminated union. Use pattern matching or helper functions:
 
 ```python
 from codexed.models import (
-    AgentMessageDeltaEvent,
-    CommandExecutionOutputDeltaEvent,
+    ItemAgentMessageDeltaNotification,
+    ItemCommandExecutionOutputDeltaNotification,
     TurnCompletedEvent,
-    TurnErrorEvent,
 )
 
 async for event in session.turn_stream(message):
     match event:
-        case AgentMessageDeltaEvent(data=data) | CommandExecutionOutputDeltaEvent(data=data):
+        case ItemAgentMessageDeltaNotification(data=data) | ItemCommandExecutionOutputDeltaNotification(data=data):
             print(data.delta, end="")
         case TurnCompletedEvent():
             break
-        case TurnErrorEvent(data=data):
-            print(f"Error: {data.error}")
+
 ```
 
 ## See Also
