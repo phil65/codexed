@@ -11,36 +11,13 @@ from typing import Annotated, Literal
 from pydantic import Discriminator, Field
 
 from codexed.models.base import CodexBaseModel
-
-
-# --- Content items ---
-
-
-class InputTextContent(CodexBaseModel):
-    """Text input content item."""
-
-    type: Literal["input_text"] = "input_text"
-    text: str
-
-
-class InputImageContent(CodexBaseModel):
-    """Image input content item."""
-
-    type: Literal["input_image"] = "input_image"
-    image_url: str
-
-
-class OutputTextContent(CodexBaseModel):
-    """Text output content item."""
-
-    type: Literal["output_text"] = "output_text"
-    text: str
-
-
-ContentItem = Annotated[
-    InputTextContent | InputImageContent | OutputTextContent,
-    Discriminator("type"),
-]
+from codexed.models.v2_protocol import (
+    ContentItem,
+    FindInPageResponsesApiWebSearchAction,
+    OpenPageResponsesApiWebSearchAction,
+    OtherResponsesApiWebSearchAction,
+    SearchResponsesApiWebSearchAction,
+)
 
 
 # --- Reasoning ---
@@ -121,43 +98,13 @@ class LocalShellExecAction(CodexBaseModel):
 LocalShellAction = LocalShellExecAction  # Currently only one variant
 
 
-# --- Web search action ---
-
-
-class SearchWebSearchAction(CodexBaseModel):
-    """Web search action."""
-
-    type: Literal["search"] = "search"
-    query: str | None = None
-    queries: list[str] | None = None
-
-
-class OpenPageWebSearchAction(CodexBaseModel):
-    """Open page action."""
-
-    type: Literal["open_page"] = "open_page"
-    url: str | None = None
-
-
-class FindInPageWebSearchAction(CodexBaseModel):
-    """Find in page action."""
-
-    type: Literal["find_in_page"] = "find_in_page"
-    url: str | None = None
-    pattern: str | None = None
-
-
-class OtherWebSearchAction(CodexBaseModel):
-    """Other web search action."""
-
-    type: Literal["other"] = "other"
-
+# --- Web search action (re-exported from v2_protocol) ---
 
 WebSearchAction = Annotated[
-    SearchWebSearchAction
-    | OpenPageWebSearchAction
-    | FindInPageWebSearchAction
-    | OtherWebSearchAction,
+    SearchResponsesApiWebSearchAction
+    | OpenPageResponsesApiWebSearchAction
+    | FindInPageResponsesApiWebSearchAction
+    | OtherResponsesApiWebSearchAction,
     Discriminator("type"),
 ]
 
