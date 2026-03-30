@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from codexed.models.base import CodexBaseModel
+from codexed.models.v2_protocol import ThreadRealtimeAudioChunk
 
 
 # ============================================================================
@@ -27,49 +28,13 @@ RealtimeConversationVersion = Literal["v1", "v2"]
 # ============================================================================
 
 
-class ThreadRealtimeAudioChunk(CodexBaseModel):
-    """Audio chunk for realtime streaming (base64-encoded PCM data)."""
-
-    data: str
-    sample_rate: int
-    num_channels: int
-    samples_per_channel: int | None = None
-    item_id: str | None = None
-
-
 # ============================================================================
 # Client request params / responses
 # ============================================================================
 
 
-class RealtimeStartParams(CodexBaseModel):
-    """Params for thread/realtime/start request."""
-
-    thread_id: str
-    prompt: str
-    session_id: str | None = None
-
-
-class RealtimeStartResponse(CodexBaseModel):
-    """Response for thread/realtime/start request."""
-
-
-class RealtimeAppendAudioParams(CodexBaseModel):
-    """Params for thread/realtime/appendAudio request."""
-
-    thread_id: str
-    audio: ThreadRealtimeAudioChunk
-
-
 class RealtimeAppendAudioResponse(CodexBaseModel):
     """Response for thread/realtime/appendAudio request."""
-
-
-class RealtimeAppendTextParams(CodexBaseModel):
-    """Params for thread/realtime/appendText request."""
-
-    thread_id: str
-    text: str
 
 
 class RealtimeAppendTextResponse(CodexBaseModel):
@@ -114,11 +79,11 @@ class RealtimeTranscriptUpdatedData(CodexBaseModel):
     text: str
 
 
-class RealtimeOutputAudioDeltaData(CodexBaseModel):
+class ThreadRealtimeOutputAudioDeltaNotification(CodexBaseModel):
     """Data for thread/realtime/outputAudio/delta notification."""
 
     thread_id: str
-    audio: RealtimeAudioChunk
+    audio: ThreadRealtimeAudioChunk
 
 
 class RealtimeErrorData(CodexBaseModel):

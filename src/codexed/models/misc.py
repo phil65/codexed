@@ -16,15 +16,21 @@ from codexed.models.codex_types import (
     MergeStrategy,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
-    PlanType,
     ReasoningEffort,
-    SandboxMode,
     SessionSource,
     SkillApprovalDecision,
     SkillScope,
 )
 from codexed.models.thread_item import ThreadItem
 from codexed.models.thread_status import ThreadStatusValue
+from codexed.models.v2_protocol import (
+    GitInfo,
+    ModelAvailabilityNux,
+    SkillErrorInfo,
+    SkillInterface,
+    SkillToolDependency,
+    TurnError,
+)
 
 
 if TYPE_CHECKING:
@@ -35,28 +41,6 @@ if TYPE_CHECKING:
 
 TurnStatusValue = Literal["completed", "interrupted", "failed", "inProgress"]
 PlanStepStatus = Literal["pending", "inProgress", "completed"]
-
-
-class TextPosition(CodexBaseModel):
-    """1-based text position."""
-
-    line: int
-    column: int
-
-
-class TextRange(CodexBaseModel):
-    """Text range with start and end positions."""
-
-    start: TextPosition
-    end: TextPosition
-
-
-class ClientInfo(CodexBaseModel):
-    """Client information for initialization."""
-
-    name: str
-    title: str | None = None
-    version: str
 
 
 class ConfigEdit(CodexBaseModel):
@@ -154,29 +138,11 @@ class SkillRequestApprovalResponse(CodexBaseModel):
     decision: SkillApprovalDecision
 
 
-class GitInfo(CodexBaseModel):
-    """Git metadata captured when thread was created."""
-
-    sha: str | None = None
-    branch: str | None = None
-    origin_url: str | None = None
-
-
 class TurnStatus(CodexBaseModel):
     """Turn status enumeration."""
 
     # This is actually an enum in Rust but sent as string
     status: TurnStatusValue
-
-
-class TurnError(CodexBaseModel):
-    """Turn error information."""
-
-    message: str
-    codex_error_info: dict[str, Any] | str | None = (
-        None  # Error metadata - varied structure (dict or string like "other")
-    )
-    additional_details: str | None = None
 
 
 class Turn(CodexBaseModel):
@@ -240,28 +206,6 @@ class TurnData(CodexBaseModel):
     error: str | None = None
 
 
-class SkillInterface(CodexBaseModel):
-    """Skill interface metadata."""
-
-    display_name: str | None = None
-    short_description: str | None = None
-    icon_small: str | None = None
-    icon_large: str | None = None
-    brand_color: str | None = None
-    default_prompt: str | None = None
-
-
-class SkillToolDependency(CodexBaseModel):
-    """Skill tool dependency."""
-
-    type: str
-    value: str
-    description: str | None = None
-    transport: str | None = None
-    command: str | None = None
-    url: str | None = None
-
-
 class SkillDependencies(CodexBaseModel):
     """Skill dependencies."""
 
@@ -279,13 +223,6 @@ class SkillData(CodexBaseModel):
     path: str | None = None
     scope: SkillScope | None = None
     enabled: bool | None = None
-
-
-class SkillErrorInfo(CodexBaseModel):
-    """Skill error information."""
-
-    path: str
-    message: str
 
 
 class SkillsContainer(CodexBaseModel):
@@ -310,12 +247,6 @@ class ModelUpgradeInfo(CodexBaseModel):
     upgrade_copy: str | None = None
     model_link: str | None = None
     migration_markdown: str | None = None
-
-
-class ModelAvailabilityNux(CodexBaseModel):
-    """Model availability notification."""
-
-    message: str
 
 
 class ModelData(CodexBaseModel):
@@ -442,87 +373,6 @@ class ConfigLayer(CodexBaseModel):
     config: dict[str, Any] = Field(default_factory=dict)
 
 
-class NetworkRequirements(CodexBaseModel):
-    """Network requirements configuration."""
-
-    enabled: bool | None = None
-    http_port: int | None = None
-    socks_port: int | None = None
-    allow_upstream_proxy: bool | None = None
-    dangerously_allow_non_loopback_proxy: bool | None = None
-    dangerously_allow_non_loopback_admin: bool | None = None
-    dangerously_allow_all_unix_sockets: bool | None = None
-    allowed_domains: list[str] | None = None
-    denied_domains: list[str] | None = None
-    allow_unix_sockets: list[str] | None = None
-    allow_local_binding: bool | None = None
-
-
-class ConfigRequirements(CodexBaseModel):
-    """Configuration requirements (from requirements.toml / MDM)."""
-
-    allowed_approval_policies: list[Any] | None = None  # AskForApproval tagged union
-    allowed_sandbox_modes: list[SandboxMode] | None = None
-    allowed_web_search_modes: list[str] | None = None
-    enforce_residency: str | None = None
-    network: NetworkRequirements | None = None
-
-
-class AppBranding(CodexBaseModel):
-    """App branding information."""
-
-    primary_color: str | None = None
-    icon: str | None = None
-
-
-class AppReview(CodexBaseModel):
-    """App review status."""
-
-    status: str
-
-
-class AppScreenshot(CodexBaseModel):
-    """App screenshot information."""
-
-    url: str | None = None
-    file_id: str | None = None
-    user_prompt: str
-
-
-class AppMetadata(CodexBaseModel):
-    """App metadata information."""
-
-    review: AppReview | None = None
-    categories: list[str] | None = None
-    sub_categories: list[str] | None = None
-    seo_description: str | None = None
-    screenshots: list[AppScreenshot] | None = None
-    developer: str | None = None
-    version: str | None = None
-    version_id: str | None = None
-    version_notes: str | None = None
-    first_party_type: str | None = None
-    first_party_requires_install: bool | None = None
-    show_in_composer_when_unlinked: bool | None = None
-
-
-class AppInfo(CodexBaseModel):
-    """App information."""
-
-    id: str
-    name: str
-    description: str | None = None
-    logo_url: str | None = None
-    logo_url_dark: str | None = None
-    distribution_channel: str | None = None
-    branding: AppBranding | None = None
-    app_metadata: AppMetadata | None = None
-    labels: dict[str, str] | None = None
-    install_url: str | None = None
-    is_accessible: bool = False
-    is_enabled: bool = True
-
-
 class ExperimentalFeature(CodexBaseModel):
     """An experimental feature."""
 
@@ -544,30 +394,3 @@ class TurnPlanStep(CodexBaseModel):
 
     step: str
     status: PlanStepStatus
-
-
-class RateLimitWindow(CodexBaseModel):
-    """Rate limit window information."""
-
-    used_percent: int
-    window_duration_mins: int | None = None
-    resets_at: int | None = None
-
-
-class CreditsSnapshot(CodexBaseModel):
-    """Credits snapshot information."""
-
-    has_credits: bool
-    unlimited: bool
-    balance: str | None = None
-
-
-class RateLimitSnapshot(CodexBaseModel):
-    """Rate limit snapshot."""
-
-    limit_id: str | None = None
-    limit_name: str | None = None
-    primary: RateLimitWindow | None = None
-    secondary: RateLimitWindow | None = None
-    credits: CreditsSnapshot | None = None
-    plan_type: PlanType | None = None

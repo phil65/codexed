@@ -24,7 +24,6 @@ from codexed.models.codex_types import (
 )
 from codexed.models.command_action import CommandAction
 from codexed.models.misc import (
-    ClientInfo,
     ConfigEdit,
     ExecPolicyAmendment,
     ExternalAgentConfigMigrationItem,
@@ -33,8 +32,8 @@ from codexed.models.misc import (
     ToolRequestUserInputQuestion,
 )
 from codexed.models.response_item import ResponseItem
-from codexed.models.terminal import CommandExecTerminalSize
 from codexed.models.user_input import UserInput
+from codexed.models.v2_protocol import ClientInfo, CommandExecTerminalSize
 
 
 if TYPE_CHECKING:

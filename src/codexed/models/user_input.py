@@ -6,26 +6,7 @@ from typing import Literal, Self
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-
-
-class ByteRange(CodexBaseModel):
-    """Byte range within a UTF-8 text buffer."""
-
-    start: int = Field(..., ge=0)
-    """Start byte offset (inclusive)."""
-    end: int = Field(..., ge=0)
-    """End byte offset (exclusive)."""
-
-
-class TextElement(CodexBaseModel):
-    """Element within text content for rich input markers.
-
-    Used to render or persist rich input markers (e.g., image placeholders)
-    across history and resume without mutating the literal text.
-    """
-
-    byte_range: ByteRange
-    placeholder: str | None = None
+from codexed.models.v2_protocol import TextElement
 
 
 class UserInputText(CodexBaseModel):

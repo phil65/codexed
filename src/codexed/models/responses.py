@@ -14,10 +14,8 @@ from codexed.models.codex_types import (
     WriteStatus,
 )
 from codexed.models.misc import (
-    AppInfo,
     ConfigLayer,
     ConfigLayerMetadata,
-    ConfigRequirements,
     ExperimentalFeature,
     ExternalAgentConfigMigrationItem,
     McpServerStatusEntry,
@@ -29,6 +27,7 @@ from codexed.models.misc import (
     TurnData,
 )
 from codexed.models.thread_item import DynamicToolCallOutputContentItem
+from codexed.models.v2_protocol import AppInfo, ConfigRequirements
 
 
 class CommandExecutionRequestApprovalResponse(CodexBaseModel):

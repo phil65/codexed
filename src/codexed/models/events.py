@@ -15,16 +15,16 @@ from codexed.models.event_data import (
     AccountLoginCompletedData,
     AccountRateLimitsUpdatedData,
     AccountUpdatedData,
-    AgentMessageDeltaData,
+    AgentMessageDeltaNotification,
     AppListUpdatedData,
     AuthStatusChangeData,
-    CommandExecutionOutputDeltaData,
+    CommandExecutionOutputDeltaNotification,
     CommandExecutionTerminalInteractionData,
     ConfigWarningData,
     ContextCompactedData,
     DeprecationNoticeData,
     ErrorEventData,
-    FileChangeOutputDeltaData,
+    FileChangeOutputDeltaNotification,
     FsChangedData,
     ItemCompletedData,
     ItemStartedData,
@@ -33,11 +33,11 @@ from codexed.models.event_data import (
     McpServerStartupStatusUpdatedData,
     McpToolCallProgressData,
     ModelReroutedData,
-    PlanDeltaData,
+    PlanDeltaNotification,
     RawResponseItemCompletedData,
-    ReasoningSummaryPartAddedData,
-    ReasoningSummaryTextDeltaData,
-    ReasoningTextDeltaData,
+    ReasoningSummaryPartAddedNotification,
+    ReasoningSummaryTextDeltaNotification,
+    ReasoningTextDeltaNotification,
     ServerRequestResolvedData,
     SessionConfiguredData,
     ThreadArchivedData,
@@ -63,9 +63,9 @@ from codexed.models.realtime import (
     RealtimeClosedData,
     RealtimeErrorData,
     RealtimeItemAddedData,
-    RealtimeOutputAudioDeltaData,
     RealtimeStartedData,
     RealtimeTranscriptUpdatedData,
+    ThreadRealtimeOutputAudioDeltaNotification,
 )
 from codexed.models.terminal import CommandExecOutputDeltaData
 
@@ -239,7 +239,7 @@ class RealtimeOutputAudioDeltaEvent(CodexBaseModel):
     """Realtime output audio delta event."""
 
     event_type: Literal["thread/realtime/outputAudio/delta"] = "thread/realtime/outputAudio/delta"
-    data: RealtimeOutputAudioDeltaData
+    data: ThreadRealtimeOutputAudioDeltaNotification
 
 
 class RealtimeErrorEvent(CodexBaseModel):
@@ -322,7 +322,7 @@ class AgentMessageDeltaEvent(CodexBaseModel):
     """Agent message delta event (streaming text)."""
 
     event_type: Literal["item/agentMessage/delta"] = "item/agentMessage/delta"
-    data: AgentMessageDeltaData
+    data: AgentMessageDeltaNotification
 
 
 # ============================================================================
@@ -334,7 +334,7 @@ class PlanDeltaEvent(CodexBaseModel):
     """Plan delta event (streaming plan text)."""
 
     event_type: Literal["item/plan/delta"] = "item/plan/delta"
-    data: PlanDeltaData
+    data: PlanDeltaNotification
 
 
 # ============================================================================
@@ -346,21 +346,21 @@ class ReasoningSummaryTextDeltaEvent(CodexBaseModel):
     """Reasoning summary text delta event."""
 
     event_type: Literal["item/reasoning/summaryTextDelta"] = "item/reasoning/summaryTextDelta"
-    data: ReasoningSummaryTextDeltaData
+    data: ReasoningSummaryTextDeltaNotification
 
 
 class ReasoningSummaryPartAddedEvent(CodexBaseModel):
     """Reasoning summary part added event."""
 
     event_type: Literal["item/reasoning/summaryPartAdded"] = "item/reasoning/summaryPartAdded"
-    data: ReasoningSummaryPartAddedData
+    data: ReasoningSummaryPartAddedNotification
 
 
 class ReasoningTextDeltaEvent(CodexBaseModel):
     """Reasoning text delta event."""
 
     event_type: Literal["item/reasoning/textDelta"] = "item/reasoning/textDelta"
-    data: ReasoningTextDeltaData
+    data: ReasoningTextDeltaNotification
 
 
 # ============================================================================
@@ -372,7 +372,7 @@ class CommandExecutionOutputDeltaEvent(CodexBaseModel):
     """Command execution output delta event."""
 
     event_type: Literal["item/commandExecution/outputDelta"] = "item/commandExecution/outputDelta"
-    data: CommandExecutionOutputDeltaData
+    data: CommandExecutionOutputDeltaNotification
 
 
 class CommandExecutionTerminalInteractionEvent(CodexBaseModel):
@@ -393,7 +393,7 @@ class FileChangeOutputDeltaEvent(CodexBaseModel):
     """File change output delta event."""
 
     event_type: Literal["item/fileChange/outputDelta"] = "item/fileChange/outputDelta"
-    data: FileChangeOutputDeltaData
+    data: FileChangeOutputDeltaNotification
 
 
 # ============================================================================

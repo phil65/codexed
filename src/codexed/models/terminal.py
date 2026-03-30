@@ -22,49 +22,9 @@ CommandExecOutputStream = Literal["stdout", "stderr"]
 """Stream label for command/exec output delta notifications."""
 
 
-class CommandExecTerminalSize(CodexBaseModel):
-    """PTY size in character cells."""
-
-    rows: int
-    cols: int
-
-
 # ============================================================================
 # Client request params / responses
 # ============================================================================
-
-
-class CommandExecWriteParams(CodexBaseModel):
-    """Params for command/exec/write request — write stdin to a running process."""
-
-    process_id: str
-    delta_base64: str | None = None
-    close_stdin: bool = False
-
-
-class CommandExecWriteResponse(CodexBaseModel):
-    """Response for command/exec/write request."""
-
-
-class CommandExecTerminateParams(CodexBaseModel):
-    """Params for command/exec/terminate request — kill a running process."""
-
-    process_id: str
-
-
-class CommandExecTerminateResponse(CodexBaseModel):
-    """Response for command/exec/terminate request."""
-
-
-class CommandExecResizeParams(CodexBaseModel):
-    """Params for command/exec/resize request — resize a PTY session."""
-
-    process_id: str
-    size: CommandExecTerminalSize
-
-
-class CommandExecResizeResponse(CodexBaseModel):
-    """Response for command/exec/resize request."""
 
 
 # ============================================================================

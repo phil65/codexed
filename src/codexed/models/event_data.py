@@ -4,18 +4,22 @@ from typing import Any
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import McpServerStartupState, ModelRerouteReason
-from codexed.models.misc import (
-    AppInfo,
-    RateLimitSnapshot,
-    TextRange,
-    Thread,
-    Turn,
-    TurnError,
-    TurnPlanStep,
-)
+from codexed.models.misc import Thread, Turn, TurnError, TurnPlanStep
 from codexed.models.thread_item import ThreadItem
 from codexed.models.thread_status import ThreadStatusValue
-from codexed.models.token_usage import ThreadTokenUsage
+from codexed.models.v2_protocol import (
+    AgentMessageDeltaNotification,
+    AppInfo,
+    CommandExecutionOutputDeltaNotification,
+    FileChangeOutputDeltaNotification,
+    PlanDeltaNotification,
+    RateLimitSnapshot,
+    ReasoningSummaryPartAddedNotification,
+    ReasoningSummaryTextDeltaNotification,
+    ReasoningTextDeltaNotification,
+    TextRange,
+    ThreadTokenUsage,
+)
 
 
 class TurnPlanUpdatedData(CodexBaseModel):
@@ -57,48 +61,6 @@ class RawResponseItemCompletedData(CodexBaseModel):
 # Item delta notifications
 
 
-class DeltaData(CodexBaseModel):
-    """Payload for item/agentMessage/delta notification."""
-
-    thread_id: str
-    turn_id: str
-    item_id: str
-    delta: str
-
-
-class AgentMessageDeltaData(DeltaData):
-    """Payload for item/agentMessage/delta notification."""
-
-
-class PlanDeltaData(DeltaData):
-    """Payload for item/plan/delta notification."""
-
-
-class ReasoningTextDeltaData(DeltaData):
-    """Payload for item/reasoning/textDelta notification."""
-
-    content_index: int
-
-
-class ReasoningSummaryTextDeltaData(DeltaData):
-    """Payload for item/reasoning/summaryTextDelta notification."""
-
-    summary_index: int
-
-
-class ReasoningSummaryPartAddedData(CodexBaseModel):
-    """Payload for item/reasoning/summaryPartAdded notification."""
-
-    thread_id: str
-    turn_id: str
-    item_id: str
-    summary_index: int
-
-
-class CommandExecutionOutputDeltaData(DeltaData):
-    """Payload for item/commandExecution/outputDelta notification."""
-
-
 class CommandExecutionTerminalInteractionData(CodexBaseModel):
     """Payload for item/commandExecution/terminalInteraction notification."""
 
@@ -107,10 +69,6 @@ class CommandExecutionTerminalInteractionData(CodexBaseModel):
     item_id: str
     process_id: str
     stdin: str
-
-
-class FileChangeOutputDeltaData(DeltaData):
-    """Payload for item/fileChange/outputDelta notification."""
 
 
 class McpToolCallProgressData(CodexBaseModel):
@@ -355,18 +313,18 @@ EventData = (
     | ItemCompletedData
     | RawResponseItemCompletedData
     # Item deltas - agent messages
-    | AgentMessageDeltaData
+    | AgentMessageDeltaNotification
     # Item deltas - plan
-    | PlanDeltaData
+    | PlanDeltaNotification
     # Item deltas - reasoning
-    | ReasoningTextDeltaData
-    | ReasoningSummaryTextDeltaData
-    | ReasoningSummaryPartAddedData
+    | ReasoningTextDeltaNotification
+    | ReasoningSummaryTextDeltaNotification
+    | ReasoningSummaryPartAddedNotification
     # Item deltas - command execution
-    | CommandExecutionOutputDeltaData
+    | CommandExecutionOutputDeltaNotification
     | CommandExecutionTerminalInteractionData
     # Item deltas - file changes
-    | FileChangeOutputDeltaData
+    | FileChangeOutputDeltaNotification
     # Item deltas - MCP tool calls
     | McpToolCallProgressData
     # MCP server status
