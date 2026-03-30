@@ -96,7 +96,7 @@ python_version = "3.13"
 disable_error_code = ["misc", "import"]
 pretty = true
 check_untyped_defs = true
-exclude = ["venv/", ".venv/", "reference/"]
+exclude = ["venv/", ".venv/", "src/codexed/models/v2_protocol.py"]
 plugins = ["pydantic.mypy"]
 
 [tool.pyright]
@@ -128,7 +128,7 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100
-extend-exclude = ["docs", "reference"]
+extend-exclude = ["docs", "src/codexed/models/v2_protocol.py"]
 target-version = "py313"
 
 [tool.ruff.lint]
@@ -271,7 +271,7 @@ max-complexity = 15
 preview = true
 
 [tool.ty.src]
-exclude = ["reference"]
+exclude = ["src/codexed/models/v2_protocol.py"]
 
 [tool.ty.environment]
 python-version = "3.13"

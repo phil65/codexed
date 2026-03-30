@@ -25,7 +25,7 @@ import tempfile
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR = PROJECT_ROOT / "reference"
+OUTPUT_DIR = PROJECT_ROOT / "src" / "codexed" / "models"
 OUTPUT_FILE = OUTPUT_DIR / "v2_protocol.py"
 SCHEMA_FILENAME = "codex_app_server_protocol.v2.schemas.json"
 
@@ -82,7 +82,7 @@ def generate_models(schema_path: Path) -> None:
         "tool",
         "run",
         "--from",
-        "datamodel-code-generator",
+        "datamodel-code-generator@0.54.1",
         "datamodel-codegen",
         "--input",
         str(schema_path),
@@ -98,6 +98,7 @@ def generate_models(schema_path: Path) -> None:
         "2",
         "--use-standard-collections",
         "--use-standard-primitive-types",
+        "--collapse-root-models",
         "--snake-case-field",
         "--no-alias",
         "--base-class",
@@ -109,8 +110,15 @@ def generate_models(schema_path: Path) -> None:
         "--reuse-model",
         "--enum-field-as-literal",
         "all",
+        # "--naming-strategy",
+        # "primary-first",
         "--use-one-literal-as-default",
+        "--keep-model-order",
         "--use-title-as-name",
+        "--enable-command-header",
+        # "--collapse-root-models-name-strategy",
+        # "parent",
+        # "--use-root-model-type-alias",
         "--formatters",
         "ruff-check",
         "ruff-format",
