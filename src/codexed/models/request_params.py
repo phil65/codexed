@@ -140,12 +140,6 @@ class ThreadArchiveParams(CodexBaseModel):
     thread_id: str
 
 
-class ThreadUnarchiveParams(CodexBaseModel):
-    """Parameters for thread/unarchive request."""
-
-    thread_id: str
-
-
 class ThreadSetNameParams(CodexBaseModel):
     """Parameters for thread/name/set request."""
 

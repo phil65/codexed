@@ -8,17 +8,22 @@ from codexed.models.misc import Thread, Turn, TurnError, TurnPlanStep
 from codexed.models.thread_item import ThreadItem
 from codexed.models.thread_status import ThreadStatusValue
 from codexed.models.v2_protocol import (
+    AccountLoginCompletedNotification,
+    AccountRateLimitsUpdatedNotification,
+    AccountUpdatedNotification,
     AgentMessageDeltaNotification,
     AppInfo,
     CommandExecutionOutputDeltaNotification,
+    ContextCompactedNotification,
     FileChangeOutputDeltaNotification,
     PlanDeltaNotification,
-    RateLimitSnapshot,
     ReasoningSummaryPartAddedNotification,
     ReasoningSummaryTextDeltaNotification,
     ReasoningTextDeltaNotification,
+    ServerRequestResolvedNotification,
     TextRange,
     ThreadTokenUsage,
+    ThreadUnarchiveParams,
 )
 
 
@@ -123,12 +128,6 @@ class ThreadArchivedData(CodexBaseModel):
     thread_id: str
 
 
-class ThreadUnarchivedData(CodexBaseModel):
-    """Payload for thread/unarchived notification."""
-
-    thread_id: str
-
-
 class ThreadNameUpdatedData(CodexBaseModel):
     """Payload for thread/name/updated notification."""
 
@@ -142,13 +141,6 @@ class ThreadTokenUsageUpdatedData(CodexBaseModel):
     thread_id: str
     turn_id: str
     token_usage: ThreadTokenUsage
-
-
-class ThreadCompactedData(CodexBaseModel):
-    """Payload for thread/compacted notification."""
-
-    thread_id: str
-    turn_id: str | None = None
 
 
 # Turn lifecycle notifications
@@ -182,20 +174,6 @@ class TurnDiffUpdatedData(CodexBaseModel):
     thread_id: str
     turn_id: str
     diff: str
-
-
-class AccountRateLimitsUpdatedData(CodexBaseModel):
-    """Payload for account/rateLimits/updated notification."""
-
-    rate_limits: RateLimitSnapshot
-
-
-class AccountLoginCompletedData(CodexBaseModel):
-    """Payload for account/login/completed notification."""
-
-    login_id: str | None = None
-    success: bool
-    error: str | None = None
 
 
 class AuthStatusChangeData(CodexBaseModel):
@@ -265,43 +243,16 @@ class AppListUpdatedData(CodexBaseModel):
     data: list[AppInfo]
 
 
-class FsChangedData(CodexBaseModel):
-    """Payload for fs/changed notification."""
-
-    watch_id: str
-    changed_paths: list[str]
-
-
-class ContextCompactedData(CodexBaseModel):
-    """Payload for thread/compacted/v2 notification."""
-
-    thread_id: str
-    turn_id: str | None = None
-
-
-class ServerRequestResolvedData(CodexBaseModel):
-    """Payload for serverRequest/resolved notification."""
-
-    thread_id: str
-    request_id: int | str
-
-
-class AccountUpdatedData(CodexBaseModel):
-    """Payload for account/updated notification."""
-
-    auth_mode: str | None = None
-
-
 # Union type of all event data
 EventData = (
     # Thread lifecycle
     ThreadStartedData
     | ThreadStatusChangedData
     | ThreadArchivedData
-    | ThreadUnarchivedData
+    | ThreadUnarchiveParams
     | ThreadNameUpdatedData
     | ThreadTokenUsageUpdatedData
-    | ThreadCompactedData
+    | ContextCompactedNotification
     # Turn lifecycle
     | TurnStartedData
     | TurnCompletedData
@@ -332,9 +283,9 @@ EventData = (
     # MCP OAuth
     | McpServerOAuthLoginCompletedData
     # Account/Auth events
-    | AccountUpdatedData
-    | AccountRateLimitsUpdatedData
-    | AccountLoginCompletedData
+    | AccountUpdatedNotification
+    | AccountRateLimitsUpdatedNotification
+    | AccountLoginCompletedNotification
     | AuthStatusChangeData
     | LoginChatGptCompleteData
     # System events
@@ -347,6 +298,6 @@ EventData = (
     | ModelReroutedData
     | ConfigWarningData
     | AppListUpdatedData
-    | ContextCompactedData
-    | ServerRequestResolvedData
+    | ContextCompactedNotification
+    | ServerRequestResolvedNotification
 )

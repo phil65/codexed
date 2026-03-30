@@ -7,7 +7,6 @@ from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
-    CollabAgentStatus,
     CollabAgentTool,
     CommandExecutionSource,
     CommandExecutionStatus,
@@ -17,6 +16,7 @@ from codexed.models.codex_types import (
 )
 from codexed.models.command_action import CommandAction
 from codexed.models.user_input import UserInput
+from codexed.models.v2_protocol import CollabAgentState, McpToolCallError
 from codexed.models.web_search import WebSearchAction
 
 
@@ -63,19 +63,6 @@ class McpToolCallResult(CodexBaseModel):
 
     content: list[ContentBlock]
     structured_content: Any = None
-
-
-class McpToolCallError(CodexBaseModel):
-    """MCP tool call error."""
-
-    message: str
-
-
-class CollabAgentState(CodexBaseModel):
-    """Collab agent state."""
-
-    status: CollabAgentStatus
-    message: str | None = None
 
 
 class BaseThreadItem(CodexBaseModel):

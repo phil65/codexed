@@ -12,20 +12,19 @@ from pydantic import Field, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.event_data import (
-    AccountLoginCompletedData,
-    AccountRateLimitsUpdatedData,
-    AccountUpdatedData,
+    AccountLoginCompletedNotification,
+    AccountRateLimitsUpdatedNotification,
+    AccountUpdatedNotification,
     AgentMessageDeltaNotification,
     AppListUpdatedData,
     AuthStatusChangeData,
     CommandExecutionOutputDeltaNotification,
     CommandExecutionTerminalInteractionData,
     ConfigWarningData,
-    ContextCompactedData,
+    ContextCompactedNotification,
     DeprecationNoticeData,
     ErrorEventData,
     FileChangeOutputDeltaNotification,
-    FsChangedData,
     ItemCompletedData,
     ItemStartedData,
     LoginChatGptCompleteData,
@@ -38,15 +37,14 @@ from codexed.models.event_data import (
     ReasoningSummaryPartAddedNotification,
     ReasoningSummaryTextDeltaNotification,
     ReasoningTextDeltaNotification,
-    ServerRequestResolvedData,
+    ServerRequestResolvedNotification,
     SessionConfiguredData,
     ThreadArchivedData,
-    ThreadCompactedData,
     ThreadNameUpdatedData,
     ThreadStartedData,
     ThreadStatusChangedData,
     ThreadTokenUsageUpdatedData,
-    ThreadUnarchivedData,
+    ThreadUnarchiveParams,
     TurnCompletedData,
     TurnDiffUpdatedData,
     TurnErrorData,
@@ -55,8 +53,8 @@ from codexed.models.event_data import (
     WindowsWorldWritableWarningData,
 )
 from codexed.models.fuzzy_search import (
-    FuzzyFileSearchSessionCompletedData,
-    FuzzyFileSearchSessionUpdatedData,
+    FuzzyFileSearchSessionCompletedNotification,
+    FuzzyFileSearchSessionUpdatedNotification,
 )
 from codexed.models.hooks import HookCompletedData, HookStartedData
 from codexed.models.realtime import (
@@ -68,6 +66,7 @@ from codexed.models.realtime import (
     ThreadRealtimeOutputAudioDeltaNotification,
 )
 from codexed.models.terminal import CommandExecOutputDeltaData
+from codexed.models.v2_protocol import FsChangedNotification
 
 
 if TYPE_CHECKING:
@@ -111,7 +110,7 @@ class ThreadUnarchivedEvent(CodexBaseModel):
     """Thread unarchived event."""
 
     event_type: Literal["thread/unarchived"] = "thread/unarchived"
-    data: ThreadUnarchivedData
+    data: ThreadUnarchiveParams
 
 
 class ThreadNameUpdatedEvent(CodexBaseModel):
@@ -147,7 +146,7 @@ class ThreadCompactedEvent(CodexBaseModel):
     """Thread compacted event."""
 
     event_type: Literal["thread/compacted"] = "thread/compacted"
-    data: ThreadCompactedData
+    data: ContextCompactedNotification
 
 
 # ============================================================================
@@ -277,14 +276,14 @@ class FuzzyFileSearchSessionUpdatedEvent(CodexBaseModel):
     """Fuzzy file search session updated with results."""
 
     event_type: Literal["fuzzyFileSearch/sessionUpdated"] = "fuzzyFileSearch/sessionUpdated"
-    data: FuzzyFileSearchSessionUpdatedData
+    data: FuzzyFileSearchSessionUpdatedNotification
 
 
 class FuzzyFileSearchSessionCompletedEvent(CodexBaseModel):
     """Fuzzy file search session completed."""
 
     event_type: Literal["fuzzyFileSearch/sessionCompleted"] = "fuzzyFileSearch/sessionCompleted"
-    data: FuzzyFileSearchSessionCompletedData
+    data: FuzzyFileSearchSessionCompletedNotification
 
 
 # ============================================================================
@@ -436,21 +435,21 @@ class AccountUpdatedEvent(CodexBaseModel):
     """Account updated event."""
 
     event_type: Literal["account/updated"] = "account/updated"
-    data: AccountUpdatedData
+    data: AccountUpdatedNotification
 
 
 class AccountRateLimitsUpdatedEvent(CodexBaseModel):
     """Account rate limits updated event."""
 
     event_type: Literal["account/rateLimits/updated"] = "account/rateLimits/updated"
-    data: AccountRateLimitsUpdatedData
+    data: AccountRateLimitsUpdatedNotification
 
 
 class AccountLoginCompletedEvent(CodexBaseModel):
     """Account login completed event."""
 
     event_type: Literal["account/login/completed"] = "account/login/completed"
-    data: AccountLoginCompletedData
+    data: AccountLoginCompletedNotification
 
 
 class AuthStatusChangeEvent(CodexBaseModel):
@@ -523,21 +522,21 @@ class FsChangedEvent(CodexBaseModel):
     """Filesystem changed event."""
 
     event_type: Literal["fs/changed"] = "fs/changed"
-    data: FsChangedData
+    data: FsChangedNotification
 
 
 class ContextCompactedEvent(CodexBaseModel):
     """Context compacted event (alias for ThreadCompactedEvent with turnId)."""
 
     event_type: Literal["thread/compacted/v2"] = "thread/compacted/v2"
-    data: ContextCompactedData
+    data: ContextCompactedNotification
 
 
 class ServerRequestResolvedEvent(CodexBaseModel):
     """Server request resolved event."""
 
     event_type: Literal["serverRequest/resolved"] = "serverRequest/resolved"
-    data: ServerRequestResolvedData
+    data: ServerRequestResolvedNotification
 
 
 # ============================================================================

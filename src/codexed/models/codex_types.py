@@ -7,6 +7,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Discriminator, Field, Tag
 
 from codexed.models.base import CodexBaseModel
+from codexed.models.v2_protocol import RestrictedReadOnlyAccess
 
 
 # Type aliases for Codex types
@@ -156,14 +157,6 @@ def _read_only_access_discriminator(v: Any) -> str:
             return str(type(v).model_fields["type"].default)
         case _:
             return str(v)
-
-
-class RestrictedReadOnlyAccess(CodexBaseModel):
-    """Restrict reads to an explicit set of roots."""
-
-    type: Literal["restricted"]
-    readable_roots: list[str] = Field(default_factory=list)
-    include_platform_defaults: bool = True
 
 
 class FullAccessReadOnlyAccess(CodexBaseModel):
