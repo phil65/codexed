@@ -16,7 +16,6 @@ from codexed.models.event_data import (
     ItemStartedData,
     RawResponseItemCompletedData,
     ThreadStartedData,
-    ThreadStatusChangedData,
     ThreadTokenUsageUpdatedData,
     TurnCompletedData,
     TurnStartedData,
@@ -48,18 +47,19 @@ from codexed.models.v2_protocol import (
     McpServerStartupStatusUpdatedNotification,
     ModelReroutedMessage,
     ServerRequestResolvedMessage,
-    ThreadArchivedNotification,
+    ThreadArchivedMessage,
     ThreadCompactedMessage,
-    ThreadNameUpdatedNotification,
+    ThreadNameUpdatedMessage,
     ThreadRealtimeClosedMessage,
     ThreadRealtimeErrorMessage,
     ThreadRealtimeItemAddedMessage,
     ThreadRealtimeOutputAudioDeltaMessage,
     ThreadRealtimeStartedMessage,
     ThreadRealtimeTranscriptUpdatedMessage,
-    ThreadUnarchiveParams,
-    TurnDiffUpdatedNotification,
-    TurnPlanUpdatedNotification,
+    ThreadStatusChangedMessage,
+    ThreadUnarchivedMessage,
+    TurnDiffUpdatedMessage,
+    TurnPlanUpdatedMessage,
     WindowsWorldWritableWarningMessage,
 )
 
@@ -78,34 +78,6 @@ class ThreadStartedEvent(CodexBaseModel):
 
     method: Literal["thread/started"] = "thread/started"
     params: ThreadStartedData
-
-
-class ThreadStatusChangedEvent(CodexBaseModel):
-    """Thread status changed event."""
-
-    method: Literal["thread/status/changed"] = "thread/status/changed"
-    params: ThreadStatusChangedData
-
-
-class ThreadArchivedEvent(CodexBaseModel):
-    """Thread archived event."""
-
-    method: Literal["thread/archived"] = "thread/archived"
-    params: ThreadArchivedNotification
-
-
-class ThreadUnarchivedEvent(CodexBaseModel):
-    """Thread unarchived event."""
-
-    method: Literal["thread/unarchived"] = "thread/unarchived"
-    params: ThreadUnarchiveParams
-
-
-class ThreadNameUpdatedEvent(CodexBaseModel):
-    """Thread name updated event."""
-
-    method: Literal["thread/name/updated"] = "thread/name/updated"
-    params: ThreadNameUpdatedNotification
 
 
 class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
@@ -149,20 +121,6 @@ class TurnCompletedEvent(CodexBaseModel):
     params: TurnCompletedData
 
 
-class TurnDiffUpdatedEvent(CodexBaseModel):
-    """Turn diff updated event."""
-
-    method: Literal["turn/diff/updated"] = "turn/diff/updated"
-    params: TurnDiffUpdatedNotification
-
-
-class TurnPlanUpdatedEvent(CodexBaseModel):
-    """Turn plan updated event."""
-
-    method: Literal["turn/plan/updated"] = "turn/plan/updated"
-    params: TurnPlanUpdatedNotification
-
-
 # ============================================================================
 # Item lifecycle events
 # ============================================================================
@@ -199,16 +157,16 @@ CodexEvent = Annotated[
     ErrorMessage
     # Thread lifecycle
     | ThreadStartedEvent
-    | ThreadStatusChangedEvent
-    | ThreadArchivedEvent
-    | ThreadUnarchivedEvent
-    | ThreadNameUpdatedEvent
+    | ThreadStatusChangedMessage
+    | ThreadArchivedMessage
+    | ThreadUnarchivedMessage
+    | ThreadNameUpdatedMessage
     | ThreadTokenUsageUpdatedEvent
     # Turn lifecycle
     | TurnStartedEvent
     | TurnCompletedEvent
-    | TurnDiffUpdatedEvent
-    | TurnPlanUpdatedEvent
+    | TurnDiffUpdatedMessage
+    | TurnPlanUpdatedMessage
     # Hook events
     | HookStartedMessage
     | HookCompletedMessage

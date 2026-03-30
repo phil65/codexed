@@ -15,10 +15,8 @@ from codexed.models.misc import (
 )
 from codexed.models.v2_protocol import (
     AuthMode,
-    ConfigRequirements,
     DynamicToolCallOutputContentItem,
     ExternalAgentConfigMigrationItem,
-    Model,
     ReasoningEffort,
 )
 
@@ -145,13 +143,6 @@ class SkillsRemoteExportResponse(CodexBaseModel):
     path: str
 
 
-class ModelListResponse(CodexBaseModel):
-    """Response for model/list request."""
-
-    data: list[Model]
-    next_cursor: str | None = None
-
-
 class ListMcpServerStatusResponse(CodexBaseModel):
     """Response for mcpServerStatus/list request."""
 
@@ -170,12 +161,6 @@ class LoginAccountResponse(CodexBaseModel):
     type: AuthMode
     login_id: str | None = None
     auth_url: str | None = None
-
-
-class ConfigRequirementsReadResponse(CodexBaseModel):
-    """Response for configRequirements/read request."""
-
-    requirements: ConfigRequirements | None = None
 
 
 class FeedbackUploadResponse(CodexBaseModel):

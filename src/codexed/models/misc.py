@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 from mcp.types import Annotations, Icon, ToolAnnotations
 from pydantic import AnyUrl, Field
@@ -20,22 +20,12 @@ from codexed.models.v2_protocol import (
     SessionSource,
     ThreadStatus,
     TurnError,
+    TurnStatus,
 )
 
 
 if TYPE_CHECKING:
     from mcp.types import Resource, ResourceTemplate, Tool
-
-
-# Strict validation in tests to catch schema changes, lenient in production
-
-TurnStatusValue = Literal["completed", "interrupted", "failed", "inProgress"]
-PlanStepStatus = Literal["pending", "inProgress", "completed"]
-
-
-# ============================================================================
-# Server Request models (server -> client callbacks)
-# ============================================================================
 
 
 class NetworkApprovalContext(CodexBaseModel):
@@ -125,7 +115,7 @@ class Turn(CodexBaseModel):
 
     id: str
     items: list[ThreadItem] = Field(default_factory=list)
-    status: TurnStatusValue = "inProgress"
+    status: TurnStatus = "inProgress"
     error: TurnError | None = None
 
     @property
@@ -175,7 +165,7 @@ class TurnData(CodexBaseModel):
     """Turn data in responses."""
 
     id: str
-    status: TurnStatusValue  # always provided by the server
+    status: TurnStatus  # always provided by the server
     thread_id: str | None = None
     items: list[ThreadItem] = Field(default_factory=list)
     error: str | None = None

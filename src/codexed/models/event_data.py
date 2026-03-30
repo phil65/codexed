@@ -29,7 +29,7 @@ from codexed.models.v2_protocol import (
     TerminalInteractionNotification,
     ThreadArchivedNotification,
     ThreadNameUpdatedNotification,
-    ThreadStatus,
+    ThreadStatusChangedNotification,
     ThreadTokenUsage,
     ThreadUnarchiveParams,
     TurnDiffUpdatedNotification,
@@ -76,13 +76,6 @@ class ThreadStartedData(CodexBaseModel):
         return self.thread.id
 
 
-class ThreadStatusChangedData(CodexBaseModel):
-    """Payload for thread/status/changed notification."""
-
-    thread_id: str
-    status: ThreadStatus
-
-
 class ThreadTokenUsageUpdatedData(CodexBaseModel):
     """Payload for thread/tokenUsage/updated notification (V2 protocol)."""
 
@@ -126,7 +119,7 @@ class SessionConfiguredData(CodexBaseModel):
 EventData = (
     # Thread lifecycle
     ThreadStartedData
-    | ThreadStatusChangedData
+    | ThreadStatusChangedNotification
     | ThreadArchivedNotification
     | ThreadUnarchiveParams
     | ThreadNameUpdatedNotification
