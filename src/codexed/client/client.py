@@ -969,7 +969,7 @@ class CodexClient:
         if method.startswith("codex/event/"):
             return
 
-        event_data = {"event_type": method, "data": params}
+        event_data = {"method": method, "params": params}
         event: CodexEvent = codex_event_adapter.validate_python(event_data)
 
         thread_id = params.get("threadId")

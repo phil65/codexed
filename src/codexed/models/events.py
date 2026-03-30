@@ -1,7 +1,7 @@
 """Codex event types for streaming.
 
 Uses discriminated unions with TypeAdapter for type-safe event parsing.
-Each event type is a proper BaseModel with the event_type as the discriminator.
+Each event type is a proper BaseModel with the method as the discriminator.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ from codexed.models.v2_protocol import (
     ModelReroutedMessage,
     ServerRequestResolvedMessage,
     ThreadArchivedNotification,
-    ThreadCompactedNotification,
+    ThreadCompactedMessage,
     ThreadNameUpdatedNotification,
     ThreadRealtimeClosedMessage,
     ThreadRealtimeErrorMessage,
@@ -76,58 +76,58 @@ if TYPE_CHECKING:
 class ThreadStartedEvent(CodexBaseModel):
     """Thread started event."""
 
-    event_type: Literal["thread/started"] = "thread/started"
-    data: ThreadStartedData
+    method: Literal["thread/started"] = "thread/started"
+    params: ThreadStartedData
 
 
 class ThreadStatusChangedEvent(CodexBaseModel):
     """Thread status changed event."""
 
-    event_type: Literal["thread/status/changed"] = "thread/status/changed"
-    data: ThreadStatusChangedData
+    method: Literal["thread/status/changed"] = "thread/status/changed"
+    params: ThreadStatusChangedData
 
 
 class ThreadArchivedEvent(CodexBaseModel):
     """Thread archived event."""
 
-    event_type: Literal["thread/archived"] = "thread/archived"
-    data: ThreadArchivedNotification
+    method: Literal["thread/archived"] = "thread/archived"
+    params: ThreadArchivedNotification
 
 
 class ThreadUnarchivedEvent(CodexBaseModel):
     """Thread unarchived event."""
 
-    event_type: Literal["thread/unarchived"] = "thread/unarchived"
-    data: ThreadUnarchiveParams
+    method: Literal["thread/unarchived"] = "thread/unarchived"
+    params: ThreadUnarchiveParams
 
 
 class ThreadNameUpdatedEvent(CodexBaseModel):
     """Thread name updated event."""
 
-    event_type: Literal["thread/name/updated"] = "thread/name/updated"
-    data: ThreadNameUpdatedNotification
+    method: Literal["thread/name/updated"] = "thread/name/updated"
+    params: ThreadNameUpdatedNotification
 
 
 class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
     """Thread token usage updated event."""
 
-    event_type: Literal["thread/tokenUsage/updated"] = "thread/tokenUsage/updated"
-    data: ThreadTokenUsageUpdatedData
+    method: Literal["thread/tokenUsage/updated"] = "thread/tokenUsage/updated"
+    params: ThreadTokenUsageUpdatedData
 
     @property
     def total(self) -> TokenUsageBreakdown:
         """Total Token usage of the Thread."""
-        return self.data.token_usage.total
+        return self.params.token_usage.total
 
     @property
     def last(self) -> TokenUsageBreakdown:
         """Token usage of last turn."""
-        return self.data.token_usage.last
+        return self.params.token_usage.last
 
     @property
     def context_window(self) -> int | None:
         """Model context window."""
-        return self.data.token_usage.model_context_window
+        return self.params.token_usage.model_context_window
 
 
 # ============================================================================
@@ -138,29 +138,29 @@ class ThreadTokenUsageUpdatedEvent(CodexBaseModel):
 class TurnStartedEvent(CodexBaseModel):
     """Turn started event."""
 
-    event_type: Literal["turn/started"] = "turn/started"
-    data: TurnStartedData
+    method: Literal["turn/started"] = "turn/started"
+    params: TurnStartedData
 
 
 class TurnCompletedEvent(CodexBaseModel):
     """Turn completed event."""
 
-    event_type: Literal["turn/completed"] = "turn/completed"
-    data: TurnCompletedData
+    method: Literal["turn/completed"] = "turn/completed"
+    params: TurnCompletedData
 
 
 class TurnDiffUpdatedEvent(CodexBaseModel):
     """Turn diff updated event."""
 
-    event_type: Literal["turn/diff/updated"] = "turn/diff/updated"
-    data: TurnDiffUpdatedNotification
+    method: Literal["turn/diff/updated"] = "turn/diff/updated"
+    params: TurnDiffUpdatedNotification
 
 
 class TurnPlanUpdatedEvent(CodexBaseModel):
     """Turn plan updated event."""
 
-    event_type: Literal["turn/plan/updated"] = "turn/plan/updated"
-    data: TurnPlanUpdatedNotification
+    method: Literal["turn/plan/updated"] = "turn/plan/updated"
+    params: TurnPlanUpdatedNotification
 
 
 # ============================================================================
@@ -171,22 +171,22 @@ class TurnPlanUpdatedEvent(CodexBaseModel):
 class ItemStartedEvent(CodexBaseModel):
     """Item started event."""
 
-    event_type: Literal["item/started"] = "item/started"
-    data: ItemStartedData
+    method: Literal["item/started"] = "item/started"
+    params: ItemStartedData
 
 
 class ItemCompletedEvent(CodexBaseModel):
     """Item completed event."""
 
-    event_type: Literal["item/completed"] = "item/completed"
-    data: ItemCompletedData
+    method: Literal["item/completed"] = "item/completed"
+    params: ItemCompletedData
 
 
 class RawResponseItemCompletedEvent(CodexBaseModel):
     """Raw response item completed event."""
 
-    event_type: Literal["rawResponseItem/completed"] = "rawResponseItem/completed"
-    data: RawResponseItemCompletedData
+    method: Literal["rawResponseItem/completed"] = "rawResponseItem/completed"
+    params: RawResponseItemCompletedData
 
 
 # ============================================================================
@@ -259,9 +259,9 @@ CodexEvent = Annotated[
     | ConfigWarningMessage
     | AppListUpdatedMessage
     | FsChangedMessage
-    | ThreadCompactedNotification
+    | ThreadCompactedMessage
     | ServerRequestResolvedMessage,
-    Field(discriminator="event_type"),
+    Field(discriminator="method"),
 ]
 
 

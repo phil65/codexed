@@ -14,8 +14,13 @@ from codexed.models.codex_types import (
     SkillApprovalDecision,
 )
 from codexed.models.thread_item import ThreadItem
-from codexed.models.thread_status import ThreadStatus
-from codexed.models.v2_protocol import GitInfo, McpAuthStatus, SessionSource, TurnError
+from codexed.models.v2_protocol import (
+    GitInfo,
+    McpAuthStatus,
+    SessionSource,
+    ThreadStatus,
+    TurnError,
+)
 
 
 if TYPE_CHECKING:

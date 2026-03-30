@@ -45,7 +45,7 @@ async def test_process_message_notification_queued():
 
     event = await asyncio.wait_for(client._event_queue.get(), timeout=1.0)
     assert isinstance(event, ItemAgentMessageDeltaNotification)
-    assert event.data.delta == "Hello"
+    assert event.params.delta == "Hello"
 
 
 async def test_send_request_not_connected_raises():
