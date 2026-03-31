@@ -27,7 +27,6 @@ from codexed.models.event_data import (
     ItemStartedData,
     RawResponseItemCompletedData,
     ThreadStartedData,
-    TurnErrorData,
     TurnStartedData,
     TurnCompletedData,
 )
@@ -865,7 +864,6 @@ __all__ = [
     "TurnDiffUpdatedMessage",
     "TurnDiffUpdatedNotification",
     "TurnError",
-    "TurnErrorData",
     "TurnInterruptParams",
     "TurnPlanStep",
     "TurnPlanStepStatus",

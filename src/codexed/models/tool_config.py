@@ -15,6 +15,8 @@ from typing import Annotated, Any, Literal, assert_never
 
 from pydantic import BaseModel, ConfigDict, Discriminator
 
+from codexed.models.v2_protocol import WebSearchLocation
+
 
 class _ToolConfigBase(BaseModel):
     """Base for individual tool configuration models."""
@@ -53,15 +55,6 @@ class ApplyPatchToolConfig(_ToolConfigBase):
 # ---------------------------------------------------------------------------
 # Web search tool
 # ---------------------------------------------------------------------------
-
-
-class WebSearchLocation(_ToolConfigBase):
-    """Location hints for web search results."""
-
-    country: str | None = None
-    region: str | None = None
-    city: str | None = None
-    timezone: str | None = None
 
 
 class WebSearchToolConfig(_ToolConfigBase):

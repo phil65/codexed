@@ -58,11 +58,3 @@ class TurnCompletedData(CodexBaseModel):
 
     thread_id: str
     turn: Turn
-
-
-class TurnErrorData(CodexBaseModel):
-    """Payload for turn/error notification."""
-
-    thread_id: str
-    turn_id: str
-    error: str
