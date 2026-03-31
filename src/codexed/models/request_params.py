@@ -229,11 +229,10 @@ class McpElicitationFormParams(_McpElicitationBase):
         turn_id: str | None = None,
     ) -> McpElicitationFormParams:
         """Create from MCP ElicitRequestFormParams."""
-        meta = params.meta.model_dump(exclude={"progressToken"}) if params.meta else None
         return cls(
             message=params.message,
             requested_schema=dict(params.requestedSchema),
-            meta=meta,
+            meta=params.meta.model_dump(exclude={"progressToken"}) if params.meta else None,
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,
@@ -268,12 +267,11 @@ class McpElicitationUrlParams(_McpElicitationBase):
         turn_id: str | None = None,
     ) -> McpElicitationUrlParams:
         """Create from MCP ElicitRequestURLParams."""
-        meta = params.meta.model_dump(exclude={"progressToken"}) if params.meta else None
         return cls(
             message=params.message,
             url=params.url,
             elicitation_id=params.elicitationId,
-            meta=meta,
+            meta=params.meta.model_dump(exclude={"progressToken"}) if params.meta else None,
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,
