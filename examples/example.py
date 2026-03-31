@@ -35,9 +35,9 @@ async def simple_chat() -> None:
             # Print agent messages
             match event:
                 case ItemAgentMessageDeltaNotification():
-                    print(event.data.delta, end="", flush=True)
+                    print(event.params.delta, end="", flush=True)
                 case ItemCommandExecutionOutputDeltaNotification():
-                    print(f"\n[Command output]\n{event.data.delta}", flush=True)
+                    print(f"\n[Command output]\n{event.params.delta}", flush=True)
                 case TurnCompletedEvent():
                     print("\n\n[Turn completed]")
                     break
@@ -114,7 +114,7 @@ async def event_inspection_example() -> None:
 
         async for event in session.turn_stream("What files are here?"):
             # Print all event types
-            print(f"[{event.event_type}]", end=" ")
+            print(f"[{event.method}]", end=" ")
             print(event)
 
 
