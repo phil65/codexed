@@ -177,6 +177,7 @@ class CodexClient:
             on_server_request=self._handle_server_request,
         )
         self._turn_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
+        self._realtime_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
         self._event_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._active_threads: set[str] = set()
         self._mcp_elicitation_enabled = on_mcp_elicitation is not None
@@ -973,6 +974,14 @@ class CodexClient:
         event: CodexEvent = codex_event_adapter.validate_python(event_data)
 
         thread_id = params.get("threadId")
+
+        # Route realtime events to the realtime session queue
+        if method.startswith("thread/realtime/") and thread_id:
+            rt_key = f"realtime:{thread_id}"
+            queue = self._realtime_queues.get(rt_key)
+            await (queue or self._event_queue).put(event)
+            return
+
         turn_id = params.get("turnId")
         if not turn_id and "turn" in params:
             turn_id = params.get("turn", {}).get("id")

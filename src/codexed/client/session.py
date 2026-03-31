@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, assert_never
 
 from pydantic import BaseModel, TypeAdapter
 
+from codexed.client.realtime import RealtimeSession
 from codexed.exceptions import CodexRequestError, TurnFailedError
 from codexed.helpers import kebab_to_camel
 from codexed.models import (
@@ -320,6 +321,22 @@ class Session:
         """Trigger context compaction for this thread."""
         params = ThreadCompactStartParams(thread_id=self.thread_id)
         await self._client.dispatch.send_request("thread/compact/start", params)
+
+    def realtime(self, prompt: str, *, session_id: str | None = None) -> RealtimeSession:
+        """Open a realtime voice session on this thread.
+
+        Returns an async context manager that sends ``thread/realtime/start``
+        on enter and ``thread/realtime/stop`` on exit.  Iterate over the
+        returned object to receive realtime events.
+
+        Example::
+
+            async with session.realtime(prompt="You are helpful") as rt:
+                await rt.send_text("hello")
+                async for event in rt:
+                    ...
+        """
+        return RealtimeSession(self._client, self.thread_id, prompt, session_id=session_id)
 
     async def rollback(self, turns: int) -> ThreadRollbackResponse:
         """Rollback the last N turns from this thread.
