@@ -18,33 +18,23 @@ from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
     ApprovalsReviewer,
     AskForApproval,
-    AuthMode,
-    BaseBranchReviewTarget,
     ClientInfo,
     CollaborationMode,
     CommandAction,
-    CommandExecTerminalSize,
-    CommitReviewTarget,
-    ConfigEdit,
-    CustomReviewTarget,
-    DynamicToolSpec,
-    ExternalAgentConfigMigrationItem,
-    MergeStrategy,
     Personality,
     ReasoningEffort,
     ReasoningSummary,
-    ReviewDelivery,
     SandboxMode,
     ServiceTier,
-    SkillsListExtraRootsForCwd,
-    ThreadSortKey,
-    ThreadSourceKind,
-    UncommittedChangesReviewTarget,
 )
 
 
 if TYPE_CHECKING:
     from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams
+
+
+HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
+ProductSurface = Literal["chatgpt", "codex", "api", "atlas"]
 
 
 class InitializeParams(CodexBaseModel):
@@ -55,27 +45,6 @@ class InitializeParams(CodexBaseModel):
     @classmethod
     def create(cls, name: str, version: str) -> Self:
         return cls(client_info=ClientInfo(name=name, version=version))
-
-
-class ThreadStartParams(CodexBaseModel):
-    """Parameters for thread/start request."""
-
-    cwd: str | None = None
-    model: str | None = None
-    model_provider: str | None = None
-    base_instructions: str | None = None
-    developer_instructions: str | None = None
-    approval_policy: AskForApproval | None = None
-    approvals_reviewer: ApprovalsReviewer | None = None
-    sandbox: SandboxMode | None = None
-    config: dict[str, Any] | None = None
-    service_name: str | None = None
-    service_tier: ServiceTier | None = None
-    personality: Personality | None = None
-    ephemeral: bool | None = None
-    dynamic_tools: list[DynamicToolSpec] | None = None
-    experimental_raw_events: bool = False
-    persist_extended_history: bool = False
 
 
 class ThreadResumeParams(CodexBaseModel):
@@ -96,43 +65,6 @@ class ThreadResumeParams(CodexBaseModel):
     service_tier: ServiceTier | None = None
     personality: Personality | None = None
     persist_extended_history: bool = False
-
-
-class ThreadForkParams(CodexBaseModel):
-    """Parameters for thread/fork request."""
-
-    thread_id: str
-    path: str | None = None
-    cwd: str | None = None
-    model: str | None = None
-    model_provider: str | None = None
-    base_instructions: str | None = None
-    developer_instructions: str | None = None
-    approval_policy: AskForApproval | None = None
-    approvals_reviewer: ApprovalsReviewer | None = None
-    sandbox: SandboxMode | None = None
-    config: dict[str, Any] | None = None
-    service_tier: ServiceTier | None = None
-    personality: Personality | None = None
-    ephemeral: bool | None = None
-    persist_extended_history: bool = False
-
-
-class ThreadListParams(CodexBaseModel):
-    """Parameters for thread/list request."""
-
-    cursor: str | None = None
-    limit: int | None = None
-    sort_key: ThreadSortKey | None = None
-    model_providers: list[str] | None = None
-    source_kinds: list[ThreadSourceKind] | None = None
-    archived: bool | None = None
-    cwd: str | None = None
-    search_term: str | None = None
-
-
-class ThreadLoadedListParams(CodexBaseModel):
-    """Parameters for thread/loaded/list request."""
 
 
 class TurnStartParams(CodexBaseModel):
@@ -161,34 +93,6 @@ class TurnSteerParams(CodexBaseModel):
     expected_turn_id: str
 
 
-ReviewTarget = (
-    UncommittedChangesReviewTarget
-    | BaseBranchReviewTarget
-    | CommitReviewTarget
-    | CustomReviewTarget
-)
-
-
-class ReviewStartParams(CodexBaseModel):
-    """Parameters for review/start request."""
-
-    thread_id: str
-    target: ReviewTarget
-    delivery: ReviewDelivery | None = None
-
-
-class SkillsListParams(CodexBaseModel):
-    """Parameters for skills/list request."""
-
-    cwds: list[str] | None = None
-    force_reload: bool | None = None
-    per_cwd_extra_user_roots: list[SkillsListExtraRootsForCwd] | None = None
-
-
-HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
-ProductSurface = Literal["chatgpt", "codex", "api", "atlas"]
-
-
 class SkillsRemoteListParams(CodexBaseModel):
     """Parameters for skills/remote/list request."""
 
@@ -201,65 +105,6 @@ class SkillsRemoteExportParams(CodexBaseModel):
     """Parameters for skills/remote/export request."""
 
     hazelnut_id: str
-
-
-class CollaborationModeListParams(CodexBaseModel):
-    """Parameters for collaborationMode/list request."""
-
-
-class CommandExecParams(CodexBaseModel):
-    """Parameters for command/exec request."""
-
-    command: list[str]
-    process_id: str | None = None
-    tty: bool = False
-    stream_stdin: bool = False
-    stream_stdout_stderr: bool = False
-    output_bytes_cap: int | None = None
-    disable_output_cap: bool = False
-    disable_timeout: bool = False
-    timeout_ms: int | None = None
-    cwd: str | None = None
-    env: dict[str, str | None] | None = None
-    size: CommandExecTerminalSize | None = None
-    sandbox_policy: dict[str, Any] | None = None
-
-
-class ConfigValueWriteParams(CodexBaseModel):
-    """Parameters for config/value/write request."""
-
-    key_path: str
-    value: Any
-    merge_strategy: MergeStrategy
-    file_path: str | None = None
-    expected_version: str | None = None
-
-
-class ConfigBatchWriteParams(CodexBaseModel):
-    """Parameters for config/batchWrite request."""
-
-    edits: list[ConfigEdit]
-    file_path: str | None = None
-    expected_version: str | None = None
-
-
-class LoginAccountParams(CodexBaseModel):
-    """Parameters for account/login/start request.
-
-    This is a discriminated union - use type field.
-    """
-
-    type: AuthMode
-    api_key: str | None = None
-    access_token: str | None = None
-    chatgpt_account_id: str | None = None
-    chatgpt_plan_type: str | None = None
-
-
-class ExternalAgentConfigImportParams(CodexBaseModel):
-    """Parameters for externalAgentConfig/import request."""
-
-    migration_items: list[ExternalAgentConfigMigrationItem]
 
 
 # ============================================================================

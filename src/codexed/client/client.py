@@ -636,12 +636,13 @@ class CodexClient:
         Returns:
             LoginAccountResponse with login details
         """
-        params = LoginAccountParams(
+        dct = dict(
             type=login_type,
             api_key=api_key,
             access_token=access_token,
             chatgpt_account_id=chatgpt_account_id,
         )
+        params = TypeAdapter[LoginAccountParams](LoginAccountParams).validate_python(dct)
         result = await self.dispatch.send_request("account/login/start", params)
         return LoginAccountResponse.model_validate(result)
 
