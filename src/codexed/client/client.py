@@ -44,13 +44,6 @@ from codexed.models import (
     McpServerOauthLoginResponse,
     ModelListParams,
     ModelListResponse,
-    SkillsConfigWriteParams,
-    SkillsListParams,
-    SkillsListResponse,
-    SkillsRemoteExportParams,
-    SkillsRemoteExportResponse,
-    SkillsRemoteListParams,
-    SkillsRemoteListResponse,
     ThreadForkParams,
     ThreadListParams,
     ThreadListResponse,
@@ -90,16 +83,12 @@ if TYPE_CHECKING:
         DynamicToolSpec,
         ExperimentalFeature,
         ExternalAgentConfigMigrationItem,
-        HazelnutScope,
         McpServerConfig,
         MergeStrategy,
         Model,
         Personality,
-        ProductSurface,
-        RemoteSkillSummary,
         SandboxMode,
         ServiceTier,
-        SkillMetadata,
         ThreadSortKey,
         ThreadSourceKind,
         ToolConfig,
@@ -501,81 +490,6 @@ class CodexClient:
         result = await self.dispatch.send_request("thread/loaded/list")
         response = ThreadLoadedListResponse.model_validate(result)
         return response.data
-
-    # ========================================================================
-    # Skills methods
-    # ========================================================================
-
-    async def skills_list(
-        self,
-        *,
-        cwds: list[str] | None = None,
-        force_reload: bool | None = None,
-    ) -> list[SkillMetadata]:
-        """List available skills.
-
-        Args:
-            cwds: Optional working directories to scope skills
-            force_reload: Force reload of skills cache
-
-        Returns:
-            List of skills with metadata
-        """
-        params = SkillsListParams(cwds=cwds, force_reload=force_reload)
-        result = await self.dispatch.send_request("skills/list", params)
-        response = SkillsListResponse.model_validate(result)
-        if response.data:
-            return response.data[0].skills
-        return []
-
-    async def skills_config_write(self, path: str, *, enabled: bool) -> None:
-        """Write skills configuration.
-
-        Args:
-            path: Path to the skill
-            enabled: Whether the skill is enabled
-        """
-        params = SkillsConfigWriteParams(path=path, enabled=enabled)
-        await self.dispatch.send_request("skills/config/write", params)
-
-    async def skills_remote_list(
-        self,
-        *,
-        hazelnut_scope: HazelnutScope = "example",
-        product_surface: ProductSurface = "codex",
-        enabled: bool = False,
-    ) -> list[RemoteSkillSummary]:
-        """List remote skills.
-
-        Args:
-            hazelnut_scope: Scope filter (example/workspace-shared/all-shared/personal)
-            product_surface: Product surface filter (chatgpt/codex/api/atlas)
-            enabled: Whether to filter by enabled status
-
-        Returns:
-            List of remote skill summaries
-        """
-        params = SkillsRemoteListParams(
-            hazelnut_scope=hazelnut_scope,
-            product_surface=product_surface,
-            enabled=enabled,
-        )
-        result = await self.dispatch.send_request("skills/remote/list", params)
-        response = SkillsRemoteListResponse.model_validate(result)
-        return response.data
-
-    async def skills_remote_export(self, hazelnut_id: str) -> SkillsRemoteExportResponse:
-        """Export a skill to remote storage.
-
-        Args:
-            hazelnut_id: ID of the remote skill to export
-
-        Returns:
-            SkillsRemoteExportResponse with id and local path
-        """
-        params = SkillsRemoteExportParams(hazelnut_id=hazelnut_id)
-        result = await self.dispatch.send_request("skills/remote/export", params)
-        return SkillsRemoteExportResponse.model_validate(result)
 
     # ========================================================================
     # Model methods
