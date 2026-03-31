@@ -163,12 +163,6 @@ class LoginAccountResponse(CodexBaseModel):
     auth_url: str | None = None
 
 
-class FeedbackUploadResponse(CodexBaseModel):
-    """Response for feedback/upload request."""
-
-    thread_id: str
-
-
 class ExternalAgentConfigDetectResponse(CodexBaseModel):
     """Response for externalAgentConfig/detect request."""
 

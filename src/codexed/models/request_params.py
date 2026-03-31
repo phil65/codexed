@@ -17,6 +17,7 @@ from codexed.models.response_item import ResponseItem
 from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
     ApprovalsReviewer,
+    AskForApproval,
     AuthMode,
     BaseBranchReviewTarget,
     ClientInfo,
@@ -64,7 +65,7 @@ class ThreadStartParams(CodexBaseModel):
     model_provider: str | None = None
     base_instructions: str | None = None
     developer_instructions: str | None = None
-    approval_policy: ApprovalPolicy | None = None
+    approval_policy: AskForApproval | None = None
     approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None
@@ -88,7 +89,7 @@ class ThreadResumeParams(CodexBaseModel):
     model_provider: str | None = None
     base_instructions: str | None = None
     developer_instructions: str | None = None
-    approval_policy: ApprovalPolicy | None = None
+    approval_policy: AskForApproval | None = None
     approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None
@@ -107,7 +108,7 @@ class ThreadForkParams(CodexBaseModel):
     model_provider: str | None = None
     base_instructions: str | None = None
     developer_instructions: str | None = None
-    approval_policy: ApprovalPolicy | None = None
+    approval_policy: AskForApproval | None = None
     approvals_reviewer: ApprovalsReviewer | None = None
     sandbox: SandboxMode | None = None
     config: dict[str, Any] | None = None

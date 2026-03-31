@@ -164,7 +164,6 @@ from codexed.models.responses import (
     CommandExecutionRequestApprovalResponse,
     DynamicToolCallResponse,
     ExternalAgentConfigDetectResponse,
-    FeedbackUploadResponse,
     FileChangeRequestApprovalResponse,
     ListMcpServerStatusResponse,
     LoginAccountResponse,
@@ -238,6 +237,7 @@ from codexed.models.user_input import (
 )
 from codexed.models.v2_protocol import (
     ByteRange,
+    FeedbackUploadResponse,
     TextElement,
     MergeStrategy,
     WriteStatus,
