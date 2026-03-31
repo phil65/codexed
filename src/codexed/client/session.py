@@ -17,6 +17,7 @@ from codexed.models import (
     ErrorNotification,
     ReviewStartParams,
     ReviewStartResponse,
+    TextUserInput,
     ThreadArchiveParams,
     ThreadCompactStartParams,
     ThreadReadParams,
@@ -38,7 +39,6 @@ from codexed.models import (
     TurnStartResponse,
     TurnSteerParams,
     TurnSteerResponse,
-    UserInputText,
 )
 
 
@@ -153,7 +153,7 @@ class Session:
                 assert_never(sandbox_policy)
         params = TurnStartParams(
             thread_id=self.thread_id,
-            input=[UserInputText(text=user_input)] if isinstance(user_input, str) else user_input,
+            input=[TextUserInput(text=user_input)] if isinstance(user_input, str) else user_input,
             model=model,
             effort=effort,
             approval_policy=approval_policy,
@@ -212,7 +212,7 @@ class Session:
         """
         params = TurnSteerParams(
             thread_id=self.thread_id,
-            input=[UserInputText(text=user_input)] if isinstance(user_input, str) else user_input,
+            input=[TextUserInput(text=user_input)] if isinstance(user_input, str) else user_input,
             expected_turn_id=expected_turn_id,
         )
         result = await self._client.dispatch.send_request("turn/steer", params)

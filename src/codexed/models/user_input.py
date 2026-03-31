@@ -9,7 +9,7 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.v2_protocol import TextElement
 
 
-class UserInputText(CodexBaseModel):
+class TextUserInput(CodexBaseModel):
     """Text user input."""
 
     type: Literal["text"] = "text"
@@ -17,7 +17,7 @@ class UserInputText(CodexBaseModel):
     text_elements: list[TextElement] = Field(default_factory=list)
 
 
-class UserInputImage(CodexBaseModel):
+class ImageUserInput(CodexBaseModel):
     """Image URL user input."""
 
     type: Literal["image"] = "image"
@@ -31,14 +31,14 @@ class UserInputImage(CodexBaseModel):
         return cls(url=data_uri)
 
 
-class UserInputLocalImage(CodexBaseModel):
+class LocalImageUserInput(CodexBaseModel):
     """Local image file user input."""
 
     type: Literal["localImage"] = "localImage"
     path: str
 
 
-class UserInputSkill(CodexBaseModel):
+class SkillUserInput(CodexBaseModel):
     """Skill file user input."""
 
     type: Literal["skill"] = "skill"
@@ -46,7 +46,7 @@ class UserInputSkill(CodexBaseModel):
     path: str
 
 
-class UserInputMention(CodexBaseModel):
+class MentionUserInput(CodexBaseModel):
     """Mention user input."""
 
     type: Literal["mention"] = "mention"
@@ -55,4 +55,4 @@ class UserInputMention(CodexBaseModel):
 
 
 # Discriminated union of user input types
-UserInput = UserInputText | UserInputImage | UserInputLocalImage | UserInputSkill | UserInputMention
+UserInput = TextUserInput | ImageUserInput | LocalImageUserInput | SkillUserInput | MentionUserInput
