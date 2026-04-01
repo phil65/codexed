@@ -13,7 +13,6 @@ from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
 # Type aliases for Codex types
 ApprovalPolicy = Literal["untrusted", "on-failure", "on-request", "never"]
 ItemStatus = Literal["pending", "running", "completed", "error"]
-McpElicitationAction = Literal["accept", "decline", "cancel"]
 McpServerStartupState = Literal["starting", "ready", "failed", "cancelled"]
 """Action taken by the user on an elicitation request."""
 ApprovalDecision = Literal["allow", "allowForSession", "deny", "denyForSession"]

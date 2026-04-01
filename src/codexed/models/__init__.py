@@ -86,7 +86,6 @@ from codexed.models.request_params import (
 from codexed.models.responses import (
     CommandExecutionRequestApprovalResponse,
     DynamicToolCallResponse,
-    ExternalAgentConfigDetectResponse,
     FileChangeRequestApprovalResponse,
     ListMcpServerStatusResponse,
     LoginAccountResponse,
@@ -166,6 +165,7 @@ from codexed.models.v2_protocol import (
     ThreadForkParams,
     CompactionResponseItem,
     ContentItem,
+    ExternalAgentConfigDetectResponse,
     CustomToolCallOutputResponseItem,
     CustomToolCallResponseItem,
     FunctionCallOutputResponseItem,

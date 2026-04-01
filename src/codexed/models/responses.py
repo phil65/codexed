@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 import mcp.types
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import ApprovalDecision, AskForApproval, SandboxPolicy
+from codexed.models.codex_types import (
+    ApprovalDecision,
+    AskForApproval,
+    ElicitationAction,
+    SandboxPolicy,
+)
 from codexed.models.misc import (
     McpServerStatusEntry,
     Thread,
@@ -16,8 +21,8 @@ from codexed.models.misc import (
 from codexed.models.v2_protocol import (
     AuthMode,
     DynamicToolCallOutputContentItem,
-    ExternalAgentConfigMigrationItem,
     ReasoningEffort,
+    ServiceTier,
 )
 
 
@@ -49,7 +54,7 @@ class DynamicToolCallResponse(CodexBaseModel):
 class McpServerElicitationResponse(CodexBaseModel):
     """Response for mcpServer/elicitation/request server request."""
 
-    action: Literal["accept", "decline", "cancel"]
+    action: ElicitationAction
     content: Any | None = None
     meta: Any | None = None
     """Optional metadata to include in the response.
@@ -86,7 +91,7 @@ class ThreadResponse(CodexBaseModel):
     approval_policy: AskForApproval
     sandbox: SandboxPolicy
     reasoning_effort: ReasoningEffort | None = None
-    service_tier: Literal["flex", "fast"] | None = None
+    service_tier: ServiceTier | None = None
 
 
 class TurnStartResponse(CodexBaseModel):
@@ -161,9 +166,3 @@ class LoginAccountResponse(CodexBaseModel):
     type: AuthMode
     login_id: str | None = None
     auth_url: str | None = None
-
-
-class ExternalAgentConfigDetectResponse(CodexBaseModel):
-    """Response for externalAgentConfig/detect request."""
-
-    items: list[ExternalAgentConfigMigrationItem]
