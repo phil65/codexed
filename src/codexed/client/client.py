@@ -88,6 +88,7 @@ if TYPE_CHECKING:
         Model,
         Personality,
         SandboxMode,
+        SandboxPolicy,
         ServiceTier,
         ThreadSortKey,
         ThreadSourceKind,
@@ -379,7 +380,6 @@ class CodexClient:
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
         service_tier: ServiceTier | None = None,
-        personality: Personality | None = None,
         ephemeral: bool | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         turn_id: str | None = None,
@@ -433,7 +433,6 @@ class CodexClient:
             sandbox=sandbox,
             config=cfg,
             service_tier=service_tier,
-            personality=personality,
             ephemeral=ephemeral,
             persist_extended_history=persist_extended_history,
         )
@@ -528,7 +527,8 @@ class CodexClient:
         command: list[str],
         *,
         cwd: str | None = None,
-        sandbox_policy: dict[str, Any] | None = None,
+        sandbox_policy: SandboxPolicy | None = None,
+        output_bytes_cap: int | None = None,
         timeout_ms: int | None = None,
     ) -> CommandExecResponse:
         """Execute a command without creating a thread/turn.
@@ -537,6 +537,7 @@ class CodexClient:
             command: Command and arguments as list (e.g., ["ls", "-la"])
             cwd: Working directory for command
             sandbox_policy: Sandbox policy override
+            output_bytes_cap: Cap output based on bytes
             timeout_ms: Timeout in milliseconds
 
         Returns:
@@ -545,6 +546,7 @@ class CodexClient:
         params = CommandExecParams(
             command=command,
             cwd=cwd,
+            output_bytes_cap=output_bytes_cap,
             sandbox_policy=sandbox_policy,
             timeout_ms=timeout_ms,
         )
