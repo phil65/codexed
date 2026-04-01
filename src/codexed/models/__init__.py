@@ -68,11 +68,11 @@ from codexed.models.misc import (
     TurnData,
 )
 from codexed.models.request_params import (
-    InitializeParams,
     HazelnutScope,
     ProductSurface,
     CommandExecutionRequestApprovalParams,
     DynamicToolCallParams,
+    ThreadResumeParams,
     FileChangeRequestApprovalParams,
     McpElicitationFormParams,
     McpElicitationUrlParams,
@@ -160,6 +160,7 @@ from codexed.models.user_input import (
 from codexed.models.v2_protocol import (
     ByteRange,
     ExternalAgentConfigImportParams,
+    InitializeParams,
     CommandExecParams,
     ThreadStartParams,
     ThreadForkParams,
@@ -180,7 +181,6 @@ from codexed.models.v2_protocol import (
     WebSearchCallResponseItem,
     ReviewStartParams,
     ReviewTarget,
-    ThreadResumeParams,
     TurnStartParams,
     TurnSteerParams,
     ConfigBatchWriteParams,

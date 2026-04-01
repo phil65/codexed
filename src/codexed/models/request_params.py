@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Annotated, Any, Literal, Required, Self, TypedDict
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Required, TypedDict
 
 from pydantic import Discriminator, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import ApprovalDecision, ApprovalPolicy
+from codexed.models.codex_types import ApprovalDecision
 from codexed.models.misc import (
     ExecPolicyAmendment,
     NetworkApprovalContext,
@@ -14,16 +13,11 @@ from codexed.models.misc import (
     ToolRequestUserInputQuestion,
 )
 from codexed.models.response_item import ResponseItem
-from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
     ApprovalsReviewer,
     AskForApproval,
-    ClientInfo,
-    CollaborationMode,
     CommandAction,
     Personality,
-    ReasoningEffort,
-    ReasoningSummary,
     SandboxMode,
     ServiceTier,
 )
@@ -35,16 +29,7 @@ if TYPE_CHECKING:
 
 HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
 ProductSurface = Literal["chatgpt", "codex", "api", "atlas"]
-
-
-class InitializeParams(CodexBaseModel):
-    """Parameters for initialize request."""
-
-    client_info: ClientInfo
-
-    @classmethod
-    def create(cls, name: str, version: str) -> Self:
-        return cls(client_info=ClientInfo(name=name, version=version))
+PersistOption = Literal["session", "always"]
 
 
 class ThreadResumeParams(CodexBaseModel):
@@ -65,32 +50,6 @@ class ThreadResumeParams(CodexBaseModel):
     service_tier: ServiceTier | None = None
     personality: Personality | None = None
     persist_extended_history: bool = False
-
-
-class TurnStartParams(CodexBaseModel):
-    """Parameters for turn/start request."""
-
-    thread_id: str
-    input: Sequence[UserInput]
-    model: str | None = None
-    effort: ReasoningEffort | None = None
-    approval_policy: ApprovalPolicy | None = None
-    approvals_reviewer: ApprovalsReviewer | None = None
-    cwd: str | None = None
-    sandbox_policy: dict[str, Any] | None = None  # Sandbox config - flexible structure
-    service_tier: ServiceTier | None = None
-    summary: ReasoningSummary | None = None
-    output_schema: dict[str, Any] | None = None  # JSON Schema - arbitrary structure
-    personality: Personality | None = None
-    collaboration_mode: CollaborationMode | None = None
-
-
-class TurnSteerParams(CodexBaseModel):
-    """Parameters for turn/steer request."""
-
-    thread_id: str
-    input: Sequence[UserInput]
-    expected_turn_id: str
 
 
 class SkillsRemoteListParams(CodexBaseModel):
@@ -164,9 +123,6 @@ class DynamicToolCallParams(CodexBaseModel):
     call_id: str
     tool: str
     arguments: Any
-
-
-PersistOption = Literal["session", "always"]
 
 
 class ToolApprovalParamDisplay(TypedDict):
