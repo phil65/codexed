@@ -11,6 +11,7 @@ from pydantic import TypeAdapter
 
 from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
+from codexed.client.skills import CodexSkills
 from codexed.helpers import merge_config
 from codexed.models import (
     AppsListParams,
@@ -174,6 +175,7 @@ class CodexClient:
         self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
         self.fs = CodexFS(self)
+        self.skills = CodexSkills(self)
         if on_approval:
             self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # type: ignore[arg-type]
             self.register_handler(SERVER_REQUEST_FILE_CHANGE_APPROVAL, on_approval)  # type: ignore[arg-type]
