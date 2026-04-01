@@ -425,7 +425,6 @@ class Session:
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
         service_tier: ServiceTier | None = None,
-        personality: Personality | None = None,
         ephemeral: bool | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         turn_id: str | None = None,
@@ -447,7 +446,6 @@ class Session:
             tools: Builtin tool configurations for forked thread
             code_mode: Enable experimental code mode feature flag
             service_tier: Service tier (fast/flex)
-            personality: Personality for forked thread
             ephemeral: If true, forked thread is not persisted
             mcp_servers: Per-thread MCP server configurations
             turn_id: If provided, rollback the forked thread to this turn
@@ -471,7 +469,6 @@ class Session:
             tools=tools,
             code_mode=code_mode,
             service_tier=service_tier,
-            personality=personality,
             ephemeral=ephemeral,
             mcp_servers=mcp_servers,
             turn_id=turn_id,
