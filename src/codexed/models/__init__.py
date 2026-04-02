@@ -11,7 +11,6 @@ from codexed.models.base import (
 )
 from codexed.models.codex_types import (
     ElicitationAction,
-    ExternalSandboxPolicy,
     ApprovalDecision,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
@@ -557,7 +556,7 @@ __all__ = [
     "ExternalAgentConfigImportParams",
     "ExternalAgentConfigMigrationItem",
     "ExternalAgentConfigMigrationItemType",
-    "ExternalSandboxPolicy",
+    "ExternalSandboxSandboxPolicy",
     "ExternalSandboxSandboxPolicy",
     "FeedbackUploadParams",
     "FeedbackUploadResponse",

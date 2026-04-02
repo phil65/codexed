@@ -5,11 +5,7 @@ from typing import Any
 import mcp.types
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (
-    ApprovalDecision,
-    ElicitationAction,
-    SandboxPolicy,
-)
+from codexed.models.codex_types import ApprovalDecision, ElicitationAction
 from codexed.models.misc import (
     McpServerStatusEntry,
     Thread,
@@ -22,6 +18,7 @@ from codexed.models.v2_protocol import (
     AuthMode,
     DynamicToolCallOutputContentItem,
     ReasoningEffort,
+    SandboxPolicy,
     ServiceTier,
 )
 

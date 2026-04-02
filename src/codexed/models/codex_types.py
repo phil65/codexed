@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, Literal
-
-from pydantic import BaseModel, Discriminator, Field, Tag
-
-from codexed.models.base import CodexBaseModel
-from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
+from typing import Literal
 
 
 # Type aliases for Codex types
@@ -16,95 +11,3 @@ SkillApprovalDecision = Literal["allow", "deny"]
 ElicitationAction = Literal["accept", "decline", "cancel"]
 NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
 NetworkPolicyRuleAction = Literal["allow", "deny"]
-
-
-# ============================================================================
-# SandboxPolicy (discriminated union on 'type' field)
-# ============================================================================
-
-
-# Mapping from camelCase type values (turn-level API) to kebab-case (thread-level API)
-_SANDBOX_TYPE_ALIASES: dict[str, str] = {
-    "workspaceWrite": "workspace-write",
-    "dangerFullAccess": "danger-full-access",
-    "readOnly": "read-only",
-    "externalSandbox": "external-sandbox",
-}
-
-_READ_ONLY_ACCESS_TYPE_ALIASES: dict[str, str] = {
-    "fullAccess": "full-access",
-}
-
-
-def _sandbox_policy_discriminator(v: Any) -> str:
-    match v:
-        case {"type": str(raw_type)}:
-            return _SANDBOX_TYPE_ALIASES.get(raw_type, raw_type)
-        case BaseModel():
-            return str(type(v).model_fields["type"].default)
-        case _:
-            return str(v)
-
-
-def _read_only_access_discriminator(v: Any) -> str:
-    match v:
-        case {"type": str(raw_type)}:
-            return _READ_ONLY_ACCESS_TYPE_ALIASES.get(raw_type, raw_type)
-        case BaseModel():
-            return str(type(v).model_fields["type"].default)
-        case _:
-            return str(v)
-
-
-class FullAccessReadOnlyAccess(CodexBaseModel):
-    """Allow unrestricted file reads."""
-
-    type: Literal["full-access", "fullAccess"]
-
-
-ReadOnlyAccess = Annotated[
-    Annotated[RestrictedReadOnlyAccess, Tag("restricted")]
-    | Annotated[FullAccessReadOnlyAccess, Tag("full-access")],
-    Discriminator(_read_only_access_discriminator),
-]
-
-
-class DangerFullAccessSandboxPolicy(CodexBaseModel):
-    """No restrictions whatsoever. Use with caution."""
-
-    type: Literal["danger-full-access", "dangerFullAccess"]
-
-
-class ReadOnlySandboxPolicy(CodexBaseModel):
-    """Read-only access configuration."""
-
-    type: Literal["read-only", "readOnly"]
-    access: ReadOnlyAccess | None = None
-
-
-class ExternalSandboxPolicy(CodexBaseModel):
-    """Process is already in an external sandbox."""
-
-    type: Literal["external-sandbox", "externalSandbox"]
-    network_access: NetworkAccess = "restricted"
-
-
-class WorkspaceWriteSandboxPolicy(CodexBaseModel):
-    """Grants write access to the workspace directory."""
-
-    type: Literal["workspace-write", "workspaceWrite"]
-    writable_roots: list[str] = Field(default_factory=list)
-    read_only_access: ReadOnlyAccess | None = None
-    network_access: bool = False
-    exclude_slash_tmp: bool = False
-    exclude_tmpdir_env_var: bool = False
-
-
-SandboxPolicy = Annotated[
-    Annotated[DangerFullAccessSandboxPolicy, Tag("danger-full-access")]
-    | Annotated[ReadOnlySandboxPolicy, Tag("read-only")]
-    | Annotated[ExternalSandboxPolicy, Tag("external-sandbox")]
-    | Annotated[WorkspaceWriteSandboxPolicy, Tag("workspace-write")],
-    Discriminator(_sandbox_policy_discriminator),
-]
-"""Discriminated union for sandbox execution restrictions."""
