@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Discriminator, Field, Tag
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
+from codexed.models.v2_protocol import Granular, NetworkAccess, RestrictedReadOnlyAccess
 
 
 # Type aliases for Codex types
@@ -24,22 +24,10 @@ NetworkPolicyRuleAction = Literal["allow", "deny"]
 # ============================================================================
 
 
-class RejectConfig(CodexBaseModel):
-    """Fine-grained rejection controls for approval prompts.
-
-    When a field is True, prompts of that category are automatically
-    rejected instead of shown to the user.
-    """
-
-    sandbox_approval: bool
-    rules: bool
-    mcp_elicitations: bool
-
-
 class RejectApprovalPolicy(CodexBaseModel):
     """Approval policy variant with fine-grained rejection controls."""
 
-    reject: RejectConfig
+    reject: Granular
 
 
 def _ask_for_approval_discriminator(v: Any) -> str:

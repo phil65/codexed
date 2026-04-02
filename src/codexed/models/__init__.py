@@ -17,7 +17,6 @@ from codexed.models.codex_types import (
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
     RejectApprovalPolicy,
-    RejectConfig,
     SkillApprovalDecision,
 )
 
@@ -175,6 +174,7 @@ from codexed.models.v2_protocol import (
     LocalShellCallResponseItem,
     MessageResponseItem,
     OtherResponseItem,
+    Granular,
     ReasoningResponseItem,
     ResponseItem,
     WebSearchCallResponseItem,
@@ -609,6 +609,7 @@ __all__ = [
     "GhostCommit",
     "GhostSnapshotResponseItem",
     "GitInfo",
+    "Granular",
     "GrepFilesToolConfig",
     "HazelnutScope",
     "HookCompletedMessage",
@@ -724,7 +725,6 @@ __all__ = [
     "ReasoningSummaryTextDeltaNotification",
     "ReasoningTextDeltaNotification",
     "RejectApprovalPolicy",
-    "RejectConfig",
     "RemoteSkillSummary",
     "RequestPermissionsToolConfig",
     "RequestUserInputToolConfig",
