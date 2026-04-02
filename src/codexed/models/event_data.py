@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.misc import Thread, Turn
+from codexed.models.response_item import ResponseItem
 from codexed.models.thread_item import ThreadItem
 
 
@@ -29,7 +30,7 @@ class RawResponseItemCompletedData(CodexBaseModel):
 
     thread_id: str
     turn_id: str
-    item: ThreadItem
+    item: ResponseItem
 
 
 class ThreadStartedData(CodexBaseModel):

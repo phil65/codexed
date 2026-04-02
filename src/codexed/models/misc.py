@@ -13,7 +13,7 @@ from codexed.models.codex_types import (
     NetworkPolicyRuleAction,
     SkillApprovalDecision,
 )
-from codexed.models.thread_item import ThreadItem
+from codexed.models.thread_item import ThreadItem, ThreadItemAgentMessage
 from codexed.models.v2_protocol import (
     GitInfo,
     McpAuthStatus,
@@ -128,8 +128,6 @@ class Turn(CodexBaseModel):
 
         For structured output turns, this returns the raw JSON string.
         """
-        from codexed.models.thread_item import ThreadItemAgentMessage
-
         last_unphased: str | None = None
         for item in reversed(self.items):
             match item:
