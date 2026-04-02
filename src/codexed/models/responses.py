@@ -67,12 +67,12 @@ class McpServerElicitationResponse(CodexBaseModel):
     """
 
     def to_mcp(self) -> mcp.types.ElicitResult:
-        return mcp.types.ElicitResult(action=self.action, content=self.content)
+        return mcp.types.ElicitResult(action=self.action, content=self.content, _meta=self.meta)
 
     @classmethod
     def from_mcp(cls, result: mcp.types.ElicitResult) -> McpServerElicitationResponse:
         """Create from MCP ElicitResult."""
-        return cls(action=result.action, content=result.content)
+        return cls(action=result.action, content=result.content, meta=result.meta)
 
 
 class ThreadReadResponse(CodexBaseModel):

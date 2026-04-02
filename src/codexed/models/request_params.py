@@ -168,13 +168,11 @@ class McpElicitationFormParams(_McpElicitationBase):
     def to_mcp(self) -> ElicitRequestFormParams:
         from mcp.types import ElicitRequestFormParams, RequestParams
 
-        params = ElicitRequestFormParams(
+        return ElicitRequestFormParams(
             message=self.message,
             requestedSchema=self.requested_schema,
+            _meta=RequestParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
-        if self.meta is not None:
-            params.meta = RequestParams.Meta(**self.meta)  # pyright: ignore[reportArgumentType]
-        return params
 
     @classmethod
     def from_mcp(
@@ -205,14 +203,12 @@ class McpElicitationUrlParams(_McpElicitationBase):
     def to_mcp(self) -> ElicitRequestURLParams:
         from mcp.types import ElicitRequestURLParams, RequestParams
 
-        params = ElicitRequestURLParams(
+        return ElicitRequestURLParams(
             message=self.message,
             url=self.url,
             elicitationId=self.elicitation_id,
+            _meta=RequestParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
-        if self.meta is not None:
-            params.meta = RequestParams.Meta(**self.meta)  # pyright: ignore[reportArgumentType]
-        return params
 
     @classmethod
     def from_mcp(
