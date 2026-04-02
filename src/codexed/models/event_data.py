@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.misc import Thread, Turn
-from codexed.models.response_item import ResponseItem
 from codexed.models.thread_item import ThreadItem
+from codexed.models.v2_protocol import ResponseItem
 
 
 # Item lifecycle notifications

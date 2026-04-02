@@ -7,46 +7,15 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Discriminator, Field, Tag
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.v2_protocol import Granular, NetworkAccess, RestrictedReadOnlyAccess
+from codexed.models.v2_protocol import NetworkAccess, RestrictedReadOnlyAccess
 
 
 # Type aliases for Codex types
-ApprovalPolicy = Literal["untrusted", "on-failure", "on-request", "never"]
 ApprovalDecision = Literal["allow", "allowForSession", "deny", "denyForSession"]
 SkillApprovalDecision = Literal["allow", "deny"]
 ElicitationAction = Literal["accept", "decline", "cancel"]
 NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
 NetworkPolicyRuleAction = Literal["allow", "deny"]
-
-
-# ============================================================================
-# AskForApproval (tagged union: string literals or {"reject": RejectConfig})
-# ============================================================================
-
-
-class RejectApprovalPolicy(CodexBaseModel):
-    """Approval policy variant with fine-grained rejection controls."""
-
-    reject: Granular
-
-
-def _ask_for_approval_discriminator(v: Any) -> str:
-    match v:
-        case str():
-            return "simple"
-        case {"reject": _}:
-            return "reject"
-        case RejectApprovalPolicy():
-            return "reject"
-        case _:
-            return "simple"
-
-
-AskForApproval = Annotated[
-    Annotated[ApprovalPolicy, Tag("simple")] | Annotated[RejectApprovalPolicy, Tag("reject")],
-    Discriminator(_ask_for_approval_discriminator),
-]
-"""Full AskForApproval type: simple string policy or reject config."""
 
 
 # ============================================================================

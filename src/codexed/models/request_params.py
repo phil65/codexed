@@ -12,12 +12,12 @@ from codexed.models.misc import (
     NetworkPolicyAmendment,
     ToolRequestUserInputQuestion,
 )
-from codexed.models.response_item import ResponseItem
 from codexed.models.v2_protocol import (
     ApprovalsReviewer,
     AskForApproval,
     CommandAction,
     Personality,
+    ResponseItem,
     SandboxMode,
     ServiceTier,
 )

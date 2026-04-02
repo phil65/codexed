@@ -10,13 +10,11 @@ from codexed.models.base import (
     JsonRpcResponse,
 )
 from codexed.models.codex_types import (
-    ApprovalPolicy,
     ElicitationAction,
     ExternalSandboxPolicy,
     ApprovalDecision,
     NetworkApprovalProtocol,
     NetworkPolicyRuleAction,
-    RejectApprovalPolicy,
     SkillApprovalDecision,
 )
 
@@ -475,7 +473,6 @@ __all__ = [
     "AppScreenshot",
     "ApplyPatchToolConfig",
     "ApprovalDecision",
-    "ApprovalPolicy",
     "ApprovalsReviewer",
     "AppsListParams",
     "AppsListResponse",
@@ -724,7 +721,6 @@ __all__ = [
     "ReasoningSummaryPartAddedNotification",
     "ReasoningSummaryTextDeltaNotification",
     "ReasoningTextDeltaNotification",
-    "RejectApprovalPolicy",
     "RemoteSkillSummary",
     "RequestPermissionsToolConfig",
     "RequestUserInputToolConfig",

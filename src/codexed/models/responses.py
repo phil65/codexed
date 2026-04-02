@@ -7,7 +7,6 @@ import mcp.types
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
     ApprovalDecision,
-    AskForApproval,
     ElicitationAction,
     SandboxPolicy,
 )
@@ -19,6 +18,7 @@ from codexed.models.misc import (
     TurnData,
 )
 from codexed.models.v2_protocol import (
+    AskForApproval,
     AuthMode,
     DynamicToolCallOutputContentItem,
     ReasoningEffort,
