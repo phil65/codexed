@@ -13,10 +13,14 @@ from codexed.client.realtime import RealtimeSession
 from codexed.exceptions import CodexRequestError, TurnFailedError
 from codexed.helpers import kebab_to_camel
 from codexed.models import (
+    DangerFullAccessSandboxPolicy,
     ErrorMessage,
     ErrorNotification,
+    ExternalSandboxSandboxPolicy,
+    ReadOnlySandboxPolicy,
     ReviewStartParams,
     ReviewStartResponse,
+    SandboxPolicy,
     TextUserInput,
     ThreadArchiveParams,
     ThreadCompactStartParams,
@@ -39,14 +43,15 @@ from codexed.models import (
     TurnStartResponse,
     TurnSteerParams,
     TurnSteerResponse,
+    WorkspaceWriteSandboxPolicy,
 )
 
 
 if TYPE_CHECKING:
     from codexed.client import CodexClient
     from codexed.models import (
-        ApprovalPolicy,
         ApprovalsReviewer,
+        AskForApproval,
         CodexEvent,
         CollaborationMode,
         McpServerConfig,
@@ -102,10 +107,10 @@ class Session:
         *,
         model: str | None = None,
         effort: ReasoningEffort | None = None,
-        approval_policy: ApprovalPolicy | None = None,
+        approval_policy: AskForApproval | None = None,
         approvals_reviewer: ApprovalsReviewer | None = None,
         cwd: str | None = None,
-        sandbox_policy: SandboxMode | dict[str, Any] | None = None,
+        sandbox_policy: SandboxMode | SandboxPolicy | None = None,
         output_schema: dict[str, Any] | type[Any] | None = None,
         personality: Personality | None = None,
         service_tier: ServiceTier | None = None,
@@ -144,11 +149,17 @@ class Session:
         # Handle sandbox_policy - convert string to dict if needed
         match sandbox_policy:
             case None:
-                sandbox_dict: dict[str, Any] | None = None
+                policy: SandboxPolicy | None = None
             case str():
-                sandbox_dict = {"type": kebab_to_camel(sandbox_policy)}
-            case dict():
-                sandbox_dict = sandbox_policy
+                dct = {"type": kebab_to_camel(sandbox_policy)}
+                policy = TypeAdapter[SandboxPolicy](SandboxPolicy).validate_python(dct)
+            case (
+                DangerFullAccessSandboxPolicy()
+                | ReadOnlySandboxPolicy()
+                | ExternalSandboxSandboxPolicy()
+                | WorkspaceWriteSandboxPolicy()
+            ):
+                policy = sandbox_policy
             case _:
                 assert_never(sandbox_policy)
         params = TurnStartParams(
@@ -159,7 +170,7 @@ class Session:
             approval_policy=approval_policy,
             approvals_reviewer=approvals_reviewer,
             cwd=cwd,
-            sandbox_policy=sandbox_dict,
+            sandbox_policy=policy,
             service_tier=service_tier,
             output_schema=schema_dict,
             personality=personality,
@@ -230,10 +241,10 @@ class Session:
         *,
         model: str | None = None,
         effort: ReasoningEffort | None = None,
-        approval_policy: ApprovalPolicy | None = None,
+        approval_policy: AskForApproval | None = None,
         approvals_reviewer: ApprovalsReviewer | None = None,
         cwd: str | None = None,
-        sandbox_policy: SandboxMode | dict[str, Any] | None = None,
+        sandbox_policy: SandboxMode | SandboxPolicy | None = None,
         personality: Personality | None = None,
         service_tier: ServiceTier | None = None,
         summary: ReasoningSummary | None = None,
@@ -418,7 +429,7 @@ class Session:
         model_provider: str | None = None,
         base_instructions: str | None = None,
         developer_instructions: str | None = None,
-        approval_policy: ApprovalPolicy | None = None,
+        approval_policy: AskForApproval | None = None,
         approvals_reviewer: ApprovalsReviewer | None = None,
         sandbox: SandboxMode | None = None,
         config: dict[str, Any] | None = None,
