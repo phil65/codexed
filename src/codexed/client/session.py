@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator, Mapping  # noqa: TC003
+from collections.abc import AsyncIterator, Mapping, Sequence  # noqa: TC003
 import logging
 from typing import TYPE_CHECKING, Any, assert_never
 
@@ -103,7 +103,7 @@ class Session:
 
     async def turn_stream(
         self,
-        user_input: str | list[UserInput],
+        user_input: str | Sequence[UserInput],
         *,
         model: str | None = None,
         effort: ReasoningEffort | None = None,
@@ -164,7 +164,9 @@ class Session:
                 assert_never(sandbox_policy)
         params = TurnStartParams(
             thread_id=self.thread_id,
-            input=[TextUserInput(text=user_input)] if isinstance(user_input, str) else user_input,
+            input=[TextUserInput(text=user_input)]
+            if isinstance(user_input, str)
+            else list(user_input),
             model=model,
             effort=effort,
             approval_policy=approval_policy,
@@ -208,7 +210,7 @@ class Session:
 
     async def turn_steer(
         self,
-        user_input: str | list[UserInput],
+        user_input: str | Sequence[UserInput],
         *,
         expected_turn_id: str,
     ) -> TurnSteerResponse:
@@ -223,7 +225,9 @@ class Session:
         """
         params = TurnSteerParams(
             thread_id=self.thread_id,
-            input=[TextUserInput(text=user_input)] if isinstance(user_input, str) else user_input,
+            input=[TextUserInput(text=user_input)]
+            if isinstance(user_input, str)
+            else list(user_input),
             expected_turn_id=expected_turn_id,
         )
         result = await self._client.dispatch.send_request("turn/steer", params)
