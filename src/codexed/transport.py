@@ -178,7 +178,7 @@ class WebSocketTransport:
         if self._ws is None:
             return None
         try:
-            raw = await self._ws.recv()
+            raw: str | bytes = await self._ws.recv()
         except Exception:  # noqa: BLE001
             return None
         if isinstance(raw, bytes):
