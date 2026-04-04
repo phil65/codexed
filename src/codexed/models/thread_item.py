@@ -51,6 +51,14 @@ class BaseThreadItem(CodexBaseModel):
 
     id: str
 
+    @property
+    def inferred_arguments(self) -> dict[str, Any] | None:
+        """Best-effort reconstruction of tool-call-like arguments.
+
+        Returns a dict for tool-like items, None for non-tool items.
+        """
+        return None
+
 
 class ThreadItemUserMessage(BaseThreadItem):
     """User message item."""
@@ -97,6 +105,10 @@ class ThreadItemCommandExecution(BaseThreadItem):
     duration_ms: int | None = None
 
     @property
+    def inferred_arguments(self) -> dict[str, Any]:
+        return {"command": self.command, "cwd": self.cwd}
+
+    @property
     def item_summary(self) -> str:
         """Human-readable summary of this command execution."""
         output = self.aggregated_output or ""
@@ -112,6 +124,10 @@ class ThreadItemFileChange(BaseThreadItem):
     type: Literal["fileChange"] = "fileChange"
     changes: list[FileUpdateChange]
     status: PatchApplyStatus
+
+    @property
+    def inferred_arguments(self) -> dict[str, Any]:
+        return {"changes": [c.model_dump() for c in self.changes]}
 
     @property
     def item_summary(self) -> str:
@@ -135,6 +151,10 @@ class ThreadItemMcpToolCall(BaseThreadItem):
     duration_ms: int | None = None
 
     @property
+    def inferred_arguments(self) -> dict[str, Any] | None:
+        return self.arguments
+
+    @property
     def item_summary(self) -> str:
         """Human-readable summary of this MCP tool call."""
         result_text = ""
@@ -155,6 +175,10 @@ class ThreadItemDynamicToolCall(BaseThreadItem):
     success: bool | None = None
     duration_ms: int | None = None
 
+    @property
+    def inferred_arguments(self) -> dict[str, Any] | None:
+        return self.arguments
+
 
 class ThreadItemWebSearch(BaseThreadItem):
     """Web search item."""
@@ -162,6 +186,10 @@ class ThreadItemWebSearch(BaseThreadItem):
     type: Literal["webSearch"] = "webSearch"
     query: str
     action: WebSearchAction | None = None
+
+    @property
+    def inferred_arguments(self) -> dict[str, Any]:
+        return {"query": self.query}
 
     @property
     def item_summary(self) -> str:
@@ -174,6 +202,10 @@ class ThreadItemImageView(BaseThreadItem):
 
     type: Literal["imageView"] = "imageView"
     path: str
+
+    @property
+    def inferred_arguments(self) -> dict[str, Any]:
+        return {"path": self.path}
 
     @property
     def item_summary(self) -> str:
@@ -221,6 +253,15 @@ class ThreadItemCollabAgentToolCall(BaseThreadItem):
     receiver_thread_ids: list[str] = Field(default_factory=list)
     prompt: str | None = None
     agents_states: dict[str, CollabAgentState] = Field(default_factory=dict)
+
+    @property
+    def inferred_arguments(self) -> dict[str, Any]:
+        args: dict[str, Any] = {"tool": self.tool}
+        if self.prompt is not None:
+            args["prompt"] = self.prompt
+        if self.receiver_thread_ids:
+            args["receiver_thread_ids"] = self.receiver_thread_ids
+        return args
 
     @property
     def item_summary(self) -> str:
