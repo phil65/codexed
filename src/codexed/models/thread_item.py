@@ -111,9 +111,8 @@ class ThreadItemCommandExecution(BaseThreadItem):
     @property
     def item_summary(self) -> str:
         """Human-readable summary of this command execution."""
-        output = self.aggregated_output or ""
         msg = f"[Executed: {self.command}]"
-        if output:
+        if output := self.aggregated_output:
             msg += f"\n{output[:200]}"
         return msg
 
