@@ -179,6 +179,7 @@ class McpTool(CodexBaseModel):
     output_schema: dict[str, Any] | None = None
     annotations: ToolAnnotations | None = None
     icons: list[Icon] | None = None
+    field_meta: dict[str, Any] | None = None
 
     def to_mcp_tool(self) -> Tool:
         from mcp.types import Tool
@@ -191,6 +192,7 @@ class McpTool(CodexBaseModel):
             outputSchema=self.output_schema,
             annotations=self.annotations,
             icons=self.icons,
+            _meta=self.field_meta,
         )
 
 
@@ -205,6 +207,7 @@ class McpResource(CodexBaseModel):
     size: int | None = None
     annotations: Annotations | None = None
     icons: list[Icon] | None = None
+    field_meta: dict[str, Any] | None = None
 
     def to_mcp_resource(self) -> Resource:
         from mcp.types import Resource
@@ -218,6 +221,7 @@ class McpResource(CodexBaseModel):
             size=self.size,
             annotations=self.annotations,
             icons=self.icons,
+            _meta=self.field_meta,
         )
 
 
