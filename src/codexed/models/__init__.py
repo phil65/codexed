@@ -46,10 +46,7 @@ from codexed.models.events import (
 from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
 from codexed.models.misc import (
     ExecPolicyAmendment,
-    McpResource,
-    McpResourceTemplate,
     McpServerStatusEntry,
-    McpTool,
     NetworkApprovalContext,
     NetworkPolicyAmendment,
     SkillRequestApprovalResponse,
@@ -656,8 +653,6 @@ __all__ = [
     "McpAuthStatus",
     "McpElicitationFormParams",
     "McpElicitationUrlParams",
-    "McpResource",
-    "McpResourceTemplate",
     "McpResourceToolsConfig",
     "McpServerConfig",
     "McpServerElicitationRequestParams",
@@ -670,7 +665,6 @@ __all__ = [
     "McpServerStartupStatusUpdatedNotification",
     "McpServerStatusEntry",
     "McpServerStatusUpdatedNotification",
-    "McpTool",
     "McpToolCallError",
     "McpToolCallProgressNotification",
     "McpToolCallResult",

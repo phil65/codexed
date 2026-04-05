@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-from mcp.types import Annotations, Icon, ToolAnnotations
-from pydantic import AnyUrl, Field
+from mcp.types import Resource, ResourceTemplate, Tool
+from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import (
@@ -22,10 +22,6 @@ from codexed.models.v2_protocol import (
     TurnError,
     TurnStatus,
 )
-
-
-if TYPE_CHECKING:
-    from mcp.types import Resource, ResourceTemplate, Tool
 
 
 class NetworkApprovalContext(CodexBaseModel):
@@ -169,89 +165,11 @@ class TurnData(CodexBaseModel):
     error: str | None = None
 
 
-class McpTool(CodexBaseModel):
-    """Tool exposed by an MCP server. Mirrors `mcp.types.Tool`."""
-
-    name: str
-    title: str | None = None
-    description: str | None = None
-    input_schema: dict[str, Any]
-    output_schema: dict[str, Any] | None = None
-    annotations: ToolAnnotations | None = None
-    icons: list[Icon] | None = None
-    field_meta: dict[str, Any] | None = None
-
-    def to_mcp_tool(self) -> Tool:
-        from mcp.types import Tool
-
-        return Tool(
-            name=self.name,
-            title=self.title,
-            description=self.description,
-            inputSchema=self.input_schema,
-            outputSchema=self.output_schema,
-            annotations=self.annotations,
-            icons=self.icons,
-            _meta=self.field_meta,
-        )
-
-
-class McpResource(CodexBaseModel):
-    """Resource exposed by an MCP server. Mirrors `mcp.types.Resource`."""
-
-    uri: str
-    name: str
-    title: str | None = None
-    description: str | None = None
-    mime_type: str | None = None
-    size: int | None = None
-    annotations: Annotations | None = None
-    icons: list[Icon] | None = None
-    field_meta: dict[str, Any] | None = None
-
-    def to_mcp_resource(self) -> Resource:
-        from mcp.types import Resource
-
-        return Resource(
-            uri=AnyUrl(self.uri),
-            name=self.name,
-            title=self.title,
-            description=self.description,
-            mimeType=self.mime_type,
-            size=self.size,
-            annotations=self.annotations,
-            icons=self.icons,
-            _meta=self.field_meta,
-        )
-
-
-class McpResourceTemplate(CodexBaseModel):
-    """Resource template exposed by an MCP server. Mirrors `mcp.types.ResourceTemplate`."""
-
-    uri_template: str
-    name: str
-    title: str | None = None
-    description: str | None = None
-    mime_type: str | None = None
-    annotations: Annotations | None = None
-
-    def to_mcp_resource(self) -> ResourceTemplate:
-        from mcp.types import ResourceTemplate
-
-        return ResourceTemplate(
-            uriTemplate=self.uri_template,
-            name=self.name,
-            title=self.title,
-            description=self.description,
-            annotations=self.annotations,
-        )
-
-
 class McpServerStatusEntry(CodexBaseModel):
     """Status of a single MCP server."""
 
     name: str
-    tools: dict[str, McpTool] = Field(default_factory=dict)
-    resources: list[McpResource] = Field(default_factory=list)
-    resource_templates: list[McpResourceTemplate] = Field(default_factory=list)
+    tools: dict[str, Tool] = Field(default_factory=dict)
+    resources: list[Resource] = Field(default_factory=list)
+    resource_templates: list[ResourceTemplate] = Field(default_factory=list)
     auth_status: McpAuthStatus = "unsupported"
