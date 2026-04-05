@@ -190,11 +190,14 @@ class CodexClient:
     async def __aenter__(self) -> Self:
         """Async context manager entry - starts the app-server."""
         import codexed
-        from codexed.models import ClientInfo, InitializeParams
+        from codexed.models import ClientInfo, InitializeCapabilities, InitializeParams
 
         await self.dispatch.start()
         version = codexed.__version__
-        init_params = InitializeParams(client_info=ClientInfo(name="codexed", version=version))
+        init_params = InitializeParams(
+            client_info=ClientInfo(name="codexed", version=version),
+            capabilities=InitializeCapabilities(experimental_api=True),
+        )
         await self.dispatch.send_request("initialize", init_params)
         return self
 

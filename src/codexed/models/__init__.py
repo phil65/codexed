@@ -153,6 +153,7 @@ from codexed.models.user_input import (
 )
 from codexed.models.v2_protocol import (
     ByteRange,
+    InitializeCapabilities,
     ExternalAgentConfigImportParams,
     InitializeParams,
     CommandExecParams,
@@ -623,6 +624,7 @@ __all__ = [
     "ImageGenerationCallResponseItem",
     "ImageGenerationToolConfig",
     "ImageUserInput",
+    "InitializeCapabilities",
     "InitializeParams",
     "InputModality",
     "ItemAgentMessageDeltaNotification",
