@@ -66,7 +66,6 @@ from codexed.models.request_params import (
     ProductSurface,
     CommandExecutionRequestApprovalParams,
     DynamicToolCallParams,
-    ThreadResumeParams,
     FileChangeRequestApprovalParams,
     McpElicitationFormParams,
     McpElicitationUrlParams,
@@ -154,6 +153,7 @@ from codexed.models.user_input import (
 from codexed.models.v2_protocol import (
     ByteRange,
     InitializeCapabilities,
+    ThreadResumeParams,
     ExternalAgentConfigImportParams,
     InitializeParams,
     CommandExecParams,

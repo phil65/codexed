@@ -12,15 +12,7 @@ from codexed.models.misc import (
     NetworkPolicyAmendment,
     ToolRequestUserInputQuestion,
 )
-from codexed.models.v2_protocol import (
-    ApprovalsReviewer,
-    AskForApproval,
-    CommandAction,
-    Personality,
-    ResponseItem,
-    SandboxMode,
-    ServiceTier,
-)
+from codexed.models.v2_protocol import CommandAction
 
 
 if TYPE_CHECKING:
@@ -30,26 +22,6 @@ if TYPE_CHECKING:
 HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
 ProductSurface = Literal["chatgpt", "codex", "api", "atlas"]
 PersistOption = Literal["session", "always"]
-
-
-class ThreadResumeParams(CodexBaseModel):
-    """Parameters for thread/resume request."""
-
-    thread_id: str
-    history: list[ResponseItem] | None = None
-    path: str | None = None
-    cwd: str | None = None
-    model: str | None = None
-    model_provider: str | None = None
-    base_instructions: str | None = None
-    developer_instructions: str | None = None
-    approval_policy: AskForApproval | None = None
-    approvals_reviewer: ApprovalsReviewer | None = None
-    sandbox: SandboxMode | None = None
-    config: dict[str, Any] | None = None
-    service_tier: ServiceTier | None = None
-    personality: Personality | None = None
-    persist_extended_history: bool = False
 
 
 class SkillsRemoteListParams(CodexBaseModel):
@@ -166,12 +138,12 @@ class McpElicitationFormParams(_McpElicitationBase):
     requested_schema: dict[str, Any]
 
     def to_mcp(self) -> ElicitRequestFormParams:
-        from mcp.types import ElicitRequestFormParams, RequestParams
+        from mcp.types import ElicitRequestFormParams
 
         return ElicitRequestFormParams(
             message=self.message,
             requestedSchema=self.requested_schema,
-            _meta=RequestParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            _meta=ElicitRequestFormParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
@@ -201,13 +173,13 @@ class McpElicitationUrlParams(_McpElicitationBase):
     elicitation_id: str
 
     def to_mcp(self) -> ElicitRequestURLParams:
-        from mcp.types import ElicitRequestURLParams, RequestParams
+        from mcp.types import ElicitRequestURLParams
 
         return ElicitRequestURLParams(
             message=self.message,
             url=self.url,
             elicitationId=self.elicitation_id,
-            _meta=RequestParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            _meta=ElicitRequestURLParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
