@@ -24,20 +24,18 @@ async def simple_chat() -> None:
 
     async with CodexClient() as client:
         # Start a thread
-        session = await client.thread_start(cwd=".")
+        session = await client.thread_start(cwd=".", experimental_raw_events=True)
         print(f"Started thread: {session.thread_id}\n")
-
         # Send a message
         message = "List the Python files in the current directory"
         print(f"> {message}\n")
-
         async for event in session.turn_stream(message):
             # Print agent messages
             match event:
-                case ItemAgentMessageDeltaNotification():
-                    print(event.params.delta, end="", flush=True)
-                case ItemCommandExecutionOutputDeltaNotification():
-                    print(f"\n[Command output]\n{event.params.delta}", flush=True)
+                case ItemAgentMessageDeltaNotification(params=params):
+                    print(params.delta, end="", flush=True)
+                case ItemCommandExecutionOutputDeltaNotification(params=params):
+                    print(f"\n[Command output]\n{params.delta}", flush=True)
                 case TurnCompletedEvent():
                     print("\n\n[Turn completed]")
                     break
@@ -62,8 +60,8 @@ async def multi_turn_chat() -> None:
 
             async for event in session.turn_stream(message):
                 match event:
-                    case ItemAgentMessageDeltaNotification(data=data):
-                        print(data.delta, end="", flush=True)
+                    case ItemAgentMessageDeltaNotification(params=params):
+                        print(params.delta, end="", flush=True)
                     case TurnCompletedEvent():
                         print("\n")
                         break
@@ -82,7 +80,7 @@ async def model_override_example() -> None:
 
         async for event in session.turn_stream("Write a hello world function"):
             match event:
-                case ItemAgentMessageDeltaNotification(data=data):
+                case ItemAgentMessageDeltaNotification(params=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     print("\n")
@@ -98,7 +96,7 @@ async def model_override_example() -> None:
             effort="high",
         ):
             match event:
-                case ItemAgentMessageDeltaNotification(data=data):
+                case ItemAgentMessageDeltaNotification(params=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     print("\n")
@@ -110,7 +108,7 @@ async def event_inspection_example() -> None:
     print("=== Event Inspection Example ===\n")
 
     async with CodexClient() as client:
-        session = await client.thread_start(cwd=".")
+        session = await client.thread_start(cwd=".", experimental_raw_events=True)
 
         async for event in session.turn_stream("What files are here?"):
             # Print all event types
