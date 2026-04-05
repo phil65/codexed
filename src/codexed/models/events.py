@@ -14,7 +14,6 @@ from codexed.models.base import CodexBaseModel
 from codexed.models.event_data import (
     ItemCompletedData,
     ItemStartedData,
-    RawResponseItemCompletedData,
     ThreadStartedData,
     TurnCompletedData,
     TurnStartedData,
@@ -45,6 +44,7 @@ from codexed.models.v2_protocol import (
     McpServerOauthLoginCompletedMessage,
     McpServerStartupStatusUpdatedNotification,
     ModelReroutedMessage,
+    RawResponseItemCompletedNotification,
     ServerRequestResolvedMessage,
     ThreadArchivedMessage,
     ThreadCompactedMessage,
@@ -144,7 +144,7 @@ class RawResponseItemCompletedEvent(CodexBaseModel):
     """Raw response item completed event."""
 
     method: Literal["rawResponseItem/completed"] = "rawResponseItem/completed"
-    params: RawResponseItemCompletedData
+    params: RawResponseItemCompletedNotification
 
 
 # ============================================================================

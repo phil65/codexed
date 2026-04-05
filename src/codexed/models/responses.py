@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
-
-import mcp.types
+from typing import TYPE_CHECKING, Any
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import ApprovalDecision, ElicitationAction
@@ -21,6 +19,10 @@ from codexed.models.v2_protocol import (
     SandboxPolicy,
     ServiceTier,
 )
+
+
+if TYPE_CHECKING:
+    from mcp.types import ElicitResult
 
 
 class CommandExecutionRequestApprovalResponse(CodexBaseModel):
@@ -63,11 +65,13 @@ class McpServerElicitationResponse(CodexBaseModel):
       Must be one of the options listed in the request's ``meta.persist``.
     """
 
-    def to_mcp(self) -> mcp.types.ElicitResult:
-        return mcp.types.ElicitResult(action=self.action, content=self.content, _meta=self.meta)
+    def to_mcp(self) -> ElicitResult:
+        from mcp.types import ElicitResult
+
+        return ElicitResult(action=self.action, content=self.content, _meta=self.meta)
 
     @classmethod
-    def from_mcp(cls, result: mcp.types.ElicitResult) -> McpServerElicitationResponse:
+    def from_mcp(cls, result: ElicitResult) -> McpServerElicitationResponse:
         """Create from MCP ElicitResult."""
         return cls(action=result.action, content=result.content, meta=result.meta)
 

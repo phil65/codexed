@@ -3,7 +3,6 @@ from __future__ import annotations
 from codexed.models.base import CodexBaseModel
 from codexed.models.misc import Thread, Turn
 from codexed.models.thread_item import ThreadItem
-from codexed.models.v2_protocol import ResponseItem
 
 
 # Item lifecycle notifications
@@ -23,14 +22,6 @@ class ItemCompletedData(CodexBaseModel):
     thread_id: str
     turn_id: str
     item: ThreadItem
-
-
-class RawResponseItemCompletedData(CodexBaseModel):
-    """Payload for rawResponseItem/completed notification."""
-
-    thread_id: str
-    turn_id: str
-    item: ResponseItem
 
 
 class ThreadStartedData(CodexBaseModel):
