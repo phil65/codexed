@@ -77,7 +77,6 @@ from codexed.models.responses import (
     DynamicToolCallResponse,
     FileChangeRequestApprovalResponse,
     ListMcpServerStatusResponse,
-    LoginAccountResponse,
     McpServerElicitationResponse,
     RemoteSkillSummary,
     ReviewStartResponse,
@@ -149,6 +148,7 @@ from codexed.models.user_input import (
 from codexed.models.v2_protocol import (
     ByteRange,
     InitializeCapabilities,
+    LoginAccountResponse,
     ThreadResumeParams,
     RawResponseItemCompletedNotification,
     ExternalAgentConfigImportParams,

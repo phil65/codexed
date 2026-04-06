@@ -651,7 +651,7 @@ class CodexClient:
         )
         params = TypeAdapter[LoginAccountParams](LoginAccountParams).validate_python(dct)
         result = await self.dispatch.send_request("account/login/start", params)
-        return LoginAccountResponse.model_validate(result)
+        return TypeAdapter[LoginAccountResponse](LoginAccountResponse).validate_python(result)
 
     async def account_login_cancel(self, login_id: str) -> CancelLoginAccountStatus:
         """Cancel an in-progress account login."""

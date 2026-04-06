@@ -13,7 +13,6 @@ from codexed.models.misc import (
 )
 from codexed.models.v2_protocol import (
     AskForApproval,
-    AuthMode,
     DynamicToolCallOutputContentItem,
     ReasoningEffort,
     SandboxPolicy,
@@ -154,16 +153,3 @@ class ListMcpServerStatusResponse(CodexBaseModel):
 
     data: list[McpServerStatusEntry]
     next_cursor: str | None = None
-
-
-# ============================================================================
-# Account models
-# ============================================================================
-
-
-class LoginAccountResponse(CodexBaseModel):
-    """Response for account/login/start request."""
-
-    type: AuthMode
-    login_id: str | None = None
-    auth_url: str | None = None
