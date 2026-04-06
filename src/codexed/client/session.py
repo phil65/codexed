@@ -407,9 +407,13 @@ class Session:
         self,
         target: ReviewTarget,
         *,
-        delivery: ReviewDelivery | None = None,
+        delivery: ReviewDelivery = "inline",
     ) -> ReviewStartResponse:
         """Start a code review.
+
+        Inline delivery runs the review on the same thread, so review items
+        appear in the existing thread history.  Detached delivery creates a new
+        thread for the review, keeping the original thread's history clean.
 
         Args:
             target: Review target (uncommittedChanges, baseBranch, commit, or custom)
@@ -426,9 +430,13 @@ class Session:
         self,
         target: ReviewTarget,
         *,
-        delivery: ReviewDelivery | None = None,
+        delivery: ReviewDelivery = "inline",
     ) -> AsyncIterator[CodexEvent]:
         """Start a code review and stream events.
+
+        Inline delivery runs the review on the same thread, so review items
+        appear in the existing thread history.  Detached delivery creates a new
+        thread for the review, keeping the original thread's history clean.
 
         Args:
             target: Review target (uncommittedChanges, baseBranch, commit, or custom)
