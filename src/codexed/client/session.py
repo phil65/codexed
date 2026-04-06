@@ -197,12 +197,12 @@ class Session:
                     case ErrorMessage(data=ErrorNotification(error=error)):
                         yield event
                         raise TurnFailedError(error.message, turn_id=turn_id)
+                    case ThreadTokenUsageUpdatedEvent(
+                        data=ThreadTokenUsageUpdatedNotification(token_usage=usage)
+                    ):
+                        self.usage = usage
+                        yield event
                     case _:
-                        match event:
-                            case ThreadTokenUsageUpdatedEvent(
-                                data=ThreadTokenUsageUpdatedNotification(token_usage=usage)
-                            ):
-                                self.usage = usage
                         yield event
         finally:
             if turn_key in self._client._turn_queues:
@@ -421,6 +421,47 @@ class Session:
         params = ReviewStartParams(thread_id=self.thread_id, target=target, delivery=delivery)
         result = await self._client.dispatch.send_request("review/start", params)
         return ReviewStartResponse.model_validate(result)
+
+    async def review_stream(
+        self,
+        target: ReviewTarget,
+        *,
+        delivery: ReviewDelivery | None = None,
+    ) -> AsyncIterator[CodexEvent]:
+        """Start a code review and stream events.
+
+        Args:
+            target: Review target (uncommittedChanges, baseBranch, commit, or custom)
+            delivery: Where to run the review (inline or detached)
+
+        Yields:
+            CodexEvent: Streaming events from the review turn
+        """
+        params = ReviewStartParams(thread_id=self.thread_id, target=target, delivery=delivery)
+        result = await self._client.dispatch.send_request("review/start", params)
+        response = ReviewStartResponse.model_validate(result)
+        turn_id = response.turn.id
+        review_thread_id = response.review_thread_id
+        turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
+        turn_key = f"{review_thread_id}:{turn_id}"
+        self._client._turn_queues[turn_key] = turn_queue
+        try:
+            while True:
+                event = await turn_queue.get()
+                match event:
+                    case None:
+                        break
+                    case TurnCompletedEvent():
+                        yield event
+                        break
+                    case ErrorMessage(data=ErrorNotification(error=error)):
+                        yield event
+                        raise TurnFailedError(error.message, turn_id=turn_id)
+                    case _:
+                        yield event
+        finally:
+            if turn_key in self._client._turn_queues:
+                del self._client._turn_queues[turn_key]
 
     # -- Fork ----------------------------------------------------------------
 
