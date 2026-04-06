@@ -91,8 +91,6 @@ from codexed.models.responses import (
     TurnStartResponse,
 )
 from codexed.models.thread_item import (
-    CollabAgentState,
-    McpToolCallError,
     McpToolCallResult,
     ThreadItem,
     ThreadItemAgentMessage,
@@ -138,6 +136,8 @@ from codexed.models.tool_config import (
 
 from codexed.models.v2_protocol import (
     ByteRange,
+    CollabAgentState,
+    McpToolCallError,
     InitializeCapabilities,
     UserInput,
     ImageUserInput,
@@ -229,7 +229,7 @@ from codexed.models.v2_protocol import (
     WriteStatus,
     ActiveThreadStatus,
     GhostCommit,
-    ThreadStatus as ThreadStatusUnion,
+    ThreadStatus,
     IdleThreadStatus,
     NotLoadedThreadStatus,
     SystemErrorThreadStatus,
@@ -824,9 +824,9 @@ __all__ = [
     "ThreadStartParams",
     "ThreadStartedData",
     "ThreadStartedEvent",
+    "ThreadStatus",
     "ThreadStatusChangedMessage",
     "ThreadStatusChangedNotification",
-    "ThreadStatusUnion",
     "ThreadTokenUsage",
     "ThreadTokenUsageUpdatedEvent",
     "ThreadTokenUsageUpdatedNotification",
