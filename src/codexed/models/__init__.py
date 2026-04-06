@@ -137,17 +137,16 @@ from codexed.models.tool_config import (
     WebSearchToolConfig,
     tools_to_config_dict,
 )
-from codexed.models.user_input import (
+
+from codexed.models.v2_protocol import (
+    ByteRange,
+    InitializeCapabilities,
     UserInput,
     ImageUserInput,
     LocalImageUserInput,
     MentionUserInput,
     SkillUserInput,
     TextUserInput,
-)
-from codexed.models.v2_protocol import (
-    ByteRange,
-    InitializeCapabilities,
     LoginAccountResponse,
     ThreadResumeParams,
     RawResponseItemCompletedNotification,

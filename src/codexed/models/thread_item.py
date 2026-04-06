@@ -6,7 +6,6 @@ from mcp.types import ContentBlock
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.user_input import UserInput
 from codexed.models.v2_protocol import (
     CollabAgentState,
     CollabAgentTool,
@@ -20,6 +19,7 @@ from codexed.models.v2_protocol import (
     McpToolCallStatus,
     MessagePhase,
     PatchApplyStatus,
+    UserInput,
     WebSearchAction,
 )
 
