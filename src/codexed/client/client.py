@@ -48,6 +48,7 @@ from codexed.models import (
     ThreadForkParams,
     ThreadListParams,
     ThreadListResponse,
+    ThreadLoadedListParams,
     ThreadLoadedListResponse,
     ThreadResponse,
     ThreadResumeParams,
@@ -86,7 +87,6 @@ if TYPE_CHECKING:
         ExternalAgentConfigMigrationItem,
         McpServerConfig,
         MergeStrategy,
-        Model,
         Personality,
         SandboxMode,
         SandboxPolicy,
@@ -489,29 +489,49 @@ class CodexClient:
         result = await self.dispatch.send_request("thread/list", params)
         return ThreadListResponse.model_validate(result)
 
-    async def thread_loaded_list(self) -> list[str]:
-        """List thread IDs currently loaded in memory."""
-        result = await self.dispatch.send_request("thread/loaded/list")
-        response = ThreadLoadedListResponse.model_validate(result)
-        return response.data
+    async def thread_loaded_list(
+        self,
+        *,
+        cursor: str | None = None,
+        limit: int | None = None,
+    ) -> ThreadLoadedListResponse:
+        """List thread IDs currently loaded in memory.
+
+        Args:
+            cursor: Opaque pagination cursor from previous response
+            limit: Maximum number of thread IDs to return
+
+        Returns:
+            ThreadLoadedListResponse with data (list of thread IDs) and next_cursor
+        """
+        params = ThreadLoadedListParams(cursor=cursor, limit=limit)
+        result = await self.dispatch.send_request("thread/loaded/list", params)
+        return ThreadLoadedListResponse.model_validate(result)
 
     # ========================================================================
     # Model methods
     # ========================================================================
 
-    async def model_list(self, *, include_hidden: bool | None = None) -> list[Model]:
+    async def model_list(
+        self,
+        *,
+        include_hidden: bool | None = None,
+        cursor: str | None = None,
+        limit: int | None = None,
+    ) -> ModelListResponse:
         """List available models with reasoning effort options.
 
         Args:
             include_hidden: When true, include hidden models
+            cursor: Opaque pagination cursor from previous response
+            limit: Maximum number of models to return
 
         Returns:
-            List of available models
+            ModelListResponse with data (list of models) and next_cursor
         """
-        params = ModelListParams(include_hidden=include_hidden, limit=None)
+        params = ModelListParams(include_hidden=include_hidden, cursor=cursor, limit=limit)
         result = await self.dispatch.send_request("model/list", params)
-        response = ModelListResponse.model_validate(result)
-        return response.data
+        return ModelListResponse.model_validate(result)
 
     async def collaboration_mode_list(self) -> list[CollaborationModeMask]:
         """List available collaboration mode presets (experimental).
