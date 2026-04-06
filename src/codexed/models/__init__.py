@@ -92,10 +92,8 @@ from codexed.models.responses import (
 )
 from codexed.models.thread_item import (
     CollabAgentState,
-    FileUpdateChange,
     McpToolCallError,
     McpToolCallResult,
-    PatchChangeKind,
     ThreadItem,
     ThreadItemAgentMessage,
     ThreadItemCollabAgentToolCall,
@@ -143,6 +141,8 @@ from codexed.models.v2_protocol import (
     InitializeCapabilities,
     UserInput,
     ImageUserInput,
+    PatchChangeKind,
+    FileUpdateChange,
     LocalImageUserInput,
     MentionUserInput,
     SkillUserInput,

@@ -15,6 +15,7 @@ from codexed.models.v2_protocol import (
     CommandExecutionStatus,
     DynamicToolCallOutputContentItem,
     DynamicToolCallStatus,
+    FileUpdateChange,
     McpToolCallError,
     McpToolCallStatus,
     MessagePhase,
@@ -22,21 +23,6 @@ from codexed.models.v2_protocol import (
     UserInput,
     WebSearchAction,
 )
-
-
-class PatchChangeKind(CodexBaseModel):
-    """Kind of file change (nested object in Codex's fileChange item)."""
-
-    kind: Literal["add", "delete", "update"] = Field(validation_alias="type")
-    move_path: str | None = None
-
-
-class FileUpdateChange(CodexBaseModel):
-    """File update change."""
-
-    path: str
-    kind: PatchChangeKind
-    diff: str | None = None  # May be absent in "inProgress" state
 
 
 class McpToolCallResult(CodexBaseModel):
