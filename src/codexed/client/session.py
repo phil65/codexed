@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator, Mapping, Sequence  # noqa: TC003
 import logging
 from typing import TYPE_CHECKING, Any, assert_never
 
+from mcp.types import BlobResourceContents, CallToolResult, TextResourceContents
 from pydantic import BaseModel, TypeAdapter
 
 from codexed.client.realtime import RealtimeSession
@@ -17,6 +18,10 @@ from codexed.models import (
     ErrorMessage,
     ErrorNotification,
     ExternalSandboxSandboxPolicy,
+    McpResourceReadParams,
+    McpResourceReadResponse,
+    McpServerToolCallParams,
+    McpServerToolCallResponse,
     ReadOnlySandboxPolicy,
     ReviewStartParams,
     ReviewStartResponse,
@@ -24,6 +29,8 @@ from codexed.models import (
     TextUserInput,
     ThreadArchiveParams,
     ThreadCompactStartParams,
+    ThreadInjectItemsParams,
+    ThreadMemoryModeSetParams,
     ThreadReadParams,
     ThreadReadResponse,
     ThreadRollbackParams,
@@ -48,6 +55,8 @@ from codexed.models import (
 
 
 if TYPE_CHECKING:
+    from openai.types.responses import ResponseItem
+
     from codexed.client import CodexClient
     from codexed.models import (
         ApprovalsReviewer,
@@ -62,6 +71,7 @@ if TYPE_CHECKING:
         ReviewTarget,
         SandboxMode,
         ServiceTier,
+        ThreadMemoryMode,
         ThreadResponse,
         ThreadTokenUsage,
         ToolConfig,
@@ -70,6 +80,8 @@ if TYPE_CHECKING:
     )
 
 logger = logging.getLogger(__name__)
+
+ResourceContents = TextResourceContents | BlobResourceContents
 
 
 class Session:
@@ -116,6 +128,7 @@ class Session:
         service_tier: ServiceTier | None = None,
         summary: ReasoningSummary | None = None,
         collaboration_mode: CollaborationMode | None = None,
+        responsesapi_client_metadata: dict[str, Any] | None = None,
     ) -> AsyncIterator[CodexEvent]:
         """Start a turn and stream events.
 
@@ -132,6 +145,7 @@ class Session:
             service_tier: Optional service tier (fast/flex)
             summary: Optional reasoning summary mode
             collaboration_mode: Optional collaboration mode preset (experimental)
+            responsesapi_client_metadata: Optional turn-scoped Responses API client metadata.
 
         Yields:
             CodexEvent: Streaming events from the turn
@@ -162,11 +176,10 @@ class Session:
                 policy = sandbox_policy
             case _:
                 assert_never(sandbox_policy)
+        in_ = [TextUserInput(text=user_input)] if isinstance(user_input, str) else list(user_input)
         params = TurnStartParams(
             thread_id=self.thread_id,
-            input=[TextUserInput(text=user_input)]
-            if isinstance(user_input, str)
-            else list(user_input),
+            input=in_,
             model=model,
             effort=effort,
             approval_policy=approval_policy,
@@ -178,6 +191,7 @@ class Session:
             personality=personality,
             summary=summary,
             collaboration_mode=collaboration_mode,
+            responsesapi_client_metadata=responsesapi_client_metadata,
         )
         turn_result = await self._client.dispatch.send_request("turn/start", params)
         response = TurnStartResponse.model_validate(turn_result)
@@ -213,12 +227,14 @@ class Session:
         user_input: str | Sequence[UserInput],
         *,
         expected_turn_id: str,
+        responsesapi_client_metadata: dict[str, Any] | None = None,
     ) -> TurnSteerResponse:
         """Steer a running turn with additional input.
 
         Args:
             user_input: Additional user input
             expected_turn_id: The expected active turn ID (precondition)
+            responsesapi_client_metadata: Optional turn-scoped Responses API client metadata.
 
         Returns:
             TurnSteerResponse with the turn ID
@@ -229,6 +245,7 @@ class Session:
             if isinstance(user_input, str)
             else list(user_input),
             expected_turn_id=expected_turn_id,
+            responsesapi_client_metadata=responsesapi_client_metadata,
         )
         result = await self._client.dispatch.send_request("turn/steer", params)
         return TurnSteerResponse.model_validate(result)
@@ -539,5 +556,53 @@ class Session:
             persist_extended_history=persist_extended_history,
         )
 
+    async def read_resource(self, server: str, uri: str) -> list[ResourceContents]:
+        """Read a resource from the MCP server."""
+        params = McpResourceReadParams(server=server, thread_id=self.thread_id, uri=uri)
+        result = await self._client.dispatch.send_request("mcpServer/resource/read", params)
+        data = McpResourceReadResponse.model_validate(result)
+        ta = TypeAdapter[ResourceContents](ResourceContents)
+
+        def convert(old: BaseModel) -> ResourceContents:
+            dct = old.model_dump()
+            dct["_meta"] = dct.pop("field_meta")
+            return ta.validate_python(dct)
+
+        return [convert(i) for i in data.contents]
+
+    async def tool_call(
+        self,
+        server: str,
+        tool: str,
+        arguments: Any | None = None,
+        meta: dict[str, Any] | None = None,
+    ) -> CallToolResult:
+        """Call a tool on the MCP server."""
+        params = McpServerToolCallParams(
+            server=server,
+            thread_id=self.thread_id,
+            tool=tool,
+            arguments=arguments,
+            field_meta=meta,
+        )
+        result = await self._client.dispatch.send_request("mcpServer/tool/call", params)
+        data = McpServerToolCallResponse.model_validate(result)
+        return CallToolResult(
+            structuredContent=data.structured_content,
+            isError=data.is_error,
+            content=data.content,
+            _meta=data.field_meta,
+        )
+
     def __repr__(self) -> str:
         return f"Session(thread_id={self.thread_id!r})"
+
+    async def inject_items(self, items: list[ResponseItem]) -> None:
+        """Inject raw responses-API Items into the thread's model-visible history."""
+        params = ThreadInjectItemsParams(items=items, thread_id=self.thread_id)
+        await self._client.dispatch.send_request("thread/inject_items", params)
+
+    async def set_memory_mode(self, mode: ThreadMemoryMode) -> None:
+        """Set the thread's memory mode."""
+        params = ThreadMemoryModeSetParams(mode=mode, thread_id=self.thread_id)
+        await self._client.dispatch.send_request("thread/memoryMode/set", params)

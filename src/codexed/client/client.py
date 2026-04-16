@@ -41,8 +41,11 @@ from codexed.models import (
     ListMcpServerStatusResponse,
     LoginAccountParams,
     LoginAccountResponse,
+    MarketplaceAddParams,
+    MarketplaceAddResponse,
     McpServerOauthLoginParams,
     McpServerOauthLoginResponse,
+    MemoryResetResponse,
     ModelListParams,
     ModelListResponse,
     ThreadForkParams,
@@ -86,6 +89,7 @@ if TYPE_CHECKING:
         ExperimentalFeature,
         ExternalAgentConfigMigrationItem,
         McpServerConfig,
+        McpServerStatusDetail,
         MergeStrategy,
         Personality,
         SandboxMode,
@@ -93,6 +97,7 @@ if TYPE_CHECKING:
         ServiceTier,
         ThreadSortKey,
         ThreadSourceKind,
+        ThreadStartSource,
         ToolConfig,
     )
     from codexed.request_handlers import (
@@ -231,6 +236,7 @@ class CodexClient:
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         experimental_raw_events: bool = False,
         persist_extended_history: bool = False,
+        session_start_source: ThreadStartSource | None = None,
     ) -> Session:
         """Start a new conversation thread.
 
@@ -257,6 +263,7 @@ class CodexClient:
                 Merged into ``config`` under the ``mcp_servers`` key.
             experimental_raw_events: Emit raw Responses API items (internal)
             persist_extended_history: Persist full history for resume/fork/read
+            session_start_source: Source of the session start
 
         Returns:
             Session wrapping the new thread
@@ -287,6 +294,7 @@ class CodexClient:
             dynamic_tools=dynamic_tools,
             experimental_raw_events=experimental_raw_events,
             persist_extended_history=persist_extended_history,
+            session_start_source=session_start_source,
         )
         result = await self.dispatch.send_request("thread/start", params)
         response = ThreadResponse.model_validate(result)
@@ -589,19 +597,21 @@ class CodexClient:
     async def mcp_server_status_list(
         self,
         *,
+        detail: McpServerStatusDetail | None = None,
         cursor: str | None = None,
         limit: int | None = None,
     ) -> ListMcpServerStatusResponse:
         """List MCP server status with tool and resource information.
 
         Args:
+            detail: Level of detail to include in the response
             cursor: Pagination cursor from previous call
             limit: Maximum number of servers to return
 
         Returns:
             Response with server status entries and optional next_cursor
         """
-        params = ListMcpServerStatusParams(cursor=cursor, limit=limit)
+        params = ListMcpServerStatusParams(cursor=cursor, limit=limit, detail=detail)
         result = await self.dispatch.send_request("mcpServerStatus/list", params)
         return ListMcpServerStatusResponse.model_validate(result)
 
@@ -841,6 +851,7 @@ class CodexClient:
         *,
         reason: str | None = None,
         thread_id: str | None = None,
+        tags: dict[str, Any] | None = None,
         include_logs: bool = False,
         extra_log_files: list[str] | None = None,
     ) -> str:
@@ -850,6 +861,7 @@ class CodexClient:
             classification: Feedback classification
             reason: Optional reason text
             thread_id: Optional thread ID to associate
+            tags: Optional tags to associate with the feedback
             include_logs: Whether to include logs
             extra_log_files: Additional log files to include
 
@@ -860,6 +872,7 @@ class CodexClient:
             classification=classification,
             reason=reason,
             thread_id=thread_id,
+            tags=tags,
             include_logs=include_logs,
             extra_log_files=extra_log_files,
         )
@@ -913,7 +926,7 @@ class CodexClient:
             return
 
         event_data = {"method": method, "params": params}
-        event: CodexEvent = codex_event_adapter.validate_python(event_data)
+        event = codex_event_adapter.validate_python(event_data)
 
         thread_id = params.get("threadId")
 
@@ -993,6 +1006,22 @@ class CodexClient:
         should be automatically granted and tool calls return empty results.
         """
         self._server_request_handlers = create_auto_approve_dict()
+
+    async def add_marketplace(
+        self,
+        ref_name: str | None,
+        source: str,
+        sparse_paths: list[str] | None = None,
+    ) -> MarketplaceAddResponse:
+        """Add a marketplace to the app-server."""
+        params = MarketplaceAddParams(ref_name=ref_name, source=source, sparse_paths=sparse_paths)
+        response = await self.dispatch.send_request("marketplace/add", params)
+        return MarketplaceAddResponse.model_validate(response)
+
+    async def reset_memory(self) -> MemoryResetResponse:
+        """Reset the app-server memory."""
+        response = await self.dispatch.send_request("memory/reset")
+        return MemoryResetResponse.model_validate(response)
 
 
 if __name__ == "__main__":

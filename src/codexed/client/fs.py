@@ -135,16 +135,17 @@ class CodexFS:
         params = FsCopyParams(source_path=source, destination_path=destination, recursive=recursive)
         await self._client.dispatch.send_request("fs/copy", params)
 
-    async def watch(self, path: str) -> FsWatchResponse:
+    async def watch(self, path: str, watch_id: str) -> FsWatchResponse:
         """Start filesystem watch notifications for an absolute path.
 
         Args:
             path: Absolute file or directory path to watch.
+            watch_id: Watch identifier to associate with the path.
 
         Returns:
             FsWatchResponse with watch_id and canonicalized path.
         """
-        params = FsWatchParams(path=path)
+        params = FsWatchParams(path=path, watch_id=watch_id)
         result = await self._client.dispatch.send_request("fs/watch", params)
         return FsWatchResponse.model_validate(result)
 

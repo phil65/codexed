@@ -9,5 +9,3 @@ from typing import Literal
 ApprovalDecision = Literal["allow", "allowForSession", "deny", "denyForSession"]
 SkillApprovalDecision = Literal["allow", "deny"]
 ElicitationAction = Literal["accept", "decline", "cancel"]
-NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
-NetworkPolicyRuleAction = Literal["allow", "deny"]

@@ -8,15 +8,14 @@ from mcp.types import Resource, ResourceTemplate, Tool
 from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
-from codexed.models.codex_types import (
-    NetworkApprovalProtocol,
-    NetworkPolicyRuleAction,
-    SkillApprovalDecision,
-)
+from codexed.models.codex_types import SkillApprovalDecision
 from codexed.models.thread_item import ThreadItem, ThreadItemAgentMessage
 from codexed.models.v2_protocol import (
+    AbsolutePathBuf,
     GitInfo,
     McpAuthStatus,
+    NetworkApprovalProtocol,
+    NetworkDomainPermission,
     SessionSource,
     ThreadStatus,
     TurnError,
@@ -35,7 +34,7 @@ class NetworkPolicyAmendment(CodexBaseModel):
     """Proposed network policy amendment."""
 
     host: str
-    action: NetworkPolicyRuleAction
+    action: NetworkDomainPermission
 
 
 class ExecPolicyAmendment(CodexBaseModel):
@@ -110,9 +109,31 @@ class Turn(CodexBaseModel):
     """Turn data structure."""
 
     id: str
-    items: list[ThreadItem] = Field(default_factory=list)
-    status: TurnStatus = "inProgress"
+
+    completed_at: int | None = None
+    """
+    Unix timestamp (in seconds) when the turn completed.
+    """
+    duration_ms: int | None = None
+    """
+    Duration between turn start and completion in milliseconds, if known.
+    """
     error: TurnError | None = None
+    """
+    Only populated when the Turn's status is failed.
+    """
+    items: list[ThreadItem]
+    """
+    Only populated on a `thread/resume` or `thread/fork` response.
+
+    For all other responses and notifications returning a Turn,
+    the items field will be an empty list.
+    """
+    started_at: int | None = None
+    """
+    Unix timestamp (in seconds) when the turn started.
+    """
+    status: TurnStatus
 
     @property
     def final_response(self) -> str | None:
@@ -135,24 +156,74 @@ class Turn(CodexBaseModel):
 
 
 class Thread(CodexBaseModel):
-    """Thread data structure (matches upstream Codex Thread type)."""
-
-    id: str
-    preview: str = ""
-    ephemeral: bool = False
-    model_provider: str = "openai"
-    created_at: int = 0
-    updated_at: int = 0
-    status: ThreadStatus | None = None
-    path: str | None = None
-    cwd: str = ""
-    cli_version: str = ""
-    source: SessionSource = "appServer"
     agent_nickname: str | None = None
+    """
+    Optional random unique nickname assigned to an AgentControl-spawned sub-agent.
+    """
     agent_role: str | None = None
+    """
+    Optional role (agent_role) assigned to an AgentControl-spawned sub-agent.
+    """
+    cli_version: str
+    """
+    Version of the CLI that created the thread.
+    """
+    created_at: int
+    """
+    Unix timestamp (in seconds) when the thread was created.
+    """
+    cwd: AbsolutePathBuf
+    """
+    Working directory captured for the thread.
+    """
+    ephemeral: bool
+    """
+    Whether the thread is ephemeral and should not be materialized on disk.
+    """
+    forked_from_id: str | None = None
+    """
+    Source thread id when this thread was created by forking another thread.
+    """
     git_info: GitInfo | None = None
+    """
+    Optional Git metadata captured when the thread was created.
+    """
+    id: str
+    model_provider: str
+    """
+    Model provider used for this thread (for example, 'openai').
+    """
     name: str | None = None
-    turns: list[Turn] = Field(default_factory=list)
+    """
+    Optional user-facing thread title.
+    """
+    path: str | None = None
+    """
+    [UNSTABLE] Path to the thread on disk.
+    """
+    preview: str
+    """
+    Usually the first user message in the thread, if available.
+    """
+    source: SessionSource
+    """
+    Origin of the thread (CLI, VSCode, codex exec, codex app-server, etc.).
+    """
+    status: ThreadStatus
+    """
+    Current runtime status for the thread.
+    """
+    turns: list[Turn]
+    """
+    Only populated on `thread/resume`, `thread/rollback`, `thread/fork`, and `thread/read`
+    (when `includeTurns` is true) responses.
+    For all other responses and notifications returning a Thread,
+    the turns field will be an empty list.
+    """
+    updated_at: int
+    """
+    Unix timestamp (in seconds) when the thread was last updated.
+    """
 
 
 class TurnData(CodexBaseModel):

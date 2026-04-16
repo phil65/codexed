@@ -13,6 +13,8 @@ from codexed.models import (
     ThreadRealtimeAppendTextResponse,
     ThreadRealtimeAudioChunk,
     ThreadRealtimeClosedMessage,
+    ThreadRealtimeListVoicesParams,
+    ThreadRealtimeListVoicesResponse,
     ThreadRealtimeStartedMessage,
     ThreadRealtimeStartParams,
     ThreadRealtimeStartResponse,
@@ -26,35 +28,30 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from codexed.client import CodexClient
-    from codexed.models import CodexEvent
+    from codexed.models import (
+        CodexEvent,
+        RealtimeOutputModality,
+        RealtimeVoice,
+        RealtimeVoicesList,
+        ThreadRealtimeStartTransport,
+    )
 
 logger = logging.getLogger(__name__)
 
 
 class RealtimeSession:
-    """Async context manager for a thread-scoped realtime voice session.
-
-    Usage::
-
-        async with session.realtime(prompt="You are helpful") as rt:
-            await rt.send_text("hello")
-            async for event in rt:
-                match event:
-                    case ThreadRealtimeOutputAudioDeltaMessage():
-                        play(event.params.audio)
-                    case ThreadRealtimeTranscriptUpdatedMessage():
-                        print(event.params.text)
-                    case ThreadRealtimeClosedMessage():
-                        break
-    """
+    """Async context manager for a thread-scoped realtime voice session."""
 
     def __init__(
         self,
         client: CodexClient,
         thread_id: str,
-        prompt: str,
+        prompt: str | None = None,
         *,
         session_id: str | None = None,
+        output_modality: RealtimeOutputModality | None = None,
+        transport: ThreadRealtimeStartTransport | None = None,
+        voice: RealtimeVoice | None = None,
     ) -> None:
         self._client = client
         self._thread_id = thread_id
@@ -63,6 +60,9 @@ class RealtimeSession:
         self._queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._closed = False
         self._queue_key = f"realtime:{thread_id}"
+        self._output_modality = output_modality
+        self._transport = transport
+        self._voice = voice
 
     @property
     def thread_id(self) -> str:
@@ -128,12 +128,16 @@ class RealtimeSession:
 
     async def send_text(self, text: str) -> None:
         """Send text input to the realtime session."""
-        params = ThreadRealtimeAppendTextParams(
-            thread_id=self._thread_id,
-            text=text,
-        )
+        params = ThreadRealtimeAppendTextParams(thread_id=self._thread_id, text=text)
         result = await self._client.dispatch.send_request("thread/realtime/appendText", params)
         ThreadRealtimeAppendTextResponse.model_validate(result)
+
+    async def list_voices(self) -> RealtimeVoicesList:
+        """List available voices for the realtime session."""
+        params = ThreadRealtimeListVoicesParams()
+        result = await self._client.dispatch.send_request("thread/realtime/listVoices", params)
+        data = ThreadRealtimeListVoicesResponse.model_validate(result)
+        return data.voices
 
     async def send_audio(
         self,

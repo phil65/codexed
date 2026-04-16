@@ -53,8 +53,10 @@ from codexed.models.v2_protocol import (
     ThreadRealtimeErrorMessage,
     ThreadRealtimeItemAddedMessage,
     ThreadRealtimeOutputAudioDeltaMessage,
+    ThreadRealtimeSdpMessage,
     ThreadRealtimeStartedMessage,
-    ThreadRealtimeTranscriptUpdatedMessage,
+    ThreadRealtimeTranscriptDeltaMessage,
+    ThreadRealtimeTranscriptDoneMessage,
     ThreadStatusChangedMessage,
     ThreadTokenUsageUpdatedNotification,
     ThreadUnarchivedMessage,
@@ -151,6 +153,16 @@ class RawResponseItemCompletedEvent(CodexBaseModel):
 # Discriminated union of all event types
 # ============================================================================
 
+RealtimeEvent = (
+    ThreadRealtimeStartedMessage
+    | ThreadRealtimeItemAddedMessage
+    | ThreadRealtimeTranscriptDeltaMessage
+    | ThreadRealtimeTranscriptDoneMessage
+    | ThreadRealtimeOutputAudioDeltaMessage
+    | ThreadRealtimeSdpMessage
+    | ThreadRealtimeErrorMessage
+    | ThreadRealtimeClosedMessage
+)
 
 CodexEvent = Annotated[
     # Error events
@@ -171,12 +183,7 @@ CodexEvent = Annotated[
     | HookStartedMessage
     | HookCompletedMessage
     # Realtime voice events (EXPERIMENTAL)
-    | ThreadRealtimeStartedMessage
-    | ThreadRealtimeItemAddedMessage
-    | ThreadRealtimeTranscriptUpdatedMessage
-    | ThreadRealtimeOutputAudioDeltaMessage
-    | ThreadRealtimeErrorMessage
-    | ThreadRealtimeClosedMessage
+    | RealtimeEvent
     # Terminal control events
     | CommandExecOutputDeltaMessage
     # Fuzzy file search events (EXPERIMENTAL)
