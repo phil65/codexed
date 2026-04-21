@@ -67,7 +67,7 @@ class McpServerElicitationResponse(CodexBaseModel):
     def to_mcp(self) -> ElicitResult:
         from mcp.types import ElicitResult
 
-        return ElicitResult(action=self.action, content=self.content, _meta=self.meta)
+        return ElicitResult(action=self.action, content=self.content, meta=self.meta)
 
     @classmethod
     def from_mcp(cls, result: ElicitResult) -> McpServerElicitationResponse:

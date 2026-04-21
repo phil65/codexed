@@ -46,10 +46,10 @@ class RealtimeSession:
         self,
         client: CodexClient,
         thread_id: str,
+        output_modality: RealtimeOutputModality,
         prompt: str | None = None,
         *,
         session_id: str | None = None,
-        output_modality: RealtimeOutputModality | None = None,
         transport: ThreadRealtimeStartTransport | None = None,
         voice: RealtimeVoice | None = None,
     ) -> None:
@@ -60,7 +60,7 @@ class RealtimeSession:
         self._queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._closed = False
         self._queue_key = f"realtime:{thread_id}"
-        self._output_modality = output_modality
+        self._output_modality: RealtimeOutputModality = output_modality
         self._transport = transport
         self._voice = voice
 
@@ -81,6 +81,7 @@ class RealtimeSession:
             thread_id=self._thread_id,
             prompt=self._prompt,
             session_id=self._session_id,
+            output_modality=self._output_modality,
         )
         result = await self._client.dispatch.send_request("thread/realtime/start", params)
         ThreadRealtimeStartResponse.model_validate(result)

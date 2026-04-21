@@ -341,7 +341,7 @@ def tools_to_config_dict(tools: list[ToolConfig]) -> dict[str, Any]:
                     case None:
                         pass
                     case _ as unreachable:
-                        assert_never(unreachable)
+                        assert_never(unreachable)  # ty: ignore[type-assertion-failure]
 
             case WebSearchToolConfig(
                 mode=mode,

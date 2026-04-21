@@ -39,6 +39,8 @@ from codexed.models import (
     ThreadShellCommandParams,
     ThreadTokenUsageUpdatedEvent,
     ThreadTokenUsageUpdatedNotification,
+    ThreadTurnsListParams,
+    ThreadTurnsListResponse,
     ThreadUnarchiveParams,
     ThreadUnarchiveResponse,
     ThreadUnsubscribeParams,
@@ -50,6 +52,7 @@ from codexed.models import (
     TurnStartResponse,
     TurnSteerParams,
     TurnSteerResponse,
+    WarningNotification,
     WorkspaceWriteSandboxPolicy,
 )
 
@@ -65,12 +68,14 @@ if TYPE_CHECKING:
         CollaborationMode,
         McpServerConfig,
         Personality,
+        RealtimeOutputModality,
         ReasoningEffort,
         ReasoningSummary,
         ReviewDelivery,
         ReviewTarget,
         SandboxMode,
         ServiceTier,
+        SortDirection,
         ThreadMemoryMode,
         ThreadResponse,
         ThreadTokenUsage,
@@ -176,7 +181,9 @@ class Session:
                 policy = sandbox_policy
             case _:
                 assert_never(sandbox_policy)
-        in_ = [TextUserInput(text=user_input)] if isinstance(user_input, str) else list(user_input)
+        in_: list[UserInput] = (
+            [TextUserInput(text=user_input)] if isinstance(user_input, str) else list(user_input)
+        )
         params = TurnStartParams(
             thread_id=self.thread_id,
             input=in_,
@@ -241,7 +248,7 @@ class Session:
         """
         params = TurnSteerParams(
             thread_id=self.thread_id,
-            input=[TextUserInput(text=user_input)]
+            input=[TextUserInput(text=user_input)]  # pyright: ignore[reportCallIssue, reportArgumentType]
             if isinstance(user_input, str)
             else list(user_input),
             expected_turn_id=expected_turn_id,
@@ -354,7 +361,13 @@ class Session:
         params = ThreadCompactStartParams(thread_id=self.thread_id)
         await self._client.dispatch.send_request("thread/compact/start", params)
 
-    def realtime(self, prompt: str, *, session_id: str | None = None) -> RealtimeSession:
+    def realtime(
+        self,
+        output_modality: RealtimeOutputModality,
+        prompt: str | None = None,
+        *,
+        session_id: str | None = None,
+    ) -> RealtimeSession:
         """Open a realtime voice session on this thread.
 
         Returns an async context manager that sends ``thread/realtime/start``
@@ -368,7 +381,29 @@ class Session:
                 async for event in rt:
                     ...
         """
-        return RealtimeSession(self._client, self.thread_id, prompt, session_id=session_id)
+        return RealtimeSession(
+            self._client,
+            self.thread_id,
+            output_modality=output_modality,
+            prompt=prompt,
+            session_id=session_id,
+        )
+
+    async def list_turns(
+        self,
+        cursor: str | None = None,
+        limit: int | None = None,
+        sort_direction: SortDirection | None = None,
+    ) -> ThreadTurnsListResponse:
+        """List all turns in this thread."""
+        params = ThreadTurnsListParams(
+            cursor=cursor,
+            limit=limit,
+            sort_direction=sort_direction,
+            thread_id=self.thread_id,
+        )
+        result = await self._client.dispatch.send_request("thread/turns/list", params)
+        return ThreadTurnsListResponse.model_validate(result)
 
     async def rollback(self, turns: int) -> ThreadRollbackResponse:
         """Rollback the last N turns from this thread.
@@ -589,9 +624,9 @@ class Session:
         data = McpServerToolCallResponse.model_validate(result)
         return CallToolResult(
             structuredContent=data.structured_content,
-            isError=data.is_error,
+            isError=bool(data.is_error),
             content=data.content,
-            _meta=data.field_meta,
+            meta=data.field_meta,
         )
 
     def __repr__(self) -> str:
@@ -606,3 +641,8 @@ class Session:
         """Set the thread's memory mode."""
         params = ThreadMemoryModeSetParams(mode=mode, thread_id=self.thread_id)
         await self._client.dispatch.send_request("thread/memoryMode/set", params)
+
+    async def warning(self, message: str) -> None:
+        """Send a thread-related warning message to the app-server."""
+        params = WarningNotification(message=message, thread_id=self.thread_id)
+        await self._client.dispatch.send_request("warning", params)

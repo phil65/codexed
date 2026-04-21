@@ -9,15 +9,16 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import TypeAdapter
 
+from codexed.client.account import CodexAccount
 from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
+from codexed.client.marketplace import CodexMarketPlace
+from codexed.client.plugin import CodexPlugin
 from codexed.client.skills import CodexSkills
 from codexed.helpers import merge_config
 from codexed.models import (
     AppsListParams,
     AppsListResponse,
-    CancelLoginAccountParams,
-    CancelLoginAccountResponse,
     CollaborationModeListResponse,
     CommandExecParams,
     CommandExecResponse,
@@ -34,15 +35,8 @@ from codexed.models import (
     ExternalAgentConfigImportParams,
     FeedbackUploadParams,
     FeedbackUploadResponse,
-    GetAccountParams,
-    GetAccountRateLimitsResponse,
-    GetAccountResponse,
     ListMcpServerStatusParams,
     ListMcpServerStatusResponse,
-    LoginAccountParams,
-    LoginAccountResponse,
-    MarketplaceAddParams,
-    MarketplaceAddResponse,
     McpServerOauthLoginParams,
     McpServerOauthLoginResponse,
     MemoryResetResponse,
@@ -58,6 +52,7 @@ from codexed.models import (
     ThreadStartParams,
     codex_event_adapter,
 )
+from codexed.models.v2_protocol import WarningNotification
 from codexed.request_handlers import (
     SERVER_REQUEST_COMMAND_APPROVAL,
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
@@ -79,8 +74,6 @@ if TYPE_CHECKING:
         AppInfo,
         ApprovalsReviewer,
         AskForApproval,
-        AuthMode,
-        CancelLoginAccountStatus,
         CodexEvent,
         CollaborationModeMask,
         ConfigEdit,
@@ -95,6 +88,7 @@ if TYPE_CHECKING:
         SandboxMode,
         SandboxPolicy,
         ServiceTier,
+        SortDirection,
         ThreadSortKey,
         ThreadSourceKind,
         ThreadStartSource,
@@ -179,7 +173,10 @@ class CodexClient:
         self._mcp_elicitation_enabled = on_mcp_elicitation is not None
         self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
+        self.account = CodexAccount(self)
         self.fs = CodexFS(self)
+        self.plugins = CodexPlugin(self)
+        self.marketplace = CodexMarketPlace(self)
         self.skills = CodexSkills(self)
         if on_approval:
             self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # type: ignore[arg-type]
@@ -468,6 +465,7 @@ class CodexClient:
         archived: bool | None = None,
         cwd: str | None = None,
         search_term: str | None = None,
+        sort_direction: SortDirection | None = None,
     ) -> ThreadListResponse:
         """List stored threads with pagination.
 
@@ -480,6 +478,7 @@ class CodexClient:
             archived: If true, only return archived threads
             cwd: Filter by working directory
             search_term: Substring filter for thread title
+            sort_direction: Sort direction (asc or desc)
 
         Returns:
             ThreadListResponse with data (list of threads) and next_cursor
@@ -493,6 +492,7 @@ class CodexClient:
             archived=archived,
             cwd=cwd,
             search_term=search_term,
+            sort_direction=sort_direction,
         )
         result = await self.dispatch.send_request("thread/list", params)
         return ThreadListResponse.model_validate(result)
@@ -636,68 +636,6 @@ class CodexClient:
         result = await self.dispatch.send_request("mcpServer/oauth/login", params)
         response = McpServerOauthLoginResponse.model_validate(result)
         return response.authorization_url
-
-    # ========================================================================
-    # Account methods
-    # ========================================================================
-
-    async def account_read(self, *, refresh_token: bool = False) -> GetAccountResponse:
-        """Read account information.
-
-        Args:
-            refresh_token: When true, trigger a proactive token refresh
-
-        Returns:
-            GetAccountResponse with account info
-        """
-        params = GetAccountParams(refresh_token=refresh_token)
-        result = await self.dispatch.send_request("account/read", params)
-        return GetAccountResponse.model_validate(result)
-
-    async def account_login_start(
-        self,
-        login_type: AuthMode,
-        *,
-        api_key: str | None = None,
-        access_token: str | None = None,
-        chatgpt_account_id: str | None = None,
-    ) -> LoginAccountResponse:
-        """Start account login.
-
-        Args:
-            login_type: Login type (apiKey, chatgpt, chatgptAuthTokens)
-            api_key: API key (for apiKey type)
-            access_token: Access token (for chatgptAuthTokens type)
-            chatgpt_account_id: ChatGPT account ID (for chatgptAuthTokens type)
-
-        Returns:
-            LoginAccountResponse with login details
-        """
-        dct = dict(
-            type=login_type,
-            api_key=api_key,
-            access_token=access_token,
-            chatgpt_account_id=chatgpt_account_id,
-        )
-        params = TypeAdapter[LoginAccountParams](LoginAccountParams).validate_python(dct)
-        result = await self.dispatch.send_request("account/login/start", params)
-        return TypeAdapter[LoginAccountResponse](LoginAccountResponse).validate_python(result)
-
-    async def account_login_cancel(self, login_id: str) -> CancelLoginAccountStatus:
-        """Cancel an in-progress account login."""
-        params = CancelLoginAccountParams(login_id=login_id)
-        result = await self.dispatch.send_request("account/login/cancel", params)
-        response = CancelLoginAccountResponse.model_validate(result)
-        return response.status
-
-    async def account_logout(self) -> None:
-        """Logout from the current account."""
-        await self.dispatch.send_request("account/logout")
-
-    async def account_rate_limits_read(self) -> GetAccountRateLimitsResponse:
-        """Read account rate limits."""
-        result = await self.dispatch.send_request("account/rateLimits/read")
-        return GetAccountRateLimitsResponse.model_validate(result)
 
     # ========================================================================
     # Config methods
@@ -1007,21 +945,15 @@ class CodexClient:
         """
         self._server_request_handlers = create_auto_approve_dict()
 
-    async def add_marketplace(
-        self,
-        ref_name: str | None,
-        source: str,
-        sparse_paths: list[str] | None = None,
-    ) -> MarketplaceAddResponse:
-        """Add a marketplace to the app-server."""
-        params = MarketplaceAddParams(ref_name=ref_name, source=source, sparse_paths=sparse_paths)
-        response = await self.dispatch.send_request("marketplace/add", params)
-        return MarketplaceAddResponse.model_validate(response)
-
     async def reset_memory(self) -> MemoryResetResponse:
         """Reset the app-server memory."""
         response = await self.dispatch.send_request("memory/reset")
         return MemoryResetResponse.model_validate(response)
+
+    async def warning(self, message: str) -> None:
+        """Send a warning message to the app-server."""
+        params = WarningNotification(message=message)
+        await self.dispatch.send_request("warning", params)
 
 
 if __name__ == "__main__":

@@ -143,7 +143,7 @@ class McpElicitationFormParams(_McpElicitationBase):
         return ElicitRequestFormParams(
             message=self.message,
             requestedSchema=self.requested_schema,
-            _meta=ElicitRequestFormParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            meta=ElicitRequestFormParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
@@ -179,7 +179,7 @@ class McpElicitationUrlParams(_McpElicitationBase):
             message=self.message,
             url=self.url,
             elicitationId=self.elicitation_id,
-            _meta=ElicitRequestURLParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            meta=ElicitRequestURLParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
