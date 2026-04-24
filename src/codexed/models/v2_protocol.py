@@ -4993,6 +4993,12 @@ class ThreadStartParams(CodexBaseModel):
     cwd: str | None = None
     developer_instructions: str | None = None
     dynamic_tools: list[DynamicToolSpec] | None = None
+    environments: list[TurnEnvironmentParams] | None = None
+    """
+    Optional sticky environments for this thread.
+
+    Omitted selects the default environment when environment access is enabled. Empty disables environment access for turns that do not provide a turn override. Non-empty selects the first environment as the current turn environment.
+    """
     ephemeral: bool | None = None
     experimental_raw_events: bool | None = False
     """
@@ -5293,6 +5299,11 @@ class TurnDiffUpdatedMessage(CodexBaseModel):
 
 
 
+class TurnEnvironmentParams(CodexBaseModel):
+    cwd: AbsolutePathBuf
+    environment_id: str
+
+
 class TurnError(CodexBaseModel):
     additional_details: str | None = None
     codex_error_info: CodexErrorInfo | None = None
@@ -5364,6 +5375,12 @@ class TurnStartParams(CodexBaseModel):
     effort: ReasoningEffort | None = None
     """
     Override the reasoning effort for this turn and subsequent turns.
+    """
+    environments: list[TurnEnvironmentParams] | None = None
+    """
+    Optional turn-scoped environments.
+
+    Omitted uses the thread sticky environments. Empty disables environment access for this turn. Non-empty selects the first environment as the current turn environment for this turn.
     """
     input: list[UserInput]
     model: str | None = None

@@ -81,6 +81,7 @@ if TYPE_CHECKING:
         ThreadTokenUsage,
         ToolConfig,
         Turn,
+        TurnEnvironmentParams,
         UserInput,
     )
 
@@ -134,6 +135,7 @@ class Session:
         summary: ReasoningSummary | None = None,
         collaboration_mode: CollaborationMode | None = None,
         responsesapi_client_metadata: dict[str, Any] | None = None,
+        environments: list[TurnEnvironmentParams] | None = None,
     ) -> AsyncIterator[CodexEvent]:
         """Start a turn and stream events.
 
@@ -151,6 +153,7 @@ class Session:
             summary: Optional reasoning summary mode
             collaboration_mode: Optional collaboration mode preset (experimental)
             responsesapi_client_metadata: Optional turn-scoped Responses API client metadata.
+            environments: Optional list of environment variables to set for this turn.
 
         Yields:
             CodexEvent: Streaming events from the turn
@@ -199,6 +202,7 @@ class Session:
             summary=summary,
             collaboration_mode=collaboration_mode,
             responsesapi_client_metadata=responsesapi_client_metadata,
+            environments=environments,
         )
         turn_result = await self._client.dispatch.send_request("turn/start", params)
         response = TurnStartResponse.model_validate(turn_result)

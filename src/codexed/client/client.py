@@ -93,6 +93,7 @@ if TYPE_CHECKING:
         ThreadSourceKind,
         ThreadStartSource,
         ToolConfig,
+        TurnEnvironmentParams,
     )
     from codexed.request_handlers import (
         ApprovalHandler,
@@ -234,6 +235,7 @@ class CodexClient:
         experimental_raw_events: bool = False,
         persist_extended_history: bool = False,
         session_start_source: ThreadStartSource | None = None,
+        environments: list[TurnEnvironmentParams] | None = None,
     ) -> Session:
         """Start a new conversation thread.
 
@@ -261,6 +263,7 @@ class CodexClient:
             experimental_raw_events: Emit raw Responses API items (internal)
             persist_extended_history: Persist full history for resume/fork/read
             session_start_source: Source of the session start
+            environments: List of environment variables to set for the thread
 
         Returns:
             Session wrapping the new thread
@@ -292,6 +295,7 @@ class CodexClient:
             experimental_raw_events=experimental_raw_events,
             persist_extended_history=persist_extended_history,
             session_start_source=session_start_source,
+            environments=environments,
         )
         result = await self.dispatch.send_request("thread/start", params)
         response = ThreadResponse.model_validate(result)
