@@ -10,6 +10,8 @@ from codexed.models import (
     MarketplaceAddResponse,
     MarketplaceRemoveParams,
     MarketplaceRemoveResponse,
+    MarketplaceUpgradeParams,
+    MarketplaceUpgradeResponse,
 )
 
 
@@ -39,6 +41,12 @@ class CodexMarketPlace:
         params = MarketplaceRemoveParams(marketplace_name=ref_name)
         response = await self._client.dispatch.send_request("marketplace/remove", params)
         return MarketplaceRemoveResponse.model_validate(response)
+
+    async def upgrade(self, marketplace_name: str | None = None):
+        """Upgrade a marketplace to the latest version."""
+        params = MarketplaceUpgradeParams(marketplace_name=marketplace_name)
+        response = await self._client.dispatch.send_request("marketplace/upgrade", params)
+        return MarketplaceUpgradeResponse.model_validate(response)
 
 
 if __name__ == "__main__":

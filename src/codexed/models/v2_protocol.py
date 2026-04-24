@@ -2636,6 +2636,31 @@ class MarketplaceRemoveResponse(CodexBaseModel):
     marketplace_name: str
 
 
+class MarketplaceUpgradeErrorInfo(CodexBaseModel):
+    marketplace_name: str
+    message: str
+
+
+class MarketplaceUpgradeParams(CodexBaseModel):
+    marketplace_name: str | None = None
+
+
+class MarketplaceUpgradeRequest(CodexBaseModel):
+    """Request from the client to the server."""
+
+    id: RequestId
+    method: Literal["marketplace/upgrade"] = "marketplace/upgrade"
+    params: MarketplaceUpgradeParams
+
+
+
+
+class MarketplaceUpgradeResponse(CodexBaseModel):
+    errors: list[MarketplaceUpgradeErrorInfo]
+    selected_marketplaces: list[str]
+    upgraded_roots: list[AbsolutePathBuf]
+
+
 type McpAuthStatus = Literal["unsupported", "notLoggedIn", "bearerToken", "oAuth"]
 
 
