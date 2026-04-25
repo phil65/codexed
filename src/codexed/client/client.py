@@ -84,6 +84,7 @@ if TYPE_CHECKING:
         McpServerConfig,
         McpServerStatusDetail,
         MergeStrategy,
+        PermissionProfile,
         Personality,
         SandboxMode,
         SandboxPolicy,
@@ -567,6 +568,7 @@ class CodexClient:
         sandbox_policy: SandboxPolicy | None = None,
         output_bytes_cap: int | None = None,
         timeout_ms: int | None = None,
+        permission_profile: PermissionProfile | None = None,
     ) -> CommandExecResponse:
         """Execute a command without creating a thread/turn.
 
@@ -576,6 +578,7 @@ class CodexClient:
             sandbox_policy: Sandbox policy override
             output_bytes_cap: Cap output based on bytes
             timeout_ms: Timeout in milliseconds
+            permission_profile: Permission profile override
 
         Returns:
             CommandExecResponse with exit_code, stdout, stderr
@@ -586,6 +589,7 @@ class CodexClient:
             output_bytes_cap=output_bytes_cap,
             sandbox_policy=sandbox_policy,
             timeout_ms=timeout_ms,
+            permission_profile=permission_profile,
         )
         result = await self.dispatch.send_request("command/exec", params)
         return CommandExecResponse.model_validate(result)

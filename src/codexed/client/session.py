@@ -67,6 +67,7 @@ if TYPE_CHECKING:
         CodexEvent,
         CollaborationMode,
         McpServerConfig,
+        PermissionProfile,
         Personality,
         RealtimeOutputModality,
         ReasoningEffort,
@@ -136,6 +137,7 @@ class Session:
         collaboration_mode: CollaborationMode | None = None,
         responsesapi_client_metadata: dict[str, Any] | None = None,
         environments: list[TurnEnvironmentParams] | None = None,
+        permission_profile: PermissionProfile | None = None,
     ) -> AsyncIterator[CodexEvent]:
         """Start a turn and stream events.
 
@@ -154,6 +156,7 @@ class Session:
             collaboration_mode: Optional collaboration mode preset (experimental)
             responsesapi_client_metadata: Optional turn-scoped Responses API client metadata.
             environments: Optional list of environment variables to set for this turn.
+            permission_profile: Optional permission profile to use for this turn.
 
         Yields:
             CodexEvent: Streaming events from the turn
@@ -203,6 +206,7 @@ class Session:
             collaboration_mode=collaboration_mode,
             responsesapi_client_metadata=responsesapi_client_metadata,
             environments=environments,
+            permission_profile=permission_profile,
         )
         turn_result = await self._client.dispatch.send_request("turn/start", params)
         response = TurnStartResponse.model_validate(turn_result)

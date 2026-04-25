@@ -663,6 +663,12 @@ class CommandExecParams(CodexBaseModel):
 
     When omitted, the server default applies. Cannot be combined with `disableOutputCap`.
     """
+    permission_profile: PermissionProfile | None = None
+    """
+    Optional full permissions profile for this command.
+
+    Defaults to the user's configured permissions when omitted. Cannot be combined with `sandboxPolicy`.
+    """
     process_id: str | None = None
     """
     Optional client-supplied, connection-scoped process id.
@@ -673,7 +679,7 @@ class CommandExecParams(CodexBaseModel):
     """
     Optional sandbox policy for this command.
 
-    Uses the same shape as thread/turn execution sandbox configuration and defaults to the user's configured policy when omitted.
+    Uses the same shape as thread/turn execution sandbox configuration and defaults to the user's configured policy when omitted. Cannot be combined with `permissionProfile`.
     """
     size: CommandExecTerminalSize | None = None
     """
