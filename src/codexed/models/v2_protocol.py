@@ -1199,6 +1199,126 @@ class DeprecationNoticeMessage(CodexBaseModel):
 
 
 
+type DeviceKeyAlgorithm = Literal["ecdsa_p256_sha256"]
+"""
+Device-key algorithm reported at enrollment and signing boundaries.
+"""
+
+
+class DeviceKeyCreateParams(CodexBaseModel):
+    """Create a controller-local device key with a random key id."""
+
+    account_user_id: str
+    client_id: str
+    protection_policy: DeviceKeyProtectionPolicy | None = None
+    """
+    Defaults to `hardware_only` when omitted.
+    """
+
+
+class DeviceKeyCreateRequest(CodexBaseModel):
+    """Request from the client to the server."""
+
+    id: RequestId
+    method: Literal["device/key/create"] = "device/key/create"
+    params: DeviceKeyCreateParams
+
+
+
+
+class DeviceKeyCreateResponse(CodexBaseModel):
+    """Device-key metadata and public key returned by create/public APIs."""
+
+    algorithm: DeviceKeyAlgorithm
+    key_id: str
+    protection_class: DeviceKeyProtectionClass
+    public_key_spki_der_base64: str
+    """
+    SubjectPublicKeyInfo DER encoded as base64.
+    """
+
+
+type DeviceKeyProtectionClass = Literal[
+    "hardware_secure_enclave", "hardware_tpm", "os_protected_nonextractable"
+]
+"""
+Platform protection class for a controller-local device key.
+"""
+
+
+type DeviceKeyProtectionPolicy = Literal["hardware_only", "allow_os_protected_nonextractable"]
+"""
+Protection policy for creating or loading a controller-local device key.
+"""
+
+
+class DeviceKeyPublicParams(CodexBaseModel):
+    """Fetch a controller-local device key public key by id."""
+
+    key_id: str
+
+
+class DeviceKeyPublicRequest(CodexBaseModel):
+    """Request from the client to the server."""
+
+    id: RequestId
+    method: Literal["device/key/public"] = "device/key/public"
+    params: DeviceKeyPublicParams
+
+
+
+
+class DeviceKeyPublicResponse(CodexBaseModel):
+    """Device-key public metadata returned by `device/key/public`."""
+
+    algorithm: DeviceKeyAlgorithm
+    key_id: str
+    protection_class: DeviceKeyProtectionClass
+    public_key_spki_der_base64: str
+    """
+    SubjectPublicKeyInfo DER encoded as base64.
+    """
+
+
+class DeviceKeySignParams(CodexBaseModel):
+    """Sign an accepted structured payload with a controller-local device key."""
+
+    key_id: str
+    payload: DeviceKeySignPayload
+
+
+class DeviceKeySignRequest(CodexBaseModel):
+    """Request from the client to the server."""
+
+    id: RequestId
+    method: Literal["device/key/sign"] = "device/key/sign"
+    params: DeviceKeySignParams
+
+
+
+
+class DeviceKeySignResponse(CodexBaseModel):
+    """ASN.1 DER signature returned by `device/key/sign`."""
+
+    algorithm: DeviceKeyAlgorithm
+    signature_der_base64: str
+    """
+    ECDSA signature DER encoded as base64.
+    """
+    signed_payload_base64: str
+    """
+    Exact bytes signed by the device key, encoded as base64. Verifiers must verify this byte string directly and must not reserialize `payload`.
+    """
+
+
+class DisabledPermissionProfile(CodexBaseModel):
+    """Do not apply an outer sandbox."""
+
+    type: Literal["disabled"] = "disabled"
+
+
+
+
 type DynamicToolCallStatus = Literal["inProgress", "completed", "failed"]
 
 
@@ -3534,6 +3654,95 @@ class ReasoningThreadItem(CodexBaseModel):
     id: str
     summary: list[str] | None = []
     type: Literal["reasoning"] = "reasoning"
+
+
+
+
+type RemoteControlClientConnectionAudience = Literal["remote_control_client_websocket"]
+"""
+Audience for a remote-control client connection device-key proof.
+"""
+
+
+class RemoteControlClientConnectionDeviceKeySignPayload(CodexBaseModel):
+    """Payload bound to one remote-control controller websocket `/client` connection challenge."""
+
+    account_user_id: str
+    audience: RemoteControlClientConnectionAudience
+    client_id: str
+    nonce: str
+    scopes: list[str]
+    """
+    Must contain exactly `remote_control_controller_websocket`.
+    """
+    session_id: str
+    """
+    Backend-issued websocket session id that this proof authorizes.
+    """
+    target_origin: str
+    """
+    Origin of the backend endpoint that issued the challenge and will verify this proof.
+    """
+    target_path: str
+    """
+    Websocket route path that this proof authorizes.
+    """
+    token_expires_at: int
+    """
+    Remote-control token expiration as Unix seconds.
+    """
+    token_sha256_base64url: str
+    """
+    SHA-256 of the controller-scoped remote-control token, encoded as unpadded base64url.
+    """
+    type: Literal["remoteControlClientConnection"] = "remoteControlClientConnection"
+
+
+
+
+type RemoteControlClientEnrollmentAudience = Literal["remote_control_client_enrollment"]
+"""
+Audience for a remote-control client enrollment device-key proof.
+"""
+
+
+class RemoteControlClientEnrollmentDeviceKeySignPayload(CodexBaseModel):
+    """Payload bound to a remote-control client `/client/enroll` ownership challenge."""
+
+    account_user_id: str
+    audience: RemoteControlClientEnrollmentAudience
+    challenge_expires_at: int
+    """
+    Enrollment challenge expiration as Unix seconds.
+    """
+    challenge_id: str
+    """
+    Backend-issued enrollment challenge id that this proof authorizes.
+    """
+    client_id: str
+    device_identity_sha256_base64url: str
+    """
+    SHA-256 of the requested device identity operation, encoded as unpadded base64url.
+    """
+    nonce: str
+    target_origin: str
+    """
+    Origin of the backend endpoint that issued the challenge and will verify this proof.
+    """
+    target_path: str
+    """
+    HTTP route path that this proof authorizes.
+    """
+    type: Literal["remoteControlClientEnrollment"] = "remoteControlClientEnrollment"
+
+
+type DeviceKeySignPayload = (
+    RemoteControlClientConnectionDeviceKeySignPayload
+    | RemoteControlClientEnrollmentDeviceKeySignPayload
+)
+"""
+Structured payloads accepted by `device/key/sign`.
+"""
 
 
 

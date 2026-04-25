@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from pydantic import TypeAdapter
 
 from codexed.client.account import CodexAccount
+from codexed.client.device import CodexDevice
 from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
 from codexed.client.marketplace import CodexMarketPlace
@@ -177,6 +178,7 @@ class CodexClient:
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
         self.account = CodexAccount(self)
         self.fs = CodexFS(self)
+        self.device = CodexDevice(self)
         self.plugins = CodexPlugin(self)
         self.marketplace = CodexMarketPlace(self)
         self.skills = CodexSkills(self)
