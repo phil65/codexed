@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator, Mapping, Sequence  # noqa: TC003
 import logging
 from typing import TYPE_CHECKING, Any, assert_never
 
-from mcp.types import BlobResourceContents, CallToolResult, TextResourceContents
+from mcp.types import CallToolResult
 from pydantic import BaseModel, TypeAdapter
 
 from codexed.client.realtime import RealtimeSession
@@ -55,6 +55,11 @@ from codexed.models import (
     WarningNotification,
     WorkspaceWriteSandboxPolicy,
 )
+from codexed.models.mcp_server import ResourceContents
+from codexed.models.v2_protocol import (
+    GuardianWarningNotification,
+    ThreadApproveGuardianDeniedActionParams,
+)
 
 
 if TYPE_CHECKING:
@@ -87,8 +92,6 @@ if TYPE_CHECKING:
     )
 
 logger = logging.getLogger(__name__)
-
-ResourceContents = TextResourceContents | BlobResourceContents
 
 
 class Session:
@@ -553,6 +556,8 @@ class Session:
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         turn_id: str | None = None,
         persist_extended_history: bool = False,
+        exclude_turns: bool | None = None,
+        permission_profile: PermissionProfile | None = None,
     ) -> Session:
         """Fork this thread into a new thread with copied history.
 
@@ -574,6 +579,10 @@ class Session:
             mcp_servers: Per-thread MCP server configurations
             turn_id: If provided, rollback the forked thread to this turn
             persist_extended_history: Persist full history for resume/fork/read
+            exclude_turns: When true, return only thread metadata and live fork state
+                            without populating `thread.turns`. This is useful when
+                            the client plans to call `thread/turns/list` immediately after forking.
+            permission_profile: Permission profile for forked thread
 
         Returns:
             Session wrapping the new forked thread
@@ -597,6 +606,8 @@ class Session:
             mcp_servers=mcp_servers,
             turn_id=turn_id,
             persist_extended_history=persist_extended_history,
+            exclude_turns=exclude_turns,
+            permission_profile=permission_profile,
         )
 
     async def read_resource(self, server: str, uri: str) -> list[ResourceContents]:
@@ -654,3 +665,13 @@ class Session:
         """Send a thread-related warning message to the app-server."""
         params = WarningNotification(message=message, thread_id=self.thread_id)
         await self._client.dispatch.send_request("warning", params)
+
+    async def guardian_warning(self, message: str) -> None:
+        """Send a thread-related guardian warning message to the app-server."""
+        params = GuardianWarningNotification(message=message, thread_id=self.thread_id)
+        await self._client.dispatch.send_request("warning", params)
+
+    async def approve_guardian_denied_action(self, event: Any) -> None:
+        """Send a request to the server to approve a guardian denied action."""
+        params = ThreadApproveGuardianDeniedActionParams(event=event, thread_id=self.thread_id)
+        await self._client.dispatch.send_request("thread/approveGuardianDeniedAction", params)

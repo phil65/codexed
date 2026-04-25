@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from mcp.types import BlobResourceContents, TextResourceContents
 from pydantic import BaseModel
+
+
+ResourceContents = TextResourceContents | BlobResourceContents
 
 
 class StdioMcpServer(BaseModel):

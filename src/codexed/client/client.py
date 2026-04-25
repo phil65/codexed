@@ -38,6 +38,8 @@ from codexed.models import (
     FeedbackUploadResponse,
     ListMcpServerStatusParams,
     ListMcpServerStatusResponse,
+    McpResourceReadParams,
+    McpResourceReadResponse,
     McpServerOauthLoginParams,
     McpServerOauthLoginResponse,
     MemoryResetResponse,
@@ -51,9 +53,10 @@ from codexed.models import (
     ThreadResponse,
     ThreadResumeParams,
     ThreadStartParams,
+    WarningNotification,
     codex_event_adapter,
 )
-from codexed.models.v2_protocol import WarningNotification
+from codexed.models.mcp_server import ResourceContents
 from codexed.request_handlers import (
     SERVER_REQUEST_COMMAND_APPROVAL,
     SERVER_REQUEST_DYNAMIC_TOOL_CALL,
@@ -69,6 +72,8 @@ from codexed.transport import StdioTransport
 
 if TYPE_CHECKING:
     from typing import Self
+
+    from pydantic import BaseModel
 
     from codexed.client.session import Session
     from codexed.models import (
@@ -97,6 +102,7 @@ if TYPE_CHECKING:
         ToolConfig,
         TurnEnvironmentParams,
     )
+    from codexed.models.v2_protocol import ThreadListCwdFilter
     from codexed.request_handlers import (
         ApprovalHandler,
         DynamicToolCallHandler,
@@ -325,6 +331,8 @@ class CodexClient:
         personality: Personality | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         persist_extended_history: bool = False,
+        exclude_turns: bool | None = None,
+        permission_profile: PermissionProfile | None = None,
     ) -> Session:
         """Resume an existing thread by ID.
 
@@ -346,6 +354,8 @@ class CodexClient:
             personality: Personality override
             mcp_servers: Per-thread MCP server configurations
             persist_extended_history: Persist full history for resume/fork/read
+            exclude_turns: If true, exclude turns from the thread's history
+            permission_profile: Permission profile override
 
         Returns:
             Session wrapping the resumed thread
@@ -374,6 +384,8 @@ class CodexClient:
             service_tier=service_tier,
             personality=personality,
             persist_extended_history=persist_extended_history,
+            exclude_turns=exclude_turns,
+            permission_profile=permission_profile,
         )
         result = await self.dispatch.send_request("thread/resume", params)
         response = ThreadResponse.model_validate(result)
@@ -401,6 +413,8 @@ class CodexClient:
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         turn_id: str | None = None,
         persist_extended_history: bool = False,
+        exclude_turns: bool | None = None,
+        permission_profile: PermissionProfile | None = None,
     ) -> Session:
         """Fork an existing thread into a new thread with copied history.
 
@@ -424,6 +438,10 @@ class CodexClient:
             mcp_servers: Per-thread MCP server configurations
             turn_id: If provided, rollback the forked thread to this turn
             persist_extended_history: Persist full history for resume/fork/read
+            exclude_turns: When true, return only thread metadata and live fork state
+                           without populating `thread.turns`. This is useful when
+                           the client plans to call `thread/turns/list` immediately after forking.
+            permission_profile: Permission profile for forked thread
 
         Returns:
             Session wrapping the new forked thread
@@ -452,6 +470,8 @@ class CodexClient:
             service_tier=service_tier,
             ephemeral=ephemeral,
             persist_extended_history=persist_extended_history,
+            exclude_turns=exclude_turns,
+            permission_profile=permission_profile,
         )
         result = await self.dispatch.send_request("thread/fork", params)
         response = ThreadResponse.model_validate(result)
@@ -470,9 +490,10 @@ class CodexClient:
         model_providers: list[str] | None = None,
         source_kinds: list[ThreadSourceKind] | None = None,
         archived: bool | None = None,
-        cwd: str | None = None,
+        cwd: ThreadListCwdFilter | None = None,
         search_term: str | None = None,
         sort_direction: SortDirection | None = None,
+        use_state_db_only: bool | None = None,
     ) -> ThreadListResponse:
         """List stored threads with pagination.
 
@@ -486,6 +507,7 @@ class CodexClient:
             cwd: Filter by working directory
             search_term: Substring filter for thread title
             sort_direction: Sort direction (asc or desc)
+            use_state_db_only: If true, only return threads from the state DB
 
         Returns:
             ThreadListResponse with data (list of threads) and next_cursor
@@ -500,6 +522,7 @@ class CodexClient:
             cwd=cwd,
             search_term=search_term,
             sort_direction=sort_direction,
+            use_state_db_only=use_state_db_only,
         )
         result = await self.dispatch.send_request("thread/list", params)
         return ThreadListResponse.model_validate(result)
@@ -646,6 +669,20 @@ class CodexClient:
         result = await self.dispatch.send_request("mcpServer/oauth/login", params)
         response = McpServerOauthLoginResponse.model_validate(result)
         return response.authorization_url
+
+    async def read_resource(self, server: str, uri: str) -> list[ResourceContents]:
+        """Read a resource from the MCP server."""
+        params = McpResourceReadParams(server=server, uri=uri)
+        result = await self.dispatch.send_request("mcpServer/resource/read", params)
+        data = McpResourceReadResponse.model_validate(result)
+        ta = TypeAdapter[ResourceContents](ResourceContents)
+
+        def convert(old: BaseModel) -> ResourceContents:
+            dct = old.model_dump()
+            dct["_meta"] = dct.pop("field_meta")
+            return ta.validate_python(dct)
+
+        return [convert(i) for i in data.contents]
 
     # ========================================================================
     # Config methods
