@@ -16,7 +16,7 @@ from codexed.models.v2_protocol import CommandAction
 
 
 if TYPE_CHECKING:
-    from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams
+    from mcp.types import ElicitRequestFormParams, ElicitRequestURLParams, RequestParamsMeta
 
 
 HazelnutScope = Literal["example", "workspace-shared", "all-shared", "personal"]
@@ -120,6 +120,22 @@ class ToolApprovalMeta(TypedDict, total=False):
     connector_description: str
 
 
+def _to_mcp_meta(meta: Any) -> RequestParamsMeta | None:
+    """Convert elicitation metadata to an MCP request `_meta` mapping."""
+    if not meta:
+        return None
+    from mcp.types import RequestParamsMeta
+
+    return TypeAdapter(RequestParamsMeta).validate_python(meta)
+
+
+def _from_mcp_meta(meta: RequestParamsMeta | None) -> dict[str, Any] | None:
+    """Convert an MCP request `_meta` mapping to elicitation metadata (without progress token)."""
+    if meta is None:
+        return None
+    return {key: value for key, value in meta.items() if key != "progress_token"}
+
+
 class _McpElicitationBase(CodexBaseModel):
     """Common fields for MCP elicitation requests."""
 
@@ -142,8 +158,8 @@ class McpElicitationFormParams(_McpElicitationBase):
 
         return ElicitRequestFormParams(
             message=self.message,
-            requestedSchema=self.requested_schema,
-            meta=ElicitRequestFormParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            requested_schema=self.requested_schema,
+            meta=_to_mcp_meta(self.meta),
         )
 
     @classmethod
@@ -157,8 +173,8 @@ class McpElicitationFormParams(_McpElicitationBase):
         """Create from MCP ElicitRequestFormParams."""
         return cls(
             message=params.message,
-            requested_schema=dict(params.requestedSchema),
-            meta=params.meta.model_dump(exclude={"progressToken"}) if params.meta else None,
+            requested_schema=dict(params.requested_schema),
+            meta=_from_mcp_meta(params.meta),
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,
@@ -178,8 +194,8 @@ class McpElicitationUrlParams(_McpElicitationBase):
         return ElicitRequestURLParams(
             message=self.message,
             url=self.url,
-            elicitationId=self.elicitation_id,
-            meta=ElicitRequestURLParams.Meta(**self.meta) if self.meta else None,  # pyright: ignore[reportArgumentType]
+            elicitation_id=self.elicitation_id,
+            meta=_to_mcp_meta(self.meta),
         )
 
     @classmethod
@@ -194,8 +210,8 @@ class McpElicitationUrlParams(_McpElicitationBase):
         return cls(
             message=params.message,
             url=params.url,
-            elicitation_id=params.elicitationId,
-            meta=params.meta.model_dump(exclude={"progressToken"}) if params.meta else None,
+            elicitation_id=params.elicitation_id,
+            meta=_from_mcp_meta(params.meta),
             thread_id=thread_id,
             server_name=server_name,
             turn_id=turn_id,
