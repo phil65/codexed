@@ -16,6 +16,7 @@ Usage:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import re
 import shutil
@@ -137,11 +138,45 @@ def generate_models(schema_path: Path) -> None:
     print(f"  Generated models to {OUTPUT_FILE}")
 
 
-def post_process() -> None:
+_PRIMITIVE_ALIASES = {"string": "str", "integer": "int", "number": "float", "boolean": "bool"}
+
+
+def find_primitive_aliases(schema_path: Path) -> dict[str, str]:
+    """Map bare primitive schema definitions (e.g. ``{"type": "string"}``) to Python types.
+
+    datamodel-codegen drops such definitions when they carry no description,
+    while still referencing them by name elsewhere.
+    """
+    schema = json.loads(schema_path.read_text())
+    definitions: dict[str, dict[str, object]] = (
+        schema.get("definitions") or schema.get("$defs") or {}
+    )
+    return {
+        name: _PRIMITIVE_ALIASES[definition["type"]]
+        for name, definition in definitions.items()
+        if set(definition) == {"type"}
+        and isinstance(definition["type"], str)
+        and definition["type"] in _PRIMITIVE_ALIASES
+    }
+
+
+def post_process(primitive_aliases: dict[str, str]) -> None:
     """Fix known datamodel-codegen issues in the generated file."""
     print("Post-processing generated models...")
     content = OUTPUT_FILE.read_text()
     original = content
+
+    # Re-add bare primitive aliases that datamodel-codegen dropped but still references.
+    missing = [
+        f"type {name} = {python_type}\n"
+        for name, python_type in sorted(primitive_aliases.items())
+        if re.search(rf"\b{name}\b", content)
+        and not re.search(rf"^(type {name} =|class {name}\b)", content, re.MULTILINE)
+    ]
+    if missing:
+        first_definition = re.search(r"^(type |class )", content, re.MULTILINE)
+        insert_at = first_definition.start() if first_definition else len(content)
+        content = content[:insert_at] + "".join(missing) + "\n\n" + content[insert_at:]
 
     # Replace constr(pattern=...) with str in dict key positions.
     content = re.sub(r"constr\(pattern=r?['\"][^'\"]*['\"]\)", "str", content)
@@ -240,8 +275,9 @@ def main() -> None:
         with tempfile.TemporaryDirectory(prefix="codex-schema-") as tmpdir:
             schema_path = generate_schema(codex, Path(tmpdir))
             generate_models(schema_path)
+            primitive_aliases = find_primitive_aliases(schema_path)
 
-        post_process()
+        post_process(primitive_aliases)
         write_init()
         verify_output()
 

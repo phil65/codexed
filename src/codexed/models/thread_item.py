@@ -30,6 +30,8 @@ class McpToolCallResult(CodexBaseModel):
 
     content: list[ContentBlock]
     structured_content: Any = None
+    meta: dict[str, Any] | None = Field(default=None, alias="_meta")
+    """MCP `_meta` field of the tool result."""
 
 
 class BaseThreadItem(CodexBaseModel):

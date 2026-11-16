@@ -5,14 +5,20 @@ from typing import TYPE_CHECKING, Any
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import ApprovalDecision, ElicitationAction
 from codexed.models.misc import (
+    ActivePermissionProfile,
     McpServerStatusEntry,
+    MultiAgentMode,
     Thread,
+    ThreadReadState,
     ToolRequestUserInputAnswer,
     Turn,
     TurnData,
+    TurnsPage,
 )
 from codexed.models.v2_protocol import (
+    ApprovalsReviewer,
     AskForApproval,
+    CollaborationMode,
     DynamicToolCallOutputContentItem,
     ReasoningEffort,
     SandboxPolicy,
@@ -79,6 +85,7 @@ class ThreadReadResponse(CodexBaseModel):
     """Response for thread/read request."""
 
     thread: Thread
+    read_state: ThreadReadState | None = None
 
 
 class ThreadResponse(CodexBaseModel):
@@ -92,6 +99,20 @@ class ThreadResponse(CodexBaseModel):
     sandbox: SandboxPolicy
     reasoning_effort: ReasoningEffort | None = None
     service_tier: ServiceTier | None = None
+    active_permission_profile: ActivePermissionProfile | None = None
+    approvals_reviewer: ApprovalsReviewer | None = None
+    collaboration_mode: CollaborationMode | None = None
+    """Only returned by thread/resume."""
+    disabled_plugin_ids: list[str] | None = None
+    initial_turns_page: TurnsPage | None = None
+    """Only returned by thread/resume."""
+    instruction_sources: list[str] | None = None
+    items_backwards_cursor: str | None = None
+    """Only returned by thread/resume."""
+    multi_agent_mode: MultiAgentMode | None = None
+    runtime_workspace_roots: list[str] | None = None
+    turns_backwards_cursor: str | None = None
+    """Only returned by thread/resume."""
 
 
 class TurnStartResponse(CodexBaseModel):
@@ -112,6 +133,9 @@ class ThreadListResponse(CodexBaseModel):
 
     data: list[Thread]
     next_cursor: str | None = None
+    backwards_cursor: str | None = None
+    read_states: dict[str, ThreadReadState] | None = None
+    """Read state per thread ID."""
 
 
 class ThreadRollbackResponse(CodexBaseModel):

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from mcp.types import Resource, ResourceTemplate, Tool
 from pydantic import Field
@@ -16,6 +16,7 @@ from codexed.models.v2_protocol import (
     McpAuthStatus,
     NetworkApprovalProtocol,
     NetworkDomainPermission,
+    ReasoningEffort,
     SessionSource,
     ThreadStatus,
     TurnError,
@@ -154,6 +155,97 @@ class Turn(CodexBaseModel):
                     last_unphased = text
         return last_unphased
 
+    items_view: TurnItemsView | None = None
+    """How completely the turn's items are included in this payload."""
+    root_turn_id: str | None = None
+
+
+type TurnItemsView = Literal["notLoaded", "summary", "full"]
+
+
+class ThreadStartThreadUnreadPosition(CodexBaseModel):
+    """Explicitly marked unread, including when the thread has no turns."""
+
+    type: Literal["threadStart"] = "threadStart"
+
+
+class TurnThreadUnreadPosition(CodexBaseModel):
+    """The earliest completed result needing attention."""
+
+    turn_id: str
+    type: Literal["turn"] = "turn"
+
+
+type ThreadUnreadPosition = ThreadStartThreadUnreadPosition | TurnThreadUnreadPosition
+
+
+class ThreadReadState(CodexBaseModel):
+    """The first unread position in a durable local thread (null position means read)."""
+
+    first_unread: ThreadUnreadPosition | None = None
+    revision: str
+    """Opaque revision guarding edits against activity the caller has not seen."""
+
+
+class ThreadEnvironment(CodexBaseModel):
+    """An environment selected by a loaded thread, independent of connection status."""
+
+    cwd: str
+    environment_id: str
+    runtime_workspace_roots: list[str]
+
+
+class ThreadExtra(CodexBaseModel):
+    """Extra app-server data for a thread."""
+
+
+type ThreadHistoryMode = Literal["legacy", "paginated"]
+
+
+class ThreadSectionAppearance(CodexBaseModel):
+    """Extensible visual presentation for a custom thread section."""
+
+    color: str | None = None
+    icon: str | None = None
+
+
+class ThreadSection(CodexBaseModel):
+    """An independently persisted, user-visible thread section."""
+
+    appearance: ThreadSectionAppearance | None = None
+    """Optional appearance synchronized across clients."""
+    id: str
+    """Opaque UUIDv7 identity that remains stable when the section is renamed."""
+    name: str
+    """The current user-visible section name."""
+
+
+class ActivePermissionProfile(CodexBaseModel):
+    """The permissions profile active for a thread."""
+
+    extends: str | None = None
+    """Parent profile identifier from the selected profile's `extends` setting, if any."""
+    id: str
+    """Identifier such as `:workspace` or a user-defined `[permissions.<id>]` profile."""
+
+
+class CustomMultiAgentMode(CodexBaseModel):
+    """Custom multi-agent delegation mode defined by the configured mode hint."""
+
+    custom: str
+
+
+type MultiAgentMode = Literal["explicitRequestOnly", "proactive"] | CustomMultiAgentMode
+"""Controls the effective multi-agent delegation instructions for a turn."""
+
+
+class TurnsPage(CodexBaseModel):
+    """A page of turns."""
+
+    backwards_cursor: str | None = None
+    data: list[Turn]
+    next_cursor: str | None = None
+
 
 class Thread(CodexBaseModel):
     agent_nickname: str | None = None
@@ -224,6 +316,23 @@ class Thread(CodexBaseModel):
     """
     Unix timestamp (in seconds) when the thread was last updated.
     """
+    attached_to_thread_id: str | None = None
+    can_accept_direct_input: bool | None = None
+    daybreak_enabled: bool | None = None
+    environments: list[ThreadEnvironment] | None = None
+    extra: ThreadExtra | None = None
+    history_mode: ThreadHistoryMode | None = None
+    model: str | None = None
+    originator: str | None = None
+    parent_thread_id: str | None = None
+    project_id: str | None = None
+    reasoning_effort: ReasoningEffort | None = None
+    recency_at: int | None = None
+    """Unix timestamp (in seconds) used to order threads by recency."""
+    section: ThreadSection | None = None
+    section_entered_at: int | None = None
+    session_id: str | None = None
+    thread_source: str | None = None
 
 
 class TurnData(CodexBaseModel):
@@ -234,6 +343,12 @@ class TurnData(CodexBaseModel):
     thread_id: str | None = None
     items: list[ThreadItem] = Field(default_factory=list)
     error: str | None = None
+    items_view: TurnItemsView | None = None
+    """How completely the turn's items are included in this payload."""
+    root_turn_id: str | None = None
+    started_at: int | None = None
+    completed_at: int | None = None
+    duration_ms: int | None = None
 
 
 class McpServerStatusEntry(CodexBaseModel):
