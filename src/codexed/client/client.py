@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any
 from pydantic import TypeAdapter
 
 from codexed.client.account import CodexAccount
-from codexed.client.device import CodexDevice
 from codexed.client.dispatch import Dispatch
 from codexed.client.fs import CodexFS
 from codexed.client.marketplace import CodexMarketPlace
@@ -90,11 +89,9 @@ if TYPE_CHECKING:
         McpServerConfig,
         McpServerStatusDetail,
         MergeStrategy,
-        PermissionProfile,
         Personality,
         SandboxMode,
         SandboxPolicy,
-        ServiceTier,
         SortDirection,
         ThreadSortKey,
         ThreadSourceKind,
@@ -184,7 +181,6 @@ class CodexClient:
         self._server_request_handlers: dict[str, ServerRequestHandler] = {}
         self.account = CodexAccount(self)
         self.fs = CodexFS(self)
-        self.device = CodexDevice(self)
         self.plugins = CodexPlugin(self)
         self.marketplace = CodexMarketPlace(self)
         self.skills = CodexSkills(self)
@@ -236,13 +232,12 @@ class CodexClient:
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
         service_name: str | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         personality: Personality | None = None,
         ephemeral: bool | None = None,
         dynamic_tools: list[DynamicToolSpec] | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
         experimental_raw_events: bool = False,
-        persist_extended_history: bool = False,
         session_start_source: ThreadStartSource | None = None,
         environments: list[TurnEnvironmentParams] | None = None,
     ) -> Session:
@@ -263,14 +258,13 @@ class CodexClient:
                 exactly those tools. Merged into ``config``.
             code_mode: Enable experimental code mode feature flag
             service_name: Optional service name
-            service_tier: Service tier (fast/flex)
+            service_tier: Service tier
             personality: Personality preset (none, friendly, pragmatic)
             ephemeral: If true, thread is not persisted to disk
             dynamic_tools: Dynamic tool specifications
             mcp_servers: Per-thread MCP server configurations.
                 Merged into ``config`` under the ``mcp_servers`` key.
             experimental_raw_events: Emit raw Responses API items (internal)
-            persist_extended_history: Persist full history for resume/fork/read
             session_start_source: Source of the session start
             environments: List of environment variables to set for the thread
 
@@ -302,7 +296,6 @@ class CodexClient:
             ephemeral=ephemeral,
             dynamic_tools=dynamic_tools,
             experimental_raw_events=experimental_raw_events,
-            persist_extended_history=persist_extended_history,
             session_start_source=session_start_source,
             environments=environments,
         )
@@ -327,12 +320,11 @@ class CodexClient:
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         personality: Personality | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
-        persist_extended_history: bool = False,
         exclude_turns: bool | None = None,
-        permission_profile: PermissionProfile | None = None,
+        permissions: str | None = None,
     ) -> Session:
         """Resume an existing thread by ID.
 
@@ -350,12 +342,11 @@ class CodexClient:
             config: Additional configuration overrides
             tools: Builtin tool configurations override
             code_mode: Enable experimental code mode feature flag
-            service_tier: Service tier (fast/flex)
+            service_tier: Service tier
             personality: Personality override
             mcp_servers: Per-thread MCP server configurations
-            persist_extended_history: Persist full history for resume/fork/read
             exclude_turns: If true, exclude turns from the thread's history
-            permission_profile: Permission profile override
+            permissions: Named permissions profile ID (cannot be combined with sandbox)
 
         Returns:
             Session wrapping the resumed thread
@@ -383,9 +374,8 @@ class CodexClient:
             config=cfg,
             service_tier=service_tier,
             personality=personality,
-            persist_extended_history=persist_extended_history,
             exclude_turns=exclude_turns,
-            permission_profile=permission_profile,
+            permissions=permissions,
         )
         result = await self.dispatch.send_request("thread/resume", params)
         response = ThreadResponse.model_validate(result)
@@ -408,13 +398,13 @@ class CodexClient:
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         ephemeral: bool | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
-        turn_id: str | None = None,
-        persist_extended_history: bool = False,
+        last_turn_id: str | None = None,
+        before_turn_id: str | None = None,
         exclude_turns: bool | None = None,
-        permission_profile: PermissionProfile | None = None,
+        permissions: str | None = None,
     ) -> Session:
         """Fork an existing thread into a new thread with copied history.
 
@@ -432,16 +422,16 @@ class CodexClient:
             config: Additional configuration overrides
             tools: Builtin tool configurations for forked thread
             code_mode: Enable experimental code mode feature flag
-            service_tier: Service tier (fast/flex)
+            service_tier: Service tier
             personality: Personality for forked thread
             ephemeral: If true, forked thread is not persisted
             mcp_servers: Per-thread MCP server configurations
-            turn_id: If provided, rollback the forked thread to this turn
-            persist_extended_history: Persist full history for resume/fork/read
+            last_turn_id: Fork through this turn (inclusive), omitting later turns
+            before_turn_id: Fork before this turn, excluding it and all later turns
             exclude_turns: When true, return only thread metadata and live fork state
                            without populating `thread.turns`. This is useful when
                            the client plans to call `thread/turns/list` immediately after forking.
-            permission_profile: Permission profile for forked thread
+            permissions: Named permissions profile ID (cannot be combined with sandbox)
 
         Returns:
             Session wrapping the new forked thread
@@ -469,17 +459,15 @@ class CodexClient:
             config=cfg,
             service_tier=service_tier,
             ephemeral=ephemeral,
-            persist_extended_history=persist_extended_history,
+            last_turn_id=last_turn_id,
+            before_turn_id=before_turn_id,
             exclude_turns=exclude_turns,
-            permission_profile=permission_profile,
+            permissions=permissions,
         )
         result = await self.dispatch.send_request("thread/fork", params)
         response = ThreadResponse.model_validate(result)
         self._active_threads.add(response.thread.id)
-        session = Session(self, response)
-        if turn_id is not None:
-            await session.rollback_to_turn(turn_id)
-        return session
+        return Session(self, response)
 
     async def thread_list(
         self,
@@ -593,7 +581,7 @@ class CodexClient:
         sandbox_policy: SandboxPolicy | None = None,
         output_bytes_cap: int | None = None,
         timeout_ms: int | None = None,
-        permission_profile: PermissionProfile | None = None,
+        permission_profile: str | None = None,
     ) -> CommandExecResponse:
         """Execute a command without creating a thread/turn.
 
@@ -603,7 +591,8 @@ class CodexClient:
             sandbox_policy: Sandbox policy override
             output_bytes_cap: Cap output based on bytes
             timeout_ms: Timeout in milliseconds
-            permission_profile: Permission profile override
+            permission_profile: Named permissions profile ID
+                (cannot be combined with sandbox_policy)
 
         Returns:
             CommandExecResponse with exit_code, stdout, stderr

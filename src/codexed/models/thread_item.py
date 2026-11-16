@@ -7,6 +7,9 @@ from pydantic import Field
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.v2_protocol import (
+    AgentMessageDelivery,
+    AgentMessageModeration,
+    AsyncUserInputQuestion,
     CollabAgentState,
     CollabAgentTool,
     CollabAgentToolCallStatus,
@@ -16,10 +19,19 @@ from codexed.models.v2_protocol import (
     DynamicToolCallOutputContentItem,
     DynamicToolCallStatus,
     FileUpdateChange,
+    FunctionCallOutputBody,
+    HookPromptFragment,
+    ImageGenerationFailure,
+    ImageGenerationInputImage,
+    McpAppUi,
+    McpToolCallAppContext,
     McpToolCallError,
     McpToolCallStatus,
+    MemoryCitation,
     MessagePhase,
     PatchApplyStatus,
+    ReasoningEffort,
+    SubAgentActivityKind,
     UserInput,
     WebSearchAction,
 )
@@ -38,6 +50,10 @@ class BaseThreadItem(CodexBaseModel):
     """Base class for thread items."""
 
     id: str
+    started_at_ms: int | None = None
+    """Unix timestamp (in milliseconds) when this item lifecycle started."""
+    completed_at_ms: int | None = None
+    """Unix timestamp (in milliseconds) when this item lifecycle completed."""
 
     @property
     def inferred_arguments(self) -> dict[str, Any] | None:
@@ -53,6 +69,7 @@ class ThreadItemUserMessage(BaseThreadItem):
 
     type: Literal["userMessage"] = "userMessage"
     content: list[UserInput]
+    client_id: str | None = None
 
 
 class ThreadItemAgentMessage(BaseThreadItem):
@@ -61,6 +78,10 @@ class ThreadItemAgentMessage(BaseThreadItem):
     type: Literal["agentMessage"] = "agentMessage"
     text: str
     phase: MessagePhase | None = None
+    delivery: AgentMessageDelivery | None = None
+    memory_citation: MemoryCitation | None = None
+    moderation: AgentMessageModeration | None = None
+    questions: list[AsyncUserInputQuestion] | None = None
 
 
 class ThreadItemPlan(BaseThreadItem):
@@ -103,6 +124,9 @@ class ThreadItemCommandExecution(BaseThreadItem):
         if output := self.aggregated_output:
             msg += f"\n{output[:200]}"
         return msg
+
+    plugin_id: str | None = None
+    script_path: str | None = None
 
 
 class ThreadItemFileChange(BaseThreadItem):
@@ -150,6 +174,12 @@ class ThreadItemMcpToolCall(BaseThreadItem):
             result_text = " ".join(texts)
         return f"[Tool: {self.tool}] {result_text[:100]}"
 
+    app_context: McpToolCallAppContext | None = None
+    mcp_app_resource_uri: str | None = None
+    mcp_app_ui: McpAppUi | None = None
+    plugin_id: str | None = None
+    read_only_hint: bool | None = None
+
 
 class ThreadItemDynamicToolCall(BaseThreadItem):
     """Dynamic tool call item."""
@@ -165,6 +195,8 @@ class ThreadItemDynamicToolCall(BaseThreadItem):
     @property
     def inferred_arguments(self) -> dict[str, Any] | None:
         return self.arguments
+
+    namespace: str | None = None
 
 
 class ThreadItemWebSearch(BaseThreadItem):
@@ -182,6 +214,8 @@ class ThreadItemWebSearch(BaseThreadItem):
     def item_summary(self) -> str:
         """Human-readable summary of this web search."""
         return f"[Web Search: {self.query}]"
+
+    results: list[Any] | None = None
 
 
 class ThreadItemImageView(BaseThreadItem):
@@ -258,8 +292,59 @@ class ThreadItemCollabAgentToolCall(BaseThreadItem):
         receiver_ids = ", ".join(self.receiver_thread_ids)
         return f"[Collab Agent: {self.tool}] {receiver_ids} ({status})"
 
+    model: str | None = None
+    reasoning_effort: ReasoningEffort | None = None
+
 
 # Discriminated union of all ThreadItem types
+class ThreadItemFunctionCallOutput(BaseThreadItem):
+    """Output of a function call."""
+
+    type: Literal["functionCallOutput"] = "functionCallOutput"
+    name: str
+    namespace: str | None = None
+    output: FunctionCallOutputBody
+
+
+class ThreadItemHookPrompt(BaseThreadItem):
+    """Prompt injected by a hook."""
+
+    type: Literal["hookPrompt"] = "hookPrompt"
+    fragments: list[HookPromptFragment]
+
+
+class ThreadItemImageGeneration(BaseThreadItem):
+    """Image generation item."""
+
+    type: Literal["imageGeneration"] = "imageGeneration"
+    status: str
+    result: str
+    failure: ImageGenerationFailure | None = None
+    generation_id: str | None = None
+    input_images: list[ImageGenerationInputImage] | None = None
+    revised_prompt: str | None = None
+    saved_path: str | None = None
+    transparent_background: bool | None = None
+
+
+class ThreadItemSleep(BaseThreadItem):
+    """Sleep item."""
+
+    type: Literal["sleep"] = "sleep"
+    duration_ms: int = Field(ge=0)
+
+
+class ThreadItemSubAgentActivity(BaseThreadItem):
+    """Activity of a sub-agent."""
+
+    type: Literal["subAgentActivity"] = "subAgentActivity"
+    agent_path: str
+    agent_thread_id: str
+    kind: SubAgentActivityKind
+    model: str | None = None
+    reasoning_effort: ReasoningEffort | None = None
+
+
 ThreadItem = (
     ThreadItemUserMessage
     | ThreadItemAgentMessage
@@ -275,4 +360,9 @@ ThreadItem = (
     | ThreadItemEnteredReviewMode
     | ThreadItemExitedReviewMode
     | ThreadItemContextCompaction
+    | ThreadItemFunctionCallOutput
+    | ThreadItemHookPrompt
+    | ThreadItemImageGeneration
+    | ThreadItemSleep
+    | ThreadItemSubAgentActivity
 )

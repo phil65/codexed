@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pydantic import Field
+
 from codexed.models.base import CodexBaseModel
 from codexed.models.misc import Thread, Turn
 from codexed.models.thread_item import ThreadItem
@@ -14,6 +16,8 @@ class ItemStartedData(CodexBaseModel):
     thread_id: str
     turn_id: str
     item: ThreadItem
+    started_at_ms: int
+    """Unix timestamp (in milliseconds) when this item lifecycle started."""
 
 
 class ItemCompletedData(CodexBaseModel):
@@ -22,6 +26,10 @@ class ItemCompletedData(CodexBaseModel):
     thread_id: str
     turn_id: str
     item: ThreadItem
+    completed_at_ms: int
+    """Unix timestamp (in milliseconds) when this item lifecycle completed."""
+    content_token_count: int | None = Field(default=None, ge=0)
+    """Token count of the item's content, if known."""
 
 
 class ThreadStartedData(CodexBaseModel):

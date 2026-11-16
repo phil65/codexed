@@ -33,8 +33,8 @@ from codexed.models import (
     ThreadMemoryModeSetParams,
     ThreadReadParams,
     ThreadReadResponse,
-    ThreadRollbackParams,
-    ThreadRollbackResponse,
+    ThreadRevertParams,
+    ThreadRevertResponse,
     ThreadSetNameParams,
     ThreadShellCommandParams,
     ThreadTokenUsageUpdatedEvent,
@@ -72,7 +72,6 @@ if TYPE_CHECKING:
         CodexEvent,
         CollaborationMode,
         McpServerConfig,
-        PermissionProfile,
         Personality,
         RealtimeOutputModality,
         ReasoningEffort,
@@ -80,7 +79,6 @@ if TYPE_CHECKING:
         ReviewDelivery,
         ReviewTarget,
         SandboxMode,
-        ServiceTier,
         SortDirection,
         ThreadMemoryMode,
         ThreadResponse,
@@ -135,12 +133,12 @@ class Session:
         sandbox_policy: SandboxMode | SandboxPolicy | None = None,
         output_schema: dict[str, Any] | type[Any] | None = None,
         personality: Personality | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         summary: ReasoningSummary | None = None,
         collaboration_mode: CollaborationMode | None = None,
         responsesapi_client_metadata: dict[str, Any] | None = None,
         environments: list[TurnEnvironmentParams] | None = None,
-        permission_profile: PermissionProfile | None = None,
+        permissions: str | None = None,
     ) -> AsyncIterator[CodexEvent]:
         """Start a turn and stream events.
 
@@ -159,7 +157,7 @@ class Session:
             collaboration_mode: Optional collaboration mode preset (experimental)
             responsesapi_client_metadata: Optional turn-scoped Responses API client metadata.
             environments: Optional list of environment variables to set for this turn.
-            permission_profile: Optional permission profile to use for this turn.
+            permissions: Named permissions profile ID (cannot be combined with sandbox)
 
         Yields:
             CodexEvent: Streaming events from the turn
@@ -209,7 +207,7 @@ class Session:
             collaboration_mode=collaboration_mode,
             responsesapi_client_metadata=responsesapi_client_metadata,
             environments=environments,
-            permission_profile=permission_profile,
+            permissions=permissions,
         )
         turn_result = await self._client.dispatch.send_request("turn/start", params)
         response = TurnStartResponse.model_validate(turn_result)
@@ -285,7 +283,7 @@ class Session:
         cwd: str | None = None,
         sandbox_policy: SandboxMode | SandboxPolicy | None = None,
         personality: Personality | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         summary: ReasoningSummary | None = None,
         collaboration_mode: CollaborationMode | None = None,
     ) -> ResultType:
@@ -377,7 +375,7 @@ class Session:
         output_modality: RealtimeOutputModality,
         prompt: str | None = None,
         *,
-        session_id: str | None = None,
+        realtime_session_id: str | None = None,
     ) -> RealtimeSession:
         """Open a realtime voice session on this thread.
 
@@ -397,7 +395,7 @@ class Session:
             self.thread_id,
             output_modality=output_modality,
             prompt=prompt,
-            session_id=session_id,
+            realtime_session_id=realtime_session_id,
         )
 
     async def list_turns(
@@ -416,41 +414,21 @@ class Session:
         result = await self._client.dispatch.send_request("thread/turns/list", params)
         return ThreadTurnsListResponse.model_validate(result)
 
-    async def rollback(self, turns: int) -> ThreadRollbackResponse:
-        """Rollback the last N turns from this thread.
+    async def revert(self, before_turn_id: str) -> ThreadRevertResponse:
+        """Replace the thread's persisted history with the turns before `before_turn_id`.
+
+        The given turn and all later turns are dropped. Only conversation history
+        changes; local file changes are not reverted.
 
         Args:
-            turns: Number of turns to rollback
+            before_turn_id: First turn to drop (it and every later turn are removed)
 
         Returns:
-            Updated thread object with turns populated
+            Updated thread metadata and cursors for re-hydrating the retained history
         """
-        params = ThreadRollbackParams(thread_id=self.thread_id, num_turns=turns)
-        result = await self._client.dispatch.send_request("thread/rollback", params)
-        return ThreadRollbackResponse.model_validate(result)
-
-    async def rollback_to_turn(self, turn_id: str) -> ThreadRollbackResponse:
-        """Rollback to a specific turn, keeping that turn and removing all after it.
-
-        Args:
-            turn_id: The turn ID to roll back to (this turn will be kept)
-
-        Returns:
-            Updated thread object with turns populated
-
-        Raises:
-            ValueError: If the turn_id is not found in the thread
-        """
-        thread_response = await self.read(include_turns=True)
-        turns = thread_response.thread.turns
-        turn_index = next((i for i, turn in enumerate(turns) if turn.id == turn_id), None)
-        if turn_index is None:
-            raise ValueError(f"Turn {turn_id!r} not found in thread {self.thread_id!r}")
-        num_turns_to_drop = len(turns) - turn_index - 1
-        if num_turns_to_drop < 1:
-            msg = f"Turn {turn_id!r} is already the last turn in thread {self.thread_id!r}"
-            raise ValueError(msg)
-        return await self.rollback(num_turns_to_drop)
+        params = ThreadRevertParams(thread_id=self.thread_id, before_turn_id=before_turn_id)
+        result = await self._client.dispatch.send_request("thread/revert", params)
+        return ThreadRevertResponse.model_validate(result)
 
     async def shell_command(self, command: str) -> None:
         """Run a user-initiated shell command against this thread.
@@ -551,13 +529,13 @@ class Session:
         config: dict[str, Any] | None = None,
         tools: list[ToolConfig] | None = None,
         code_mode: bool | None = None,
-        service_tier: ServiceTier | None = None,
+        service_tier: str | None = None,
         ephemeral: bool | None = None,
         mcp_servers: Mapping[str, McpServerConfig] | None = None,
-        turn_id: str | None = None,
-        persist_extended_history: bool = False,
+        last_turn_id: str | None = None,
+        before_turn_id: str | None = None,
         exclude_turns: bool | None = None,
-        permission_profile: PermissionProfile | None = None,
+        permissions: str | None = None,
     ) -> Session:
         """Fork this thread into a new thread with copied history.
 
@@ -574,15 +552,15 @@ class Session:
             config: Additional configuration overrides
             tools: Builtin tool configurations for forked thread
             code_mode: Enable experimental code mode feature flag
-            service_tier: Service tier (fast/flex)
+            service_tier: Service tier
             ephemeral: If true, forked thread is not persisted
             mcp_servers: Per-thread MCP server configurations
-            turn_id: If provided, rollback the forked thread to this turn
-            persist_extended_history: Persist full history for resume/fork/read
+            last_turn_id: Fork through this turn (inclusive), omitting later turns
+            before_turn_id: Fork before this turn, excluding it and all later turns
             exclude_turns: When true, return only thread metadata and live fork state
                             without populating `thread.turns`. This is useful when
                             the client plans to call `thread/turns/list` immediately after forking.
-            permission_profile: Permission profile for forked thread
+            permissions: Named permissions profile ID (cannot be combined with sandbox)
 
         Returns:
             Session wrapping the new forked thread
@@ -604,10 +582,10 @@ class Session:
             service_tier=service_tier,
             ephemeral=ephemeral,
             mcp_servers=mcp_servers,
-            turn_id=turn_id,
-            persist_extended_history=persist_extended_history,
+            last_turn_id=last_turn_id,
+            before_turn_id=before_turn_id,
             exclude_turns=exclude_turns,
-            permission_profile=permission_profile,
+            permissions=permissions,
         )
 
     async def read_resource(self, server: str, uri: str) -> list[ResourceContents]:

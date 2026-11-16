@@ -49,14 +49,14 @@ class RealtimeSession:
         output_modality: RealtimeOutputModality,
         prompt: str | None = None,
         *,
-        session_id: str | None = None,
+        realtime_session_id: str | None = None,
         transport: ThreadRealtimeStartTransport | None = None,
         voice: RealtimeVoice | None = None,
     ) -> None:
         self._client = client
         self._thread_id = thread_id
         self._prompt = prompt
-        self._session_id = session_id
+        self._session_id = realtime_session_id
         self._queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         self._closed = False
         self._queue_key = f"realtime:{thread_id}"
@@ -69,7 +69,7 @@ class RealtimeSession:
         return self._thread_id
 
     @property
-    def session_id(self) -> str | None:
+    def realtime_session_id(self) -> str | None:
         return self._session_id
 
     async def __aenter__(self) -> Self:
@@ -80,7 +80,7 @@ class RealtimeSession:
         params = ThreadRealtimeStartParams(
             thread_id=self._thread_id,
             prompt=self._prompt,
-            session_id=self._session_id,
+            realtime_session_id=self._session_id,
             output_modality=self._output_modality,
         )
         result = await self._client.dispatch.send_request("thread/realtime/start", params)
@@ -89,7 +89,7 @@ class RealtimeSession:
         # Wait for the started notification
         event = await self._queue.get()
         if isinstance(event, ThreadRealtimeStartedMessage):
-            self._session_id = event.params.session_id
+            self._session_id = event.params.realtime_session_id
         return self
 
     async def __aexit__(
@@ -175,5 +175,5 @@ class RealtimeSession:
         state = "closed" if self._closed else "active"
         return (
             f"RealtimeSession(thread_id={self._thread_id!r}, "
-            f"session_id={self._session_id!r}, {state})"
+            f"realtime_session_id={self._session_id!r}, {state})"
         )

@@ -5,24 +5,22 @@ from typing import TYPE_CHECKING, Any
 from codexed.models.base import CodexBaseModel
 from codexed.models.codex_types import ApprovalDecision, ElicitationAction
 from codexed.models.misc import (
-    ActivePermissionProfile,
     McpServerStatusEntry,
-    MultiAgentMode,
     Thread,
-    ThreadReadState,
     ToolRequestUserInputAnswer,
-    Turn,
     TurnData,
     TurnsPage,
 )
 from codexed.models.v2_protocol import (
+    ActivePermissionProfile,
     ApprovalsReviewer,
     AskForApproval,
     CollaborationMode,
     DynamicToolCallOutputContentItem,
+    MultiAgentMode,
     ReasoningEffort,
     SandboxPolicy,
-    ServiceTier,
+    ThreadReadState,
 )
 
 
@@ -98,7 +96,7 @@ class ThreadResponse(CodexBaseModel):
     approval_policy: AskForApproval
     sandbox: SandboxPolicy
     reasoning_effort: ReasoningEffort | None = None
-    service_tier: ServiceTier | None = None
+    service_tier: str | None = None
     active_permission_profile: ActivePermissionProfile | None = None
     approvals_reviewer: ApprovalsReviewer | None = None
     collaboration_mode: CollaborationMode | None = None
@@ -138,11 +136,15 @@ class ThreadListResponse(CodexBaseModel):
     """Read state per thread ID."""
 
 
-class ThreadRollbackResponse(CodexBaseModel):
-    """Response for thread/rollback request."""
+class ThreadRevertResponse(CodexBaseModel):
+    """Response for thread/revert request."""
 
     thread: Thread
-    turns: list[Turn]
+    """Updated thread metadata. `turns` is always empty; use `thread/turns/list`."""
+    items_backwards_cursor: str | None = None
+    """Cursor for hydrating paginated items backwards via `thread/items/list`."""
+    turns_backwards_cursor: str | None = None
+    """Cursor for hydrating paginated turns backwards via `thread/turns/list`."""
 
 
 class ThreadUnarchiveResponse(CodexBaseModel):

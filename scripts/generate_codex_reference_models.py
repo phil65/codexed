@@ -194,6 +194,8 @@ def post_process(primitive_aliases: dict[str, str]) -> None:
     # datamodel-codegen appends "1" when a name clashes with the params class.
     # We rename FooNotification1 -> FooMessage (the envelope with method + params).
     content = re.sub(r"\b(\w+)Notification1\b", r"\1Message", content)
+    # Newer datamodel-codegen versions name the envelope FooNotificationModel instead.
+    content = re.sub(r"\b(\w+)NotificationModel\b", r"\1Message", content)
 
     # Envelope classes where the params class has a different prefix,
     # so datamodel-codegen didn't append "1". Rename explicitly.

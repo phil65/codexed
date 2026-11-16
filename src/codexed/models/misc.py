@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from mcp.types import Resource, ResourceTemplate, Tool
 from pydantic import Field
@@ -18,8 +18,13 @@ from codexed.models.v2_protocol import (
     NetworkDomainPermission,
     ReasoningEffort,
     SessionSource,
+    ThreadEnvironment,
+    ThreadExtra,
+    ThreadHistoryMode,
+    ThreadSection,
     ThreadStatus,
     TurnError,
+    TurnItemsView,
     TurnStatus,
 )
 
@@ -160,85 +165,6 @@ class Turn(CodexBaseModel):
     root_turn_id: str | None = None
 
 
-type TurnItemsView = Literal["notLoaded", "summary", "full"]
-
-
-class ThreadStartThreadUnreadPosition(CodexBaseModel):
-    """Explicitly marked unread, including when the thread has no turns."""
-
-    type: Literal["threadStart"] = "threadStart"
-
-
-class TurnThreadUnreadPosition(CodexBaseModel):
-    """The earliest completed result needing attention."""
-
-    turn_id: str
-    type: Literal["turn"] = "turn"
-
-
-type ThreadUnreadPosition = ThreadStartThreadUnreadPosition | TurnThreadUnreadPosition
-
-
-class ThreadReadState(CodexBaseModel):
-    """The first unread position in a durable local thread (null position means read)."""
-
-    first_unread: ThreadUnreadPosition | None = None
-    revision: str
-    """Opaque revision guarding edits against activity the caller has not seen."""
-
-
-class ThreadEnvironment(CodexBaseModel):
-    """An environment selected by a loaded thread, independent of connection status."""
-
-    cwd: str
-    environment_id: str
-    runtime_workspace_roots: list[str]
-
-
-class ThreadExtra(CodexBaseModel):
-    """Extra app-server data for a thread."""
-
-
-type ThreadHistoryMode = Literal["legacy", "paginated"]
-
-
-class ThreadSectionAppearance(CodexBaseModel):
-    """Extensible visual presentation for a custom thread section."""
-
-    color: str | None = None
-    icon: str | None = None
-
-
-class ThreadSection(CodexBaseModel):
-    """An independently persisted, user-visible thread section."""
-
-    appearance: ThreadSectionAppearance | None = None
-    """Optional appearance synchronized across clients."""
-    id: str
-    """Opaque UUIDv7 identity that remains stable when the section is renamed."""
-    name: str
-    """The current user-visible section name."""
-
-
-class ActivePermissionProfile(CodexBaseModel):
-    """The permissions profile active for a thread."""
-
-    extends: str | None = None
-    """Parent profile identifier from the selected profile's `extends` setting, if any."""
-    id: str
-    """Identifier such as `:workspace` or a user-defined `[permissions.<id>]` profile."""
-
-
-class CustomMultiAgentMode(CodexBaseModel):
-    """Custom multi-agent delegation mode defined by the configured mode hint."""
-
-    custom: str
-
-
-type MultiAgentMode = Literal["explicitRequestOnly", "proactive"] | CustomMultiAgentMode
-"""Controls the effective multi-agent delegation instructions for a turn."""
-
-
 class TurnsPage(CodexBaseModel):
     """A page of turns."""
 
@@ -307,7 +233,7 @@ class Thread(CodexBaseModel):
     """
     turns: list[Turn]
     """
-    Only populated on `thread/resume`, `thread/rollback`, `thread/fork`, and `thread/read`
+    Only populated on `thread/resume`, `thread/fork`, and `thread/read`
     (when `includeTurns` is true) responses.
     For all other responses and notifications returning a Thread,
     the turns field will be an empty list.

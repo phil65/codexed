@@ -19,49 +19,86 @@ from codexed.models.event_data import (
     TurnStartedData,
 )
 from codexed.models.v2_protocol import (
+    AccountGatewayOAuthChangedNotification,
     AccountLoginCompletedMessage,
     AccountRateLimitsUpdatedMessage,
     AccountUpdatedMessage,
     AppListUpdatedMessage,
+    AutoApprovalReviewStrictReviewRequiredNotification,
     CommandExecOutputDeltaMessage,
     ConfigWarningMessage,
     DeprecationNoticeMessage,
     ErrorMessage,
+    ExternalAgentConfigImportCompletedMessage,
+    ExternalAgentConfigImportProgressMessage,
     FsChangedMessage,
     FuzzyFileSearchSessionCompletedMessage,
     FuzzyFileSearchSessionUpdatedMessage,
+    GuardianWarningMessage,
     HookCompletedMessage,
     HookStartedMessage,
     ItemAgentMessageDeltaNotification,
+    ItemAutoApprovalReviewCompletedNotification,
+    ItemAutoApprovalReviewStartedNotification,
     ItemCommandExecutionOutputDeltaNotification,
     ItemCommandExecutionTerminalInteractionNotification,
     ItemFileChangeOutputDeltaNotification,
+    ItemFileChangePatchUpdatedNotification,
     ItemMcpToolCallProgressNotification,
     ItemPlanDeltaNotification,
     ItemReasoningSummaryPartAddedNotification,
     ItemReasoningSummaryTextDeltaNotification,
     ItemReasoningTextDeltaNotification,
+    McpServerEventStreamNotificationNotification,
     McpServerOauthLoginCompletedMessage,
     McpServerStartupStatusUpdatedNotification,
+    ModelProviderAuthRecoveryCompletedNotification,
+    ModelProviderAuthRecoveryStartedNotification,
     ModelReroutedMessage,
-    RawResponseItemCompletedNotification,
+    ModelSafetyBufferingUpdatedMessage,
+    ModelVerificationMessage,
+    ProcessExitedMessage,
+    ProcessOutputDeltaMessage,
+    ProjectChangedMessage,
+    RemoteControlStatusChangedMessage,
     ServerRequestResolvedMessage,
+    SkillsChangedMessage,
     ThreadArchivedMessage,
+    ThreadAttachmentUpdatedMessage,
+    ThreadClosedMessage,
     ThreadCompactedMessage,
+    ThreadDeletedMessage,
+    ThreadEnvironmentConnectedNotification,
+    ThreadEnvironmentDisconnectedNotification,
+    ThreadGoalClearedMessage,
+    ThreadGoalUpdatedMessage,
     ThreadNameUpdatedMessage,
+    ThreadPredictionUpdatedMessage,
+    ThreadProjectUpdatedMessage,
+    ThreadQueueChangedMessage,
+    ThreadReadStateChangedMessage,
     ThreadRealtimeClosedMessage,
     ThreadRealtimeErrorMessage,
     ThreadRealtimeItemAddedMessage,
+    ThreadRealtimeItemCompletedMessage,
+    ThreadRealtimeItemStartedMessage,
+    ThreadRealtimeItemTranscriptDeltaMessage,
     ThreadRealtimeOutputAudioDeltaMessage,
     ThreadRealtimeSdpMessage,
     ThreadRealtimeStartedMessage,
     ThreadRealtimeTranscriptDeltaMessage,
     ThreadRealtimeTranscriptDoneMessage,
+    ThreadRevertedMessage,
+    ThreadSectionChangedMessage,
+    ThreadSettingsUpdatedMessage,
     ThreadStatusChangedMessage,
     ThreadTokenUsageUpdatedNotification,
     ThreadUnarchivedMessage,
     TurnDiffUpdatedMessage,
+    TurnModerationMetadataMessage,
     TurnPlanUpdatedMessage,
+    WarningMessage,
+    WindowsSandboxSetupCompletedMessage,
     WindowsWorldWritableWarningMessage,
 )
 
@@ -142,13 +179,6 @@ class ItemCompletedEvent(CodexBaseModel):
     params: ItemCompletedData
 
 
-class RawResponseItemCompletedEvent(CodexBaseModel):
-    """Raw response item completed event."""
-
-    method: Literal["rawResponseItem/completed"] = "rawResponseItem/completed"
-    params: RawResponseItemCompletedNotification
-
-
 # ============================================================================
 # Discriminated union of all event types
 # ============================================================================
@@ -156,6 +186,9 @@ class RawResponseItemCompletedEvent(CodexBaseModel):
 RealtimeEvent = (
     ThreadRealtimeStartedMessage
     | ThreadRealtimeItemAddedMessage
+    | ThreadRealtimeItemStartedMessage
+    | ThreadRealtimeItemTranscriptDeltaMessage
+    | ThreadRealtimeItemCompletedMessage
     | ThreadRealtimeTranscriptDeltaMessage
     | ThreadRealtimeTranscriptDoneMessage
     | ThreadRealtimeOutputAudioDeltaMessage
@@ -165,67 +198,92 @@ RealtimeEvent = (
 )
 
 CodexEvent = Annotated[
-    # Error events
     ErrorMessage
-    # Thread lifecycle
     | ThreadStartedEvent
     | ThreadStatusChangedMessage
+    | ThreadReadStateChangedMessage
     | ThreadArchivedMessage
+    | ThreadDeletedMessage
     | ThreadUnarchivedMessage
+    | ThreadClosedMessage
+    | ThreadRevertedMessage
+    | SkillsChangedMessage
     | ThreadNameUpdatedMessage
+    | ThreadSectionChangedMessage
+    | ThreadAttachmentUpdatedMessage
+    | ThreadGoalUpdatedMessage
+    | ThreadPredictionUpdatedMessage
+    | ThreadGoalClearedMessage
+    | ThreadQueueChangedMessage
+    | ProjectChangedMessage
+    | ThreadProjectUpdatedMessage
+    | ThreadEnvironmentConnectedNotification
+    | ThreadEnvironmentDisconnectedNotification
+    | ThreadSettingsUpdatedMessage
     | ThreadTokenUsageUpdatedEvent
-    # Turn lifecycle
     | TurnStartedEvent
+    | HookStartedMessage
     | TurnCompletedEvent
+    | HookCompletedMessage
     | TurnDiffUpdatedMessage
     | TurnPlanUpdatedMessage
-    # Hook events
-    | HookStartedMessage
-    | HookCompletedMessage
-    # Realtime voice events (EXPERIMENTAL)
-    | RealtimeEvent
-    # Terminal control events
-    | CommandExecOutputDeltaMessage
-    # Fuzzy file search events (EXPERIMENTAL)
-    | FuzzyFileSearchSessionUpdatedMessage
-    | FuzzyFileSearchSessionCompletedMessage
-    # Item lifecycle
     | ItemStartedEvent
+    | ItemAutoApprovalReviewStartedNotification
+    | ItemAutoApprovalReviewCompletedNotification
+    | AutoApprovalReviewStrictReviewRequiredNotification
     | ItemCompletedEvent
-    | RawResponseItemCompletedEvent
-    # Item deltas - agent messages
     | ItemAgentMessageDeltaNotification
-    # Item deltas - plan
     | ItemPlanDeltaNotification
-    # Item deltas - reasoning
+    | CommandExecOutputDeltaMessage
+    | ProcessOutputDeltaMessage
+    | ProcessExitedMessage
+    | ItemCommandExecutionOutputDeltaNotification
+    | ItemCommandExecutionTerminalInteractionNotification
+    | ItemFileChangeOutputDeltaNotification
+    | ItemFileChangePatchUpdatedNotification
+    | ServerRequestResolvedMessage
+    | ItemMcpToolCallProgressNotification
+    | McpServerOauthLoginCompletedMessage
+    | McpServerStartupStatusUpdatedNotification
+    | McpServerEventStreamNotificationNotification
+    | AccountUpdatedMessage
+    | AccountGatewayOAuthChangedNotification
+    | AccountRateLimitsUpdatedMessage
+    | AppListUpdatedMessage
+    | RemoteControlStatusChangedMessage
+    | ExternalAgentConfigImportProgressMessage
+    | ExternalAgentConfigImportCompletedMessage
+    | FsChangedMessage
     | ItemReasoningSummaryTextDeltaNotification
     | ItemReasoningSummaryPartAddedNotification
     | ItemReasoningTextDeltaNotification
-    # Item deltas - command execution
-    | ItemCommandExecutionOutputDeltaNotification
-    | ItemCommandExecutionTerminalInteractionNotification
-    # Item deltas - file changes
-    | ItemFileChangeOutputDeltaNotification
-    # Item deltas - MCP tool calls
-    | ItemMcpToolCallProgressNotification
-    # MCP server status
-    | McpServerStartupStatusUpdatedNotification
-    # MCP OAuth
-    | McpServerOauthLoginCompletedMessage
-    # Account/Auth events
-    | AccountUpdatedMessage
-    | AccountRateLimitsUpdatedMessage
-    | AccountLoginCompletedMessage
-    # System events
-    | DeprecationNoticeMessage
-    | WindowsWorldWritableWarningMessage
-    # New events
-    | ModelReroutedMessage
-    | ConfigWarningMessage
-    | AppListUpdatedMessage
-    | FsChangedMessage
     | ThreadCompactedMessage
-    | ServerRequestResolvedMessage,
+    | ModelReroutedMessage
+    | ModelVerificationMessage
+    | ModelProviderAuthRecoveryStartedNotification
+    | ModelProviderAuthRecoveryCompletedNotification
+    | TurnModerationMetadataMessage
+    | ModelSafetyBufferingUpdatedMessage
+    | WarningMessage
+    | GuardianWarningMessage
+    | DeprecationNoticeMessage
+    | ConfigWarningMessage
+    | FuzzyFileSearchSessionUpdatedMessage
+    | FuzzyFileSearchSessionCompletedMessage
+    | ThreadRealtimeStartedMessage
+    | ThreadRealtimeItemAddedMessage
+    | ThreadRealtimeItemStartedMessage
+    | ThreadRealtimeItemTranscriptDeltaMessage
+    | ThreadRealtimeItemCompletedMessage
+    | ThreadRealtimeTranscriptDeltaMessage
+    | ThreadRealtimeTranscriptDoneMessage
+    | ThreadRealtimeOutputAudioDeltaMessage
+    | ThreadRealtimeSdpMessage
+    | ThreadRealtimeErrorMessage
+    | ThreadRealtimeClosedMessage
+    | WindowsWorldWritableWarningMessage
+    | WindowsSandboxSetupCompletedMessage
+    | AccountLoginCompletedMessage,
     Field(discriminator="method"),
 ]
 

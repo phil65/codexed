@@ -15,7 +15,7 @@ from typing import Annotated, Any, Literal, assert_never
 
 from pydantic import BaseModel, ConfigDict, Discriminator
 
-from codexed.models.v2_protocol import WebSearchLocation
+from codexed.models.v2_protocol import WebSearchContextSize, WebSearchLocation, WebSearchMode
 
 
 class _ToolConfigBase(BaseModel):
@@ -62,10 +62,10 @@ class WebSearchToolConfig(_ToolConfigBase):
 
     type: Literal["web_search"] = "web_search"
 
-    mode: Literal["disabled", "cached", "live"] | None = None
+    mode: WebSearchMode | None = None
     """Search mode."""
 
-    context_size: Literal["low", "medium", "high"] | None = None
+    context_size: WebSearchContextSize | None = None
     """Amount of context returned from search results."""
 
     allowed_domains: list[str] | None = None
