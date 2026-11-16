@@ -9,16 +9,18 @@ import asyncio
 from codexed import CodexClient
 from codexed.models import ItemAgentMessageDeltaNotification, TurnCompletedEvent
 
+
 async def main():
     async with CodexClient() as client:
         session = await client.thread_start(cwd="/path/to/project")
-        
+
         async for event in session.turn_stream("Help me refactor this code"):
             match event:
                 case ItemAgentMessageDeltaNotification(data=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     break
+
 
 asyncio.run(main())
 ```
@@ -28,9 +30,11 @@ asyncio.run(main())
 ```python
 from pydantic import BaseModel
 
+
 class FileList(BaseModel):
     files: list[str]
     total: int
+
 
 async with CodexClient() as client:
     session = await client.thread_start(cwd=".")
@@ -54,11 +58,13 @@ from codexed.models import (
 
 async for event in session.turn_stream(message):
     match event:
-        case ItemAgentMessageDeltaNotification(data=data) | ItemCommandExecutionOutputDeltaNotification(data=data):
+        case (
+            ItemAgentMessageDeltaNotification(data=data)
+            | ItemCommandExecutionOutputDeltaNotification(data=data)
+        ):
             print(data.delta, end="")
         case TurnCompletedEvent():
             break
-
 ```
 
 ## See Also

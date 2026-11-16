@@ -108,7 +108,7 @@ class RealtimeSession:
                     event = await self._queue.get()
                     if event is None or isinstance(event, ThreadRealtimeClosedMessage):
                         break
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.debug("Error during realtime cleanup", exc_info=True)
         finally:
             self._client._realtime_queues.pop(self._queue_key, None)
