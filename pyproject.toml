@@ -53,6 +53,7 @@ dev = [
   "pytest",
   "pytest-cov",
   # Only add below (Copier)
+  "pytest-asyncio>=1.5.0",
 ]
 benchmark = ["pyinstrument"]
 docs = [
