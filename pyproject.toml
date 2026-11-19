@@ -62,6 +62,7 @@ docs = [
   # Only add below (Copier)
 ]
 lint = [
+  "openai",  # type-only import (openai.types.responses) for ty
   "ruff",
   "ty",
   # Only add below (Copier)
