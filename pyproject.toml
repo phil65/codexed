@@ -51,9 +51,9 @@ dev = [
   "devtools",
   "pyreadline3",
   "pytest",
-  "pytest-cov",
   # Only add below (Copier)
   "pytest-asyncio>=1.5.0",
+  "pytest-cov",
 ]
 benchmark = ["pyinstrument"]
 docs = [
@@ -62,9 +62,8 @@ docs = [
   # Only add below (Copier)
 ]
 lint = [
-  "mypy; python_version >= '3.14'",
-  "mypy[faster-cache]; python_version < '3.14'",
   "ruff",
+  "ty",
   # Only add below (Copier)
 ]
 
@@ -92,14 +91,6 @@ allowed-commit-types = [
   "chore",
 ]
 docstring-style = "google"
-
-[tool.mypy]
-python_version = "3.13"
-disable_error_code = ["misc", "import"]
-pretty = true
-check_untyped_defs = true
-exclude = ["venv/", ".venv/", "src/codexed/models/v2_protocol.py"]
-plugins = ["pydantic.mypy"]
 
 [tool.pyright]
 venvPath = "."
@@ -274,11 +265,17 @@ max-complexity = 15
 preview = true
 
 [tool.ty.src]
+include = ["src"]
 exclude = ["src/codexed/models/v2_protocol.py"]
 
 [tool.ty.environment]
 python-version = "3.13"
 python-platform = "all"
+
+[tool.ty.rules]
+# Narrowing an overridden class attribute (e.g. pydantic discriminators,
+# `Config` attributes) is an intentional pattern.
+incompatible-mutable-override = "ignore"
 
 [tool.uv]
 default-groups = ["dev", "lint", "docs"]

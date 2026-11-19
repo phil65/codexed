@@ -17,6 +17,8 @@ from codexed.models import (
 
 
 if TYPE_CHECKING:
+    import builtins
+
     from codexed.client import CodexClient
 
 logger = logging.getLogger(__name__)
@@ -46,7 +48,7 @@ class CodexPlugin:
         params = PluginUninstallParams(plugin_id=plugin_id)
         await self._client.dispatch.send_request("plugin/uninstall", params)
 
-    async def list(self, cwds: list[str] | None = None) -> PluginListResponse:
+    async def list(self, cwds: builtins.list[str] | None = None) -> PluginListResponse:
         params = PluginListParams(cwds=cwds)
         response = await self._client.dispatch.send_request("plugin/list", params)
         return PluginListResponse.model_validate(response)

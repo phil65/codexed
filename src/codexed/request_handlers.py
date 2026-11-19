@@ -97,7 +97,11 @@ ApprovalResponse = (
 ApprovalHandler = Callable[[ApprovalParams], Awaitable[ApprovalResponse]]
 
 # Validator: either a model class or a TypeAdapter for discriminated unions
-ParamsValidator = type[ServerRequestParams] | TypeAdapter[ServerRequestParams]
+ParamsValidator = (
+    type[ServerRequestParams]
+    | TypeAdapter[ServerRequestParams]
+    | TypeAdapter[McpServerElicitationRequestParams]
+)
 
 # Map from wire method names to param validator + response model type
 SERVER_REQUEST_TYPES: dict[str, tuple[ParamsValidator, type[ServerRequestResponse]]] = {
@@ -119,7 +123,7 @@ SERVER_REQUEST_TYPES: dict[str, tuple[ParamsValidator, type[ServerRequestRespons
         SkillRequestApprovalResponse,
     ),
     SERVER_REQUEST_MCP_ELICITATION: (
-        mcp_elicitation_adapter,  # type: ignore[dict-item]
+        mcp_elicitation_adapter,
         McpServerElicitationResponse,
     ),
 }

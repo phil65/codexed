@@ -620,8 +620,8 @@ class Session:
         result = await self._client.dispatch.send_request("mcpServer/tool/call", params)
         data = McpServerToolCallResponse.model_validate(result)
         return CallToolResult(
-            structuredContent=data.structured_content,
-            isError=bool(data.is_error),
+            structured_content=data.structured_content,
+            is_error=bool(data.is_error),
             content=data.content,
             meta=data.field_meta,
         )

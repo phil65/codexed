@@ -206,7 +206,15 @@ class McpElicitationUrlParams(_McpElicitationBase):
         server_name: str,
         turn_id: str | None = None,
     ) -> McpElicitationUrlParams:
-        """Create from MCP ElicitRequestURLParams."""
+        """Create from MCP ElicitRequestURLParams.
+
+        Raises:
+            ValueError: If the MCP request carries no elicitation ID, which the
+                app-server protocol requires to correlate the response
+        """
+        if params.elicitation_id is None:
+            msg = "URL elicitation request without elicitation_id cannot be forwarded"
+            raise ValueError(msg)
         return cls(
             message=params.message,
             url=params.url,

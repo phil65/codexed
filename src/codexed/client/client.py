@@ -185,15 +185,15 @@ class CodexClient:
         self.marketplace = CodexMarketPlace(self)
         self.skills = CodexSkills(self)
         if on_approval:
-            self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # type: ignore[arg-type]
-            self.register_handler(SERVER_REQUEST_FILE_CHANGE_APPROVAL, on_approval)  # type: ignore[arg-type]
-            self.register_handler(SERVER_REQUEST_SKILL_APPROVAL, on_approval)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_COMMAND_APPROVAL, on_approval)  # ty: ignore[invalid-argument-type]
+            self.register_handler(SERVER_REQUEST_FILE_CHANGE_APPROVAL, on_approval)  # ty: ignore[invalid-argument-type]
+            self.register_handler(SERVER_REQUEST_SKILL_APPROVAL, on_approval)  # ty: ignore[invalid-argument-type]
         if on_user_input:
-            self.register_handler(SERVER_REQUEST_USER_INPUT, on_user_input)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_USER_INPUT, on_user_input)  # ty: ignore[invalid-argument-type]
         if on_dynamic_tool_call:
-            self.register_handler(SERVER_REQUEST_DYNAMIC_TOOL_CALL, on_dynamic_tool_call)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_DYNAMIC_TOOL_CALL, on_dynamic_tool_call)  # ty: ignore[invalid-argument-type]
         if on_mcp_elicitation:
-            self.register_handler(SERVER_REQUEST_MCP_ELICITATION, on_mcp_elicitation)  # type: ignore[arg-type]
+            self.register_handler(SERVER_REQUEST_MCP_ELICITATION, on_mcp_elicitation)  # ty: ignore[invalid-argument-type]
 
     async def __aenter__(self) -> Self:
         """Async context manager entry - starts the app-server."""
