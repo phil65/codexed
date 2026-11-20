@@ -21,7 +21,12 @@ from codexed.models import (
 
 if TYPE_CHECKING:
     from codexed.client import CodexClient
-    from codexed.models import AddCreditsNudgeCreditType, AuthMode, CancelLoginAccountStatus
+    from codexed.models import (
+        AddCreditsNudgeCreditType,
+        AuthMode,
+        CancelLoginAccountStatus,
+        RateLimitSnapshot,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +34,9 @@ logger = logging.getLogger(__name__)
 class CodexAccount:
     def __init__(self, client: CodexClient):
         self._client = client
+        self.rate_limits: RateLimitSnapshot | None = None
+        """Latest rate limits: from :meth:`rate_limits_read` and from the
+        ``account/rateLimits/updated`` notifications the server sends during turns."""
 
     async def read(self, *, refresh_token: bool = False) -> GetAccountResponse:
         """Read account information.
@@ -84,9 +92,11 @@ class CodexAccount:
         await self._client.dispatch.send_request("account/logout")
 
     async def rate_limits_read(self) -> GetAccountRateLimitsResponse:
-        """Read account rate limits."""
+        """Read account rate limits (also updates :attr:`rate_limits`)."""
         result = await self._client.dispatch.send_request("account/rateLimits/read")
-        return GetAccountRateLimitsResponse.model_validate(result)
+        response = GetAccountRateLimitsResponse.model_validate(result)
+        self.rate_limits = response.rate_limits
+        return response
 
     async def send_add_credits_nudge_email(self, credit_type: AddCreditsNudgeCreditType) -> None:
         """Send an add credits nudge email."""

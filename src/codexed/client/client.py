@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Mapping  # noqa: TC003
+from collections.abc import Awaitable, Callable, Mapping
+import inspect
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -17,6 +18,7 @@ from codexed.client.plugin import CodexPlugin
 from codexed.client.skills import CodexSkills
 from codexed.helpers import merge_config
 from codexed.models import (
+    AccountRateLimitsUpdatedMessage,
     AppsListParams,
     AppsListResponse,
     CollaborationModeListResponse,
@@ -112,6 +114,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+type EventListener = Callable[[CodexEvent], Awaitable[None] | None]
+"""Receives events that belong to no running turn."""
+
 
 class CodexClient:
     """Client for the Codex app-server JSON-RPC protocol.
@@ -174,7 +179,7 @@ class CodexClient:
         )
         self._turn_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
         self._realtime_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
-        self._event_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
+        self._event_listeners: list[EventListener] = []
         self._active_threads: set[str] = set()
         self._mcp_elicitation_enabled = on_mcp_elicitation is not None
         self._mcp_elicitation_for_approvals = mcp_elicitation_for_approvals
@@ -901,26 +906,52 @@ class CodexClient:
 
         event_data = {"method": method, "params": params}
         event = codex_event_adapter.validate_python(event_data)
+        if isinstance(event, AccountRateLimitsUpdatedMessage):
+            self.account.rate_limits = event.params.rate_limits
 
         thread_id = params.get("threadId")
 
         # Route realtime events to the realtime session queue
         if method.startswith("thread/realtime/") and thread_id:
             rt_key = f"realtime:{thread_id}"
-            queue = self._realtime_queues.get(rt_key)
-            await (queue or self._event_queue).put(event)
+            if (queue := self._realtime_queues.get(rt_key)) is not None:
+                await queue.put(event)
+            else:
+                await self._notify_listeners(event)
             return
 
         turn_id = params.get("turnId")
         if not turn_id and "turn" in params:
             turn_id = params.get("turn", {}).get("id")
 
-        if thread_id and turn_id:
-            turn_key = f"{thread_id}:{turn_id}"
-            queue = self._turn_queues.get(turn_key)
-            await (queue or self._event_queue).put(event)
+        turn_queue = (
+            self._turn_queues.get(f"{thread_id}:{turn_id}") if thread_id and turn_id else None
+        )
+        if turn_queue is not None:
+            await turn_queue.put(event)
         else:
-            await self._event_queue.put(event)
+            await self._notify_listeners(event)
+
+    def add_event_listener(self, listener: EventListener) -> None:
+        """Receive events that belong to no running turn (account, config, app updates, ...).
+
+        Turn events go to the turn's stream; everything else is passed to the listeners
+        (and otherwise dropped).
+        """
+        self._event_listeners.append(listener)
+
+    def remove_event_listener(self, listener: EventListener) -> None:
+        """Stop passing events to a listener added with :meth:`add_event_listener`."""
+        self._event_listeners.remove(listener)
+
+    async def _notify_listeners(self, event: CodexEvent) -> None:
+        for listener in list(self._event_listeners):
+            try:
+                result = listener(event)
+                if inspect.isawaitable(result):
+                    await result
+            except Exception:
+                logger.exception("Codex event listener failed for %s", event.method)
 
     async def _handle_server_request(
         self, method: str, request_id: int | str, params: dict[str, Any]

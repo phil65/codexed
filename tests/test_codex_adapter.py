@@ -33,9 +33,11 @@ async def test_process_message_error_raises():
     assert exc.value.code == -32602  # noqa: PLR2004
 
 
-async def test_process_message_notification_queued():
-    """JSON-RPC notifications are parsed and queued."""
+async def test_process_message_notification_routed():
+    """JSON-RPC notifications are parsed; without a running turn they go to listeners."""
     client = CodexClient()
+    received: asyncio.Queue[object] = asyncio.Queue()
+    client.add_event_listener(received.put_nowait)
 
     await client.dispatch._process_message({
         "jsonrpc": "2.0",
@@ -43,7 +45,7 @@ async def test_process_message_notification_queued():
         "params": {"delta": "Hello", "itemId": "1", "threadId": "t", "turnId": "u"},
     })
 
-    event = await asyncio.wait_for(client._event_queue.get(), timeout=1.0)
+    event = await asyncio.wait_for(received.get(), timeout=1.0)
     assert isinstance(event, ItemAgentMessageDeltaNotification)
     assert event.params.delta == "Hello"
 
