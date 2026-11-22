@@ -30,7 +30,6 @@ dependencies = [
   "anyenv>=2.0.15",
   "mcp>=1.27.0",
   "pydantic",
-  "schemez",
   # Only add below (Copier)
 ]
 
