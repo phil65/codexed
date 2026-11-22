@@ -48,7 +48,6 @@ dependencies = [
 
 [project.urls]
 "Code coverage" = "https://app.codecov.io/gh/phil65/codexed"
-Discussions = "https://github.com/phil65/codexed/discussions"
 Documentation = "https://phil65.github.io/codexed/"
 Homepage = "https://github.com/phil65/codexed"
 Issues = "https://github.com/phil65/codexed/issues"
@@ -74,10 +73,12 @@ docs = [
   # Only add below (Copier)
 ]
 lint = [
-  "openai",  # type-only import (openai.types.responses) for ty
-  "ruff",
-  "ty",
   # Only add below (Copier)
+  "openai",  # type-only import (openai.types.responses) for ty
+  # Pinned on purpose: CI, pre-commit and editors all run exactly these versions.
+  # Bump them here (template) and roll out via `copier update`.
+  "ruff==0.17.6",
+  "ty==0.0.107",
 ]
 
 [build-system]
@@ -234,6 +235,7 @@ ignore = [
   "PLR0913",  # Too many arguments to function call
   "PLR0917",  # Too many positional arguments
   "PLR0915",  # Too many statements
+  "PLR0917",  # Too many positional arguments
   # "PLR2004", # Magic values instead of named consts
   "SLF001",  # Private member accessed
   "TRY003",  # Avoid specifying long messages outside the exception class

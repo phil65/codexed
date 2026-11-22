@@ -9,7 +9,6 @@
 [![Implementation](https://img.shields.io/pypi/implementation/codexed.svg)](https://pypi.org/project/codexed/)
 [![Releases](https://img.shields.io/github/downloads/phil65/codexed/total.svg)](https://github.com/phil65/codexed/releases)
 [![Github Contributors](https://img.shields.io/github/contributors/phil65/codexed)](https://github.com/phil65/codexed/graphs/contributors)
-[![Github Discussions](https://img.shields.io/github/discussions/phil65/codexed)](https://github.com/phil65/codexed/discussions)
 [![Github Forks](https://img.shields.io/github/forks/phil65/codexed)](https://github.com/phil65/codexed/forks)
 [![Github Issues](https://img.shields.io/github/issues/phil65/codexed)](https://github.com/phil65/codexed/issues)
 [![Github Issues](https://img.shields.io/github/issues-pr/phil65/codexed)](https://github.com/phil65/codexed/pulls)
