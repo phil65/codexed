@@ -37,7 +37,12 @@ from codexed.models.events import (
     codex_event_adapter,
     RealtimeEvent,
 )
-from codexed.models.mcp_server import HttpMcpServer, McpServerConfig, StdioMcpServer
+from codexed.models.mcp_server import (
+    HttpMcpServer,
+    McpServerConfig,
+    StdioMcpServer,
+    ToolApprovalMode,
+)
 from codexed.models.misc import (
     ExecPolicyAmendment,
     McpServerStatusEntry,
@@ -893,6 +898,7 @@ __all__ = [
     "ThreadUnsubscribeParams",
     "ThreadUnsubscribeResponse",
     "TokenUsageBreakdown",
+    "ToolApprovalMode",
     "ToolConfig",
     "ToolRequestUserInputAnswer",
     "ToolRequestUserInputOption",

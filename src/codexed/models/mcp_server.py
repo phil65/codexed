@@ -2,11 +2,23 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from mcp.types import BlobResourceContents, TextResourceContents
 from pydantic import BaseModel
 
 
 ResourceContents = TextResourceContents | BlobResourceContents
+
+type ToolApprovalMode = Literal["auto", "prompt", "writes", "approve"]
+"""When Codex asks before calling a server's tools (``default_tools_approval_mode``).
+
+- ``auto``: Codex's default; asks unless the tool is annotated read-only, or
+  non-destructive and closed-world. Under approval policy ``never`` it rejects them.
+- ``prompt``: always asks.
+- ``writes``: asks unless the tool is annotated read-only.
+- ``approve``: never asks.
+"""
 
 
 class StdioMcpServer(BaseModel):
@@ -16,6 +28,8 @@ class StdioMcpServer(BaseModel):
     args: list[str] = []
     env: dict[str, str] | None = None
     enabled: bool = True
+    default_tools_approval_mode: ToolApprovalMode | None = None
+    """When Codex asks before calling this server's tools (Codex's default: ``auto``)."""
 
     def to_config_toml(self, name: str) -> str:
         parts = [f'command = "{self.command}"']
@@ -28,6 +42,8 @@ class StdioMcpServer(BaseModel):
             parts.append(f"env = {{{env_items}}}")
         if not self.enabled:
             parts.append("enabled = false")
+        if self.default_tools_approval_mode:
+            parts.append(f'default_tools_approval_mode = "{self.default_tools_approval_mode}"')
         return f"mcp_servers.{name}={{{', '.join(parts)}}}"
 
 
@@ -38,6 +54,8 @@ class HttpMcpServer(BaseModel):
     bearer_token_env_var: str | None = None
     http_headers: dict[str, str] | None = None
     enabled: bool = True
+    default_tools_approval_mode: ToolApprovalMode | None = None
+    """When Codex asks before calling this server's tools (Codex's default: ``auto``)."""
 
     def to_config_toml(self, name: str) -> str:
         parts = [f'url = "{self.url}"']
@@ -49,6 +67,8 @@ class HttpMcpServer(BaseModel):
             parts.append(f"http_headers = {{{headers_items}}}")
         if not self.enabled:
             parts.append("enabled = false")
+        if self.default_tools_approval_mode:
+            parts.append(f'default_tools_approval_mode = "{self.default_tools_approval_mode}"')
         return f"mcp_servers.{name}={{{', '.join(parts)}}}"
 
 
