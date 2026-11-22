@@ -16,7 +16,7 @@ async def main():
 
         async for event in session.turn_stream("Help me refactor this code"):
             match event:
-                case ItemAgentMessageDeltaNotification(data=data):
+                case ItemAgentMessageDeltaNotification(params=data):
                     print(data.delta, end="", flush=True)
                 case TurnCompletedEvent():
                     break
@@ -59,8 +59,8 @@ from codexed.models import (
 async for event in session.turn_stream(message):
     match event:
         case (
-            ItemAgentMessageDeltaNotification(data=data)
-            | ItemCommandExecutionOutputDeltaNotification(data=data)
+            ItemAgentMessageDeltaNotification(params=data)
+            | ItemCommandExecutionOutputDeltaNotification(params=data)
         ):
             print(data.delta, end="")
         case TurnCompletedEvent():
