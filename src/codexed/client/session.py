@@ -224,11 +224,11 @@ class Session:
                     case TurnCompletedEvent():
                         yield event
                         break
-                    case ErrorMessage(data=ErrorNotification(error=error)):
+                    case ErrorMessage(params=ErrorNotification(error=error)):
                         yield event
                         raise TurnFailedError(error.message, turn_id=turn_id)
                     case ThreadTokenUsageUpdatedEvent(
-                        data=ThreadTokenUsageUpdatedNotification(token_usage=usage)
+                        params=ThreadTokenUsageUpdatedNotification(token_usage=usage)
                     ):
                         self.usage = usage
                         yield event
@@ -322,9 +322,9 @@ class Session:
             collaboration_mode=collaboration_mode,
         ):
             match event:
-                case TurnCompletedEvent(data=TurnCompletedData(turn=t)):
+                case TurnCompletedEvent(params=TurnCompletedData(turn=t)):
                     turn = t
-                case ErrorMessage(data=ErrorNotification(error=error)):
+                case ErrorMessage(params=ErrorNotification(error=error)):
                     raise TurnFailedError(error.message, turn_id="unknown")
 
         if turn is None:
@@ -503,7 +503,7 @@ class Session:
                     case TurnCompletedEvent():
                         yield event
                         break
-                    case ErrorMessage(data=ErrorNotification(error=error)):
+                    case ErrorMessage(params=ErrorNotification(error=error)):
                         yield event
                         raise TurnFailedError(error.message, turn_id=turn_id)
                     case _:
