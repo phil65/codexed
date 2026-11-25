@@ -69,7 +69,7 @@ uv run pytest                        # tests
 uvx ruff check . && uvx ruff format --check .
 uv run ty check                      # must pass with no warnings
 uv run deptry src                    # dependency hygiene
-uv run mkdocs-mknodes build          # docs (mkdocs-mknodes default site, slow)
+uv run mknodes build                 # docs (mknodes default site, slow)
 uv build
 ```
 
