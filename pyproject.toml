@@ -137,6 +137,8 @@ asyncio_mode = "auto"
 [tool.ruff]
 line-length = 100
 extend-exclude = ["docs", "src/codexed/models/v2_protocol.py"]
+# Also honour the excludes for paths passed explicitly (pre-commit hooks).
+force-exclude = true
 target-version = "py313"
 
 [tool.ruff.lint]
