@@ -52,6 +52,7 @@ Documentation = "https://phil65.github.io/codexed/"
 Homepage = "https://github.com/phil65/codexed"
 Issues = "https://github.com/phil65/codexed/issues"
 Source = "https://github.com/phil65/codexed"
+"Spec: Codex app-server" = "https://github.com/openai/codex/blob/main/codex-rs/app-server/README.md"
 
 [project.optional-dependencies]
 websocket = ["websockets>=13.0"]

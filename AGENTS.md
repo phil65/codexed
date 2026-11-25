@@ -88,6 +88,12 @@ uv build
   real `codex` process: they call `client.dispatch._process_message`, `client._handle_notification`
   or replace `client.dispatch.send_request` with a fake.
 
+## Specs
+
+| Spec | URL | Targets | Code | Update check |
+|---|---|---|---|---|
+| Codex app-server protocol (v2 JSON schema) | https://github.com/openai/codex/blob/main/codex-rs/app-server/README.md | codex-cli 0.169 (from commit e3b2ee2; exact patch unknown, regenerate to record it in the `v2_protocol.py` header) | `src/codexed/models/v2_protocol.py` (generated), `scripts/generate_codex_reference_models.py`, `src/codexed/client/` | `codex --version` vs. the `#   codex:` header line; https://github.com/openai/codex/releases |
+
 ## Pitfalls
 
 - When matching events, use `Event(params=...)`. Strict `extra="forbid"` in tests means test
