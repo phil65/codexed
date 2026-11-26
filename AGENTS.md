@@ -86,7 +86,7 @@ uv build
 
 ## Conventions
 
-- Python >= 3.13, `from __future__ import annotations`, pattern matching where it fits,
+- Python >= 3.14, no `from __future__ import annotations` (PEP 649; banned via ruff TID251), pattern matching where it fits,
   google-style docstrings without types in `Args` (see `.github/copilot-instructions.md`).
 - Ruff with a broad rule set and `preview` formatting, line length 100.
 - Optional method arguments are keyword-only. Protocol params are built as pydantic `*Params` models and sent with `dispatch.send_request(method, params)`, responses
