@@ -1,18 +1,24 @@
-import sys
+import os
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
-IS_DEV = "pytest" in sys.modules
+IS_DEV = os.environ.get("CODEXED_STRICT_MODELS") == "1"
+"""Strict models (``extra="forbid"``): set in this repo's tests (``tests/conftest.py``).
+
+Not inferred from ``"pytest" in sys.modules``: any process that imported pytest (another
+project's tests, a notebook) would reject events with fields newer than the schema.
+"""
 
 
 class CodexBaseModel(BaseModel):
     """Base model for all Codex API models.
 
     Provides:
-    - Strict validation in tests (forbids extra fields to catch schema changes)
+    - Strict validation in tests (``CODEXED_STRICT_MODELS=1``: forbids extra fields to catch
+      schema changes)
     - Lenient validation in production (ignores extra fields for forward compat)
     - Snake_case Python fields with camelCase JSON aliases
     - Both field names and aliases accepted for parsing (populate_by_name=True)
@@ -22,6 +28,7 @@ class CodexBaseModel(BaseModel):
         extra="forbid" if IS_DEV else "ignore",
         populate_by_name=True,
         alias_generator=to_camel,
+        defer_build=True,
     )
 
 

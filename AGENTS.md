@@ -104,8 +104,12 @@ uv build
 
 ## Pitfalls
 
-- When matching events, use `Event(params=...)`. Strict `extra="forbid"` in tests means test
-  payloads must match the schema exactly.
+- When matching events, use `Event(params=...)`. Strict `extra="forbid"` in tests
+  (`CODEXED_STRICT_MODELS=1`, set in `tests/conftest.py`) means test payloads must match the
+  schema exactly.
+- Models and `codex_event_adapter` use `defer_build=True` (built on first validation):
+  `import codexed` went from ~1.21 s to ~1.07 s; the rest is `mcp.types` (~0.5 s) and creating
+  the generated classes (~0.3 s).
 - Copier-managed project (`.copier-answers.yml`, template `copier-phil65`): `pyproject.toml`
   structure, workflows, `duties.py`, `mkdocs.yml`, `.pre-commit-config.yaml` come from the
   template. Add dependencies below the `# Only add below (Copier)` markers.

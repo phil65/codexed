@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated, Literal
 
-from pydantic import Field, TypeAdapter
+from pydantic import ConfigDict, Field, TypeAdapter
 
 from codexed.models.base import CodexBaseModel
 from codexed.models.event_data import (
@@ -289,7 +289,10 @@ CodexEvent = Annotated[
 
 
 # TypeAdapter for parsing events
-codex_event_adapter: TypeAdapter[CodexEvent] = TypeAdapter(CodexEvent)
+# Built on first use (like the models, see CodexBaseModel): keeps `import codexed` cheap.
+codex_event_adapter: TypeAdapter[CodexEvent] = TypeAdapter(
+    CodexEvent, config=ConfigDict(defer_build=True)
+)
 
 
 # Type alias for all delta events
