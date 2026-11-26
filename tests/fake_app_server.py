@@ -40,6 +40,7 @@ if scenario == "child":
     with open(os.environ["CHILD_PID_FILE"], "w") as f:  # noqa: PTH123
         f.write(str(child.pid))
 
+interrupts: list[dict] = []
 for line in sys.stdin:
     msg = json.loads(line)
     method = msg.get("method")
@@ -54,6 +55,16 @@ for line in sys.stdin:
         sys.stderr.write("panic: something broke\n")
         sys.stderr.flush()
         sys.exit(3)
+    elif method == "turn/start" and scenario == "slow_turn":  # runs until interrupted
+        send(
+            {"jsonrpc": "2.0", "id": req_id, "result": {"turn": turn("inProgress")}},
+            {"method": "turn/started", "params": {"threadId": THREAD, "turn": turn("inProgress")}},
+        )
+    elif method == "turn/interrupt":
+        interrupts.append(msg["params"])
+        send({"jsonrpc": "2.0", "id": req_id, "result": {}})
+    elif method == "fake/interrupts":
+        send({"jsonrpc": "2.0", "id": req_id, "result": {"interrupts": interrupts}})
     elif method == "turn/start":
         send(
             {"jsonrpc": "2.0", "id": req_id, "result": {"turn": turn("inProgress")}},

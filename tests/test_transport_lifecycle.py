@@ -148,3 +148,45 @@ async def test_stop_kills_the_server_children(fake_codex: str, tmp_path: Path) -
     else:
         os.kill(child, 9)
         pytest.fail("child of the app-server survived stop()")
+
+
+async def _interrupts(client: CodexClient) -> list[dict[str, Any]]:
+    result = await asyncio.wait_for(client.dispatch.send_request("fake/interrupts"), 5)
+    return result["interrupts"]
+
+
+async def test_cancelled_turn_stream_interrupts_the_turn(fake_codex: str) -> None:
+    async with client_for(fake_codex, "slow_turn") as client:
+        session = session_for(client)
+        started = asyncio.Event()
+
+        async def consume() -> None:
+            async for event in session.turn_stream("hi"):
+                if event.method == "turn/started":
+                    started.set()
+
+        task = asyncio.create_task(consume())
+        await asyncio.wait_for(started.wait(), 5)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert await _interrupts(client) == [{"threadId": "thread-1", "turnId": "turn-1"}]
+
+
+async def test_abandoned_turn_stream_interrupts_the_turn(fake_codex: str) -> None:
+    async with client_for(fake_codex, "slow_turn") as client:
+        session = session_for(client)
+        stream = session.turn_stream("hi")
+        async for event in stream:
+            assert event.method == "turn/started"
+            break
+        await stream.aclose()
+        assert await _interrupts(client) == [{"threadId": "thread-1", "turnId": "turn-1"}]
+
+
+async def test_completed_turn_is_not_interrupted(fake_codex: str) -> None:
+    async with client_for(fake_codex, "") as client:
+        session = session_for(client)
+        async for _ in session.turn_stream("hi"):
+            pass
+        assert await _interrupts(client) == []

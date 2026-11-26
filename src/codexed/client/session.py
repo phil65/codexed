@@ -91,6 +91,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+ABANDONED_TURN_INTERRUPT_TIMEOUT = 5.0
+"""Seconds a cancelled or abandoned turn stream waits for its ``turn/interrupt``."""
+
 
 class Session:
     """Runtime handle for an active Codex thread.
@@ -161,6 +164,9 @@ class Session:
 
         Yields:
             CodexEvent: Streaming events from the turn
+
+        Cancelling the consumer, or closing the stream before ``turn/completed``,
+        interrupts the turn (``turn/interrupt``).
         """
         # Handle output_schema - convert type to JSON Schema if needed
         match output_schema:
@@ -219,16 +225,20 @@ class Session:
             turn_key = f"{self.thread_id}:{turn_id}"
         finally:
             await self._client._end_turn_start(turn_key, turn_queue)
+        finished = False  # The turn ended (or the connection did): nothing to interrupt
         try:
             while True:
                 event = await turn_queue.get()
                 match event:
                     case None:
+                        finished = True
                         raise self._connection_closed()
                     case TurnCompletedEvent():
+                        finished = True
                         yield event
                         break
                     case ErrorMessage(params=ErrorNotification(error=error)):
+                        finished = True
                         yield event
                         raise TurnFailedError(error.message, turn_id=turn_id)
                     case ThreadTokenUsageUpdatedEvent(
@@ -240,6 +250,8 @@ class Session:
                         yield event
         finally:
             self._client._turn_queues.pop(turn_key, None)
+            if not finished:  # Cancelled, or the caller stopped iterating
+                await self._interrupt_abandoned_turn(self.thread_id, turn_id)
 
     async def turn_steer(
         self,
@@ -273,6 +285,15 @@ class Session:
         """Interrupt a running turn."""
         params = TurnInterruptParams(thread_id=self.thread_id, turn_id=turn_id)
         await self._client.dispatch.send_request("turn/interrupt", params)
+
+    async def _interrupt_abandoned_turn(self, thread_id: str, turn_id: str) -> None:
+        """Stop a turn whose stream was cancelled or closed early (best effort, bounded)."""
+        params = TurnInterruptParams(thread_id=thread_id, turn_id=turn_id)
+        try:
+            async with asyncio.timeout(ABANDONED_TURN_INTERRUPT_TIMEOUT):
+                await self._client.dispatch.send_request("turn/interrupt", params)
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("Interrupting abandoned turn %s failed: %s", turn_id, exc)
 
     async def turn_stream_structured[ResultType: BaseModel](
         self,
@@ -488,6 +509,9 @@ class Session:
 
         Yields:
             CodexEvent: Streaming events from the review turn
+
+        Cancelling the consumer, or closing the stream before the turn completes,
+        interrupts the review turn.
         """
         params = ReviewStartParams(thread_id=self.thread_id, target=target, delivery=delivery)
         turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
@@ -497,25 +521,32 @@ class Session:
             result = await self._client.dispatch.send_request("review/start", params)
             response = ReviewStartResponse.model_validate(result)
             turn_id = response.turn.id
-            turn_key = f"{response.review_thread_id}:{turn_id}"
+            review_thread_id = response.review_thread_id
+            turn_key = f"{review_thread_id}:{turn_id}"
         finally:
             await self._client._end_turn_start(turn_key, turn_queue)
+        finished = False  # The turn ended (or the connection did): nothing to interrupt
         try:
             while True:
                 event = await turn_queue.get()
                 match event:
                     case None:
+                        finished = True
                         raise self._connection_closed()
                     case TurnCompletedEvent():
+                        finished = True
                         yield event
                         break
                     case ErrorMessage(params=ErrorNotification(error=error)):
+                        finished = True
                         yield event
                         raise TurnFailedError(error.message, turn_id=turn_id)
                     case _:
                         yield event
         finally:
             self._client._turn_queues.pop(turn_key, None)
+            if not finished:  # Cancelled, or the caller stopped iterating
+                await self._interrupt_abandoned_turn(review_thread_id, turn_id)
 
     # -- Fork ----------------------------------------------------------------
 
