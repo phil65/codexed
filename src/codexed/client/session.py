@@ -215,16 +215,19 @@ class Session:
         )
         turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         turn_key: str | None = None
-        self._client._begin_turn_start()
-        try:
-            turn_result = await self._client.dispatch.send_request("turn/start", params)
-            response = TurnStartResponse.model_validate(turn_result)
-            turn_id = response.turn.id
-            turn_key = f"{self.thread_id}:{turn_id}"
-        finally:
-            await self._client._end_turn_start(turn_key, turn_queue)
+        turn_id: str | None = None
         finished = False  # The turn ended (or the connection did): nothing to interrupt
+        self._client._begin_turn_start()
+        # One try: a cancellation while _end_turn_start hands out buffered events
+        # still forgets the queue and interrupts the turn.
         try:
+            try:
+                turn_result = await self._client.dispatch.send_request("turn/start", params)
+                response = TurnStartResponse.model_validate(turn_result)
+                turn_id = response.turn.id
+                turn_key = f"{self.thread_id}:{turn_id}"
+            finally:
+                await self._client._end_turn_start(turn_key, turn_queue)
             while True:
                 event = await turn_queue.get()
                 match event:
@@ -247,8 +250,9 @@ class Session:
                     case _:
                         yield event
         finally:
-            self._client._turn_queues.pop(turn_key, None)
-            if not finished:  # Cancelled, or the caller stopped iterating
+            if turn_key is not None:
+                self._client._turn_queues.pop(turn_key, None)
+            if turn_id is not None and not finished:  # Cancelled, or closed early
                 await self._interrupt_abandoned_turn(self.thread_id, turn_id)
 
     async def turn_steer(
@@ -514,17 +518,19 @@ class Session:
         params = ReviewStartParams(thread_id=self.thread_id, target=target, delivery=delivery)
         turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
         turn_key: str | None = None
-        self._client._begin_turn_start()
-        try:
-            result = await self._client.dispatch.send_request("review/start", params)
-            response = ReviewStartResponse.model_validate(result)
-            turn_id = response.turn.id
-            review_thread_id = response.review_thread_id
-            turn_key = f"{review_thread_id}:{turn_id}"
-        finally:
-            await self._client._end_turn_start(turn_key, turn_queue)
+        turn_id: str | None = None
+        review_thread_id = self.thread_id
         finished = False  # The turn ended (or the connection did): nothing to interrupt
-        try:
+        self._client._begin_turn_start()
+        try:  # One try, as in turn_stream
+            try:
+                result = await self._client.dispatch.send_request("review/start", params)
+                response = ReviewStartResponse.model_validate(result)
+                turn_id = response.turn.id
+                review_thread_id = response.review_thread_id
+                turn_key = f"{review_thread_id}:{turn_id}"
+            finally:
+                await self._client._end_turn_start(turn_key, turn_queue)
             while True:
                 event = await turn_queue.get()
                 match event:
@@ -542,8 +548,9 @@ class Session:
                     case _:
                         yield event
         finally:
-            self._client._turn_queues.pop(turn_key, None)
-            if not finished:  # Cancelled, or the caller stopped iterating
+            if turn_key is not None:
+                self._client._turn_queues.pop(turn_key, None)
+            if turn_id is not None and not finished:  # Cancelled, or closed early
                 await self._interrupt_abandoned_turn(review_thread_id, turn_id)
 
     # -- Fork ----------------------------------------------------------------

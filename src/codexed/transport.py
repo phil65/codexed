@@ -128,7 +128,14 @@ class StdioTransport:
     async def _drain_stderr(self, process: asyncio.subprocess.Process) -> None:
         """Read stderr continuously: an unread pipe fills up and blocks the server."""
         assert process.stderr is not None
-        while line_bytes := await process.stderr.readline():
+        while True:
+            try:
+                line_bytes = await process.stderr.readline()
+            except ValueError:  # a line over the stream limit (dropped): read on
+                self._stderr_tail.append("[stderr line over the length limit dropped]")
+                continue
+            if not line_bytes:
+                break
             line = line_bytes.decode(errors="replace").rstrip()
             self._stderr_tail.append(line)
             logger.debug("codex stderr: %s", line)
@@ -151,10 +158,12 @@ class StdioTransport:
 
     def _signal_group(self, process: asyncio.subprocess.Process, sig: int) -> None:
         if sys.platform == "win32":
-            if sig == signal.SIGTERM:
-                process.terminate()
-            else:
-                process.kill()
+            if process.returncode is None:
+                with contextlib.suppress(ProcessLookupError, PermissionError):
+                    if sig == signal.SIGTERM:
+                        process.terminate()
+                    else:
+                        process.kill()
             return
         with contextlib.suppress(ProcessLookupError, PermissionError):
             os.killpg(process.pid, sig)

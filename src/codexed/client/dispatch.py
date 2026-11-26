@@ -91,10 +91,11 @@ class Dispatch:
 
     async def send_request(self, method: str, params: BaseModel | None = None) -> Any:
         """Send a JSON-RPC request and wait for the response."""
-        if not self._transport.is_connected:
-            raise TransportClosedError("Not connected to Codex app-server")
+        # The recorded reason (exit code, stderr) first: it says more than "not connected".
         if self._closed_error is not None:
             raise TransportClosedError(str(self._closed_error))
+        if not self._transport.is_connected:
+            raise TransportClosedError("Not connected to Codex app-server")
 
         request_id = self._request_id
         self._request_id += 1
@@ -103,16 +104,16 @@ class Dispatch:
         params_dict = params.model_dump(by_alias=True, exclude_none=True) if params else {}
         request = JsonRpcRequest(id=request_id, method=method, params=params_dict)
         try:
-            message = request.model_dump(mode="json", by_alias=True, exclude_none=True)
-            await self._transport.send(message)
-        except Exception as exc:
-            del self._pending_requests[request_id]
-            raise CodexProcessError(f"Failed to send request: {exc}") from exc
-
-        try:
+            try:
+                message = request.model_dump(mode="json", by_alias=True, exclude_none=True)
+                await self._transport.send(message)
+            except Exception as exc:
+                raise CodexProcessError(f"Failed to send request: {exc}") from exc
             return await future
         finally:  # also when cancelled: no response may ever come
             self._pending_requests.pop(request_id, None)
+            if future.done() and not future.cancelled():
+                future.exception()  # set by a close while sending: nobody else reads it
 
     async def send_response(self, request_id: int | str, result: dict[str, Any]) -> None:
         """Send a JSON-RPC success response to a server request."""

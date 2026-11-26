@@ -33,6 +33,9 @@ if scenario == "stderr_flood":
     for _ in range(25 * 1024):  # 25 MB
         sys.stderr.write(chunk)
     sys.stderr.flush()
+if scenario == "stderr_long_line":  # one line longer than the stream limit (10 MiB)
+    sys.stderr.write("y" * (11 * 1024 * 1024) + "\nafter\n")
+    sys.stderr.flush()
 if scenario == "child":
     child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
     with open(os.environ["CHILD_PID_FILE"], "w") as f:  # noqa: PTH123
@@ -57,6 +60,13 @@ for line in sys.stdin:
         send(
             {"jsonrpc": "2.0", "id": req_id, "result": {"turn": turn("inProgress")}},
             {"method": "turn/started", "params": {"threadId": THREAD, "turn": turn("inProgress")}},
+        )
+    elif method == "turn/start" and scenario == "leftover_turn":
+        # Another turn's event arrives while this start is in flight: no turn claims it.
+        other = {"threadId": "thread-2", "turn": {**turn("inProgress"), "id": "turn-2"}}
+        send(
+            {"method": "turn/started", "params": other},
+            {"jsonrpc": "2.0", "id": req_id, "result": {"turn": turn("inProgress")}},
         )
     elif method == "turn/interrupt":
         interrupts.append(msg["params"])

@@ -10,7 +10,7 @@ import pytest
 
 from codexed import CodexClient, Session
 from codexed.client.dispatch import Dispatch
-from codexed.exceptions import TransportClosedError
+from codexed.exceptions import CodexProcessError, TransportClosedError
 from codexed.models import ThreadResponse
 from codexed.transport import StdioTransport
 
@@ -188,3 +188,85 @@ async def test_completed_turn_is_not_interrupted(fake_codex: str) -> None:
         async for _ in session.turn_stream("hi"):
             pass
         assert await _interrupts(client) == []
+
+
+async def test_cancelled_during_leftover_delivery_forgets_and_interrupts_the_turn(
+    fake_codex: str,
+) -> None:
+    async with client_for(fake_codex, "leftover_turn") as client:
+        session = session_for(client)
+        in_listener = asyncio.Event()
+
+        async def slow_listener(event: Any) -> None:
+            in_listener.set()
+            await asyncio.Event().wait()
+
+        client._event_listeners.append(slow_listener)
+
+        async def consume() -> None:
+            async for _ in session.turn_stream("hi"):
+                pass
+
+        task = asyncio.create_task(consume())
+        await asyncio.wait_for(in_listener.wait(), 5)
+        client._event_listeners.remove(slow_listener)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert client._turn_queues == {}
+        assert await _interrupts(client) == [{"threadId": "thread-1", "turnId": "turn-1"}]
+
+
+async def test_send_failing_after_close_is_a_process_error(fake_codex: str) -> None:
+    async with client_for(fake_codex, "") as client:
+        dispatch = client.dispatch
+
+        async def send(message: dict[str, Any]) -> None:
+            dispatch._close(TransportClosedError("gone"))
+            raise BrokenPipeError
+
+        dispatch._transport.send = send  # type: ignore[method-assign]
+        with pytest.raises(CodexProcessError, match="Failed to send"):
+            await dispatch.send_request("ping")
+        assert dispatch._pending_requests == {}
+
+
+async def test_request_cancelled_while_sending_is_forgotten(fake_codex: str) -> None:
+    async with client_for(fake_codex, "") as client:
+        dispatch = client.dispatch
+        sending = asyncio.Event()
+
+        async def send(message: dict[str, Any]) -> None:
+            sending.set()
+            await asyncio.Event().wait()
+
+        dispatch._transport.send = send  # type: ignore[method-assign]
+        task = asyncio.create_task(dispatch.send_request("ping"))
+        await asyncio.wait_for(sending.wait(), 5)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert dispatch._pending_requests == {}
+
+
+async def test_closed_error_wins_over_not_connected(
+    fake_codex: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async with client_for(fake_codex, "") as client:
+        with pytest.raises(TransportClosedError):
+            await asyncio.wait_for(client.dispatch.send_request("die"), 5)
+        monkeypatch.setattr(StdioTransport, "is_connected", property(lambda _self: False))
+        with pytest.raises(TransportClosedError, match="exit code 3"):
+            await client.dispatch.send_request("model/list")
+
+
+async def test_stderr_line_over_the_limit_does_not_stop_draining(fake_codex: str) -> None:
+    async with client_for(fake_codex, "stderr_long_line") as client:
+        transport = client.dispatch._transport
+        assert isinstance(transport, StdioTransport)
+        for _ in range(100):
+            if "after" in transport._stderr_tail:
+                break
+            await asyncio.sleep(0.05)
+        assert "after" in transport._stderr_tail
+        assert await asyncio.wait_for(client.dispatch.send_request("ping"), 5)
