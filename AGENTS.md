@@ -12,17 +12,24 @@ so treat the public API (`codexed/__init__.py`, `codexed.models`) as stable.
 
 Layers, bottom to top:
 
-- `src/codexed/transport.py`: `Transport` protocol plus `StdioTransport` (subprocess via
-  `anyenv.create_process`, MCP servers passed as `--config` TOML strings) and `WebSocketTransport`
-  (optional `websockets` extra). Newline-delimited JSON in both directions.
+- `src/codexed/transport.py`: `Transport` protocol plus `StdioTransport` (subprocess in its own
+  process group, MCP servers passed as `--config` TOML strings; stderr is drained into a tail
+  that `close_reason()` reports; `stop()` closes stdin, then TERM/KILLs the group) and
+  `WebSocketTransport` (optional `websockets` extra). Newline-delimited JSON in both directions;
+  invalid lines are logged and skipped.
 - `src/codexed/client/dispatch.py`: `Dispatch`, the domain-free JSON-RPC layer: read loop,
-  request id / future correlation, routes notifications and server-initiated requests to callbacks.
+  request id / future correlation, routes notifications (inline, in order) and server-initiated
+  requests (one task each) to callbacks. When the read loop ends, pending and later requests
+  fail with `TransportClosedError` (exit code, stderr tail) and `on_close` runs.
   Errors are mapped by `exceptions.map_jsonrpc_error`.
 - `src/codexed/client/client.py`: `CodexClient` (async context manager; sends `initialize` on enter).
   Global methods (`thread_start/resume/fork/list`, `model_list`, `config_*`, `command_exec`,
   `mcp_server_*`, `apps_list`, ...). `_handle_notification` validates every notification with
   `codex_event_adapter` and puts it on the queue keyed `"{thread_id}:{turn_id}"` (or
   `"realtime:{thread_id}"`); events without a running turn go to `add_event_listener` callbacks.
+  While a `turn/start` / `review/start` is pending, unrouted turn events are buffered
+  (`_begin_turn_start` / `_end_turn_start`): the response and the first events can arrive in
+  one read. On close every queue gets `None` and `turn_stream` raises `TransportClosedError`.
   `_handle_server_request` answers approval / user-input / dynamic-tool / elicitation requests via
   handlers registered with `register_handler` (types in `request_handlers.py`).
 - Sub-APIs hung off the client: `client.account` (`client/account.py`, also caches the latest
@@ -85,8 +92,9 @@ uv build
 - Optional method arguments are keyword-only. Protocol params are built as pydantic `*Params` models and sent with `dispatch.send_request(method, params)`, responses
   validated with the matching `*Response` model.
 - Tests in `tests/`, plain functions (no classes), `asyncio_mode = "auto"`. They never start a
-  real `codex` process: they call `client.dispatch._process_message`, `client._handle_notification`
-  or replace `client.dispatch.send_request` with a fake.
+  real `codex` process: they call `client.dispatch._process_message`, `client._handle_notification`,
+  replace `client.dispatch.send_request` with a fake, or run `tests/fake_app_server.py` (a
+  scripted stdio server, POSIX only) for transport lifecycle tests.
 
 ## Specs
 

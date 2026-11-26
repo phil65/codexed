@@ -11,7 +11,7 @@ from mcp.types import CallToolResult
 from pydantic import BaseModel, TypeAdapter
 
 from codexed.client.realtime import RealtimeSession
-from codexed.exceptions import CodexRequestError, TurnFailedError
+from codexed.exceptions import CodexRequestError, TransportClosedError, TurnFailedError
 from codexed.helpers import kebab_to_camel
 from codexed.models import (
     DangerFullAccessSandboxPolicy,
@@ -209,18 +209,22 @@ class Session:
             environments=environments,
             permissions=permissions,
         )
-        turn_result = await self._client.dispatch.send_request("turn/start", params)
-        response = TurnStartResponse.model_validate(turn_result)
-        turn_id = response.turn.id
         turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
-        turn_key = f"{self.thread_id}:{turn_id}"
-        self._client._turn_queues[turn_key] = turn_queue
+        turn_key: str | None = None
+        self._client._begin_turn_start()
+        try:
+            turn_result = await self._client.dispatch.send_request("turn/start", params)
+            response = TurnStartResponse.model_validate(turn_result)
+            turn_id = response.turn.id
+            turn_key = f"{self.thread_id}:{turn_id}"
+        finally:
+            await self._client._end_turn_start(turn_key, turn_queue)
         try:
             while True:
                 event = await turn_queue.get()
                 match event:
                     case None:
-                        break
+                        raise self._connection_closed()
                     case TurnCompletedEvent():
                         yield event
                         break
@@ -235,8 +239,7 @@ class Session:
                     case _:
                         yield event
         finally:
-            if turn_key in self._client._turn_queues:
-                del self._client._turn_queues[turn_key]
+            self._client._turn_queues.pop(turn_key, None)
 
     async def turn_steer(
         self,
@@ -487,19 +490,22 @@ class Session:
             CodexEvent: Streaming events from the review turn
         """
         params = ReviewStartParams(thread_id=self.thread_id, target=target, delivery=delivery)
-        result = await self._client.dispatch.send_request("review/start", params)
-        response = ReviewStartResponse.model_validate(result)
-        turn_id = response.turn.id
-        review_thread_id = response.review_thread_id
         turn_queue: asyncio.Queue[CodexEvent | None] = asyncio.Queue()
-        turn_key = f"{review_thread_id}:{turn_id}"
-        self._client._turn_queues[turn_key] = turn_queue
+        turn_key: str | None = None
+        self._client._begin_turn_start()
+        try:
+            result = await self._client.dispatch.send_request("review/start", params)
+            response = ReviewStartResponse.model_validate(result)
+            turn_id = response.turn.id
+            turn_key = f"{response.review_thread_id}:{turn_id}"
+        finally:
+            await self._client._end_turn_start(turn_key, turn_queue)
         try:
             while True:
                 event = await turn_queue.get()
                 match event:
                     case None:
-                        break
+                        raise self._connection_closed()
                     case TurnCompletedEvent():
                         yield event
                         break
@@ -509,8 +515,7 @@ class Session:
                     case _:
                         yield event
         finally:
-            if turn_key in self._client._turn_queues:
-                del self._client._turn_queues[turn_key]
+            self._client._turn_queues.pop(turn_key, None)
 
     # -- Fork ----------------------------------------------------------------
 
@@ -625,6 +630,11 @@ class Session:
             content=data.content,
             meta=data.field_meta,
         )
+
+    def _connection_closed(self) -> TransportClosedError:
+        """The error for a stream whose connection ended before the turn completed."""
+        reason = self._client.dispatch.closed_error or "connection closed"
+        return TransportClosedError(f"Codex app-server connection ended mid-turn: {reason}")
 
     def __repr__(self) -> str:
         return f"Session(thread_id={self.thread_id!r})"

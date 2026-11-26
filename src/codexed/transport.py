@@ -8,9 +8,12 @@ Provides a Protocol-based transport interface and concrete implementations:
 from __future__ import annotations
 
 import asyncio
+from collections import deque
 import contextlib
 import logging
 import os
+import signal
+import sys
 from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 import anyenv
@@ -25,6 +28,28 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
+
+
+STDOUT_LINE_LIMIT = 10 * 1024 * 1024
+"""Longest JSON line read from the server's stdout."""
+STDERR_TAIL_LINES = 50
+"""Last stderr lines kept for the error when the server exits."""
+
+
+def _parse_line(line: str) -> dict[str, Any] | None:
+    """Parse one JSON-RPC message; None for blank or invalid lines (logged and skipped)."""
+    line = line.strip()
+    if not line or line == "null":
+        return None
+    try:
+        message = anyenv.load_json(line)
+    except Exception:  # noqa: BLE001
+        logger.warning("Skipping non-JSON line from the app-server: %.200s", line)
+        return None
+    if not isinstance(message, dict):
+        logger.warning("Skipping non-object JSON from the app-server: %.200s", line)
+        return None
+    return message
 
 
 @runtime_checkable
@@ -69,6 +94,8 @@ class StdioTransport:
         self._env_vars = env_vars or {}
         self._process: asyncio.subprocess.Process | None = None
         self._writer_lock = asyncio.Lock()
+        self._stderr_task: asyncio.Task[None] | None = None
+        self._stderr_tail: deque[str] = deque(maxlen=STDERR_TAIL_LINES)
 
     async def start(self) -> None:
         if self._process is not None:
@@ -83,28 +110,78 @@ class StdioTransport:
 
         logger.info("Starting Codex app-server: %s", " ".join(cmd))
         try:
-            self._process = await anyenv.create_process(
+            self._process = await asyncio.create_subprocess_exec(
                 *cmd,
-                stdin="pipe",
-                stdout="pipe",
-                stderr="pipe",
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                limit=STDOUT_LINE_LIMIT,
                 env={**os.environ, **self._env_vars},
+                # Own process group: stop() also ends wrapper children and MCP servers.
+                start_new_session=sys.platform != "win32",
             )
         except FileNotFoundError as exc:
             raise CodexProcessError(f"Codex binary not found: {self._command}") from exc
         except Exception as exc:
             raise CodexProcessError(f"Failed to start Codex app-server: {exc}") from exc
+        self._stderr_tail.clear()
+        self._stderr_task = asyncio.create_task(self._drain_stderr(self._process))
+
+    async def _drain_stderr(self, process: asyncio.subprocess.Process) -> None:
+        """Read stderr continuously: an unread pipe fills up and blocks the server."""
+        assert process.stderr is not None
+        while line_bytes := await process.stderr.readline():
+            line = line_bytes.decode(errors="replace").rstrip()
+            self._stderr_tail.append(line)
+            logger.debug("codex stderr: %s", line)
+
+    async def close_reason(self) -> str:
+        """Describe why the server's stdout closed: exit code and the last stderr lines."""
+        process = self._process
+        if process is None:
+            return "transport stopped"
+        with contextlib.suppress(TimeoutError):
+            await asyncio.wait_for(process.wait(), timeout=2.0)
+        if self._stderr_task is not None:
+            with contextlib.suppress(TimeoutError, Exception):
+                await asyncio.wait_for(asyncio.shield(self._stderr_task), timeout=0.5)
+        code = process.returncode
+        reason = "still running" if code is None else f"exit code {code}"
+        if self._stderr_tail:
+            reason += "; stderr:\n" + "\n".join(self._stderr_tail)
+        return reason
+
+    def _signal_group(self, process: asyncio.subprocess.Process, sig: int) -> None:
+        if sys.platform == "win32":
+            if sig == signal.SIGTERM:
+                process.terminate()
+            else:
+                process.kill()
+            return
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(process.pid, sig)
 
     async def stop(self) -> None:
-        if self._process is None:
+        process = self._process
+        if process is None:
             return
-        if self._process.returncode is None:
-            self._process.terminate()
-            try:
-                await asyncio.wait_for(self._process.wait(), timeout=5.0)
-            except TimeoutError:
-                self._process.kill()
-                await self._process.wait()
+        # Closing stdin is the graceful shutdown for a stdio server.
+        if process.stdin is not None and not process.stdin.is_closing():
+            process.stdin.close()
+        with contextlib.suppress(TimeoutError):
+            await asyncio.wait_for(process.wait(), timeout=2.0)
+        # Also when the server exited: its children (MCP servers, tools) may still run.
+        self._signal_group(process, signal.SIGTERM)
+        try:
+            await asyncio.wait_for(process.wait(), timeout=5.0)
+        except TimeoutError:
+            self._signal_group(process, getattr(signal, "SIGKILL", signal.SIGTERM))
+            await process.wait()
+        if self._stderr_task is not None:
+            self._stderr_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await self._stderr_task
+            self._stderr_task = None
         self._process = None
 
     async def send(self, message: dict[str, Any]) -> None:
@@ -118,13 +195,13 @@ class StdioTransport:
     async def receive(self) -> dict[str, Any] | None:
         if self._process is None or self._process.stdout is None:
             return None
-        line_bytes = await self._process.stdout.readline()
-        if not line_bytes:
-            return None
-        line = line_bytes.decode().strip()
-        if not line or line == "null":
-            return await self.receive()
-        return anyenv.load_json(line, return_type=dict)
+        while True:
+            line_bytes = await self._process.stdout.readline()
+            if not line_bytes:
+                return None
+            # A stray warning line or byte must not end the connection: skip it.
+            if (message := _parse_line(line_bytes.decode(errors="replace"))) is not None:
+                return message
 
     @property
     def is_connected(self) -> bool:
@@ -177,16 +254,16 @@ class WebSocketTransport:
     async def receive(self) -> dict[str, Any] | None:
         if self._ws is None:
             return None
-        try:
-            raw: str | bytes = await self._ws.recv()
-        except Exception:  # noqa: BLE001
-            return None
-        if isinstance(raw, bytes):
-            raw = raw.decode()
-        raw = raw.strip()
-        if not raw or raw == "null":
-            return await self.receive()
-        return anyenv.load_json(raw, return_type=dict)
+        while True:
+            try:
+                raw: str | bytes = await self._ws.recv()
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("WebSocket closed: %s", exc)
+                return None
+            if isinstance(raw, bytes):
+                raw = raw.decode(errors="replace")
+            if (message := _parse_line(raw)) is not None:
+                return message
 
     @property
     def is_connected(self) -> bool:

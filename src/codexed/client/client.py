@@ -176,8 +176,13 @@ class CodexClient:
             tp,
             on_notification=self._handle_notification,
             on_server_request=self._handle_server_request,
+            on_close=self._handle_close,
         )
         self._turn_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
+        # Turn events that arrive while a turn/start (or review/start) request is pending
+        # and have no queue yet: the response and the first events can come in one read.
+        self._pending_turn_starts = 0
+        self._turn_buffer: list[tuple[str, CodexEvent]] = []
         self._realtime_queues: dict[str, asyncio.Queue[CodexEvent | None]] = {}
         self._event_listeners: list[EventListener] = []
         self._active_threads: set[str] = set()
@@ -924,19 +929,57 @@ class CodexClient:
         if not turn_id and "turn" in params:
             turn_id = params.get("turn", {}).get("id")
 
-        turn_queue = (
-            self._turn_queues.get(f"{thread_id}:{turn_id}") if thread_id and turn_id else None
-        )
+        turn_key = f"{thread_id}:{turn_id}" if thread_id and turn_id else None
+        turn_queue = self._turn_queues.get(turn_key) if turn_key else None
         if turn_queue is not None:
             await turn_queue.put(event)
+        elif turn_key and self._pending_turn_starts:
+            self._turn_buffer.append((turn_key, event))
         else:
             await self._notify_listeners(event)
+
+    def _begin_turn_start(self) -> None:
+        """Buffer unrouted turn events until :meth:`_end_turn_start` (call before sending)."""
+        self._pending_turn_starts += 1
+
+    async def _end_turn_start(
+        self, turn_key: str | None, queue: asyncio.Queue[CodexEvent | None]
+    ) -> None:
+        """Register the turn's queue (if the start succeeded) with its buffered events.
+
+        Registering and claiming happen without a suspension point in between, so no
+        event can slip past the queue. Once no start is pending, events no turn claimed
+        go to the listeners.
+        """
+        if turn_key is not None:
+            self._turn_queues[turn_key] = queue
+            rest: list[tuple[str, CodexEvent]] = []
+            for key, event in self._turn_buffer:
+                if key == turn_key:
+                    queue.put_nowait(event)
+                else:
+                    rest.append((key, event))
+            self._turn_buffer = rest
+            if self.dispatch.closed_error is not None:
+                queue.put_nowait(None)  # the connection ended before the queue existed
+        self._pending_turn_starts -= 1
+        if not self._pending_turn_starts and self._turn_buffer:
+            leftovers, self._turn_buffer = self._turn_buffer, []
+            for _, event in leftovers:
+                await self._notify_listeners(event)
+
+    def _handle_close(self, error: Exception) -> None:
+        """End every turn and realtime stream: no more events will come."""
+        logger.debug("Ending open streams: %s", error)
+        for queue in [*self._turn_queues.values(), *self._realtime_queues.values()]:
+            queue.put_nowait(None)
 
     def add_event_listener(self, listener: EventListener) -> None:
         """Receive events that belong to no running turn (account, config, app updates, ...).
 
         Turn events go to the turn's stream; everything else is passed to the listeners
-        (and otherwise dropped).
+        (and otherwise dropped). Listeners run inside the read loop, in event order: they
+        must return quickly and must not await client requests (that would deadlock).
         """
         self._event_listeners.append(listener)
 
