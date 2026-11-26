@@ -4,8 +4,6 @@
 #   timestamp: 2026-11-25T05:11:55+00:00
 #   command:   datamodel-codegen --input /tmp/user/1000/codex-schema-ncuf_cb8/codex_app_server_protocol.v2.schemas.json --input-file-type jsonschema --output /home/phil65/dev/.oss-worktrees/fu-codexed/src/codexed/models/v2_protocol.py --output-model-type pydantic_v2.BaseModel --target-python-version 3.13 --target-pydantic-version 2 --use-standard-collections --use-standard-primitive-types --snake-case-field --no-alias --base-class codexed.models.base.CodexBaseModel --field-constraints --use-schema-description --use-field-description --use-double-quotes --enum-field-as-literal all --use-one-literal-as-default --keep-model-order --use-title-as-name --enable-command-header --use-type-alias --formatters ruff-check ruff-format
 
-from __future__ import annotations
-
 from typing import Annotated, Any, Literal
 
 from pydantic import ConfigDict, Field

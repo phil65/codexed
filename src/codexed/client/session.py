@@ -1,7 +1,5 @@
 """Codex session — runtime handle for an active thread."""
 
-from __future__ import annotations
-
 import asyncio
 from collections.abc import AsyncIterator, Mapping, Sequence  # noqa: TC003
 import logging

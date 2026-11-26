@@ -1,7 +1,5 @@
 """Pydantic models for Codex JSON-RPC API requests and responses."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from mcp.types import Resource, ResourceTemplate, Tool

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Required, TypedDict
 
 from pydantic import Discriminator, TypeAdapter

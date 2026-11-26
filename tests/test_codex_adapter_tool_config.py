@@ -1,7 +1,5 @@
 """Tests for Codex adapter tool configuration models."""
 
-from __future__ import annotations
-
 from pydantic import TypeAdapter
 
 from codexed.models.tool_config import (

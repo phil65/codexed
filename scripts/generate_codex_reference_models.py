@@ -14,8 +14,6 @@ Usage:
     uv run python scripts/generate_codex_reference_models.py
 """
 
-from __future__ import annotations
-
 import json
 from pathlib import Path
 import re

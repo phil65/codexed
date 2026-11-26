@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, Any
 
 from codexed.models.tool_config import tools_to_config_dict

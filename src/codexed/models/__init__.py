@@ -1,7 +1,5 @@
 """Codex adapter models."""
 
-from __future__ import annotations
-
 from codexed.models.base import (
     CodexBaseModel,
     JsonRpcError,

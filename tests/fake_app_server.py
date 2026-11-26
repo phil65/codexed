@@ -3,8 +3,6 @@
 The scenario comes from ``FAKE_SCENARIO``; see the tests in ``test_transport_lifecycle.py``.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import subprocess

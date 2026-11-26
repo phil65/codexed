@@ -1,7 +1,5 @@
 """Strict models only when CODEXED_STRICT_MODELS=1, not whenever pytest is imported."""
 
-from __future__ import annotations
-
 import os
 import subprocess
 import sys

@@ -9,8 +9,6 @@ while :func:`tools_to_config_dict` converts an arbitrary ``list[ToolConfig]``
 into the ``config`` dict accepted by ``ThreadStartParams``.
 """
 
-from __future__ import annotations
-
 from typing import Annotated, Any, Literal, assert_never
 
 from pydantic import BaseModel, ConfigDict, Discriminator

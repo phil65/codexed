@@ -1,7 +1,5 @@
 """Transport and dispatch lifecycle against a scripted app-server process."""
 
-from __future__ import annotations
-
 import asyncio
 import os
 from pathlib import Path

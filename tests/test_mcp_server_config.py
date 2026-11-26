@@ -1,7 +1,5 @@
 """MCP server configs reach Codex with their tool approval mode."""
 
-from __future__ import annotations
-
 from codexed.helpers import merge_config
 from codexed.models import HttpMcpServer, StdioMcpServer
 

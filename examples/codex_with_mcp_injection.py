@@ -4,8 +4,6 @@ This demonstrates how to inject MCP servers when initializing a Codex agent,
 similar to how ToolManagerBridge creates in-process MCP servers for ACP agents.
 """
 
-from __future__ import annotations
-
 from codexed import CodexClient, HttpMcpServer, StdioMcpServer
 
 

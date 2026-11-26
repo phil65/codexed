@@ -1,7 +1,5 @@
 """Pure JSON-RPC dispatch layer — no Codex domain knowledge."""
 
-from __future__ import annotations
-
 import asyncio
 from collections.abc import Awaitable, Callable
 import contextlib

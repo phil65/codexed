@@ -4,8 +4,6 @@ Uses discriminated unions with TypeAdapter for type-safe event parsing.
 Each event type is a proper BaseModel with the method as the discriminator.
 """
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, Annotated, Literal
 
 from pydantic import ConfigDict, Field, TypeAdapter

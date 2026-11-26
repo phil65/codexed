@@ -4,8 +4,6 @@ Provides a rich error hierarchy for JSON-RPC errors from the Codex app-server,
 with automatic classification of retryable/overload errors.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 

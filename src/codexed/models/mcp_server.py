@@ -1,7 +1,5 @@
 """MCP server configuration models."""
 
-from __future__ import annotations
-
 from typing import Literal
 
 from mcp.types import BlobResourceContents, TextResourceContents

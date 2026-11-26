@@ -1,7 +1,5 @@
 """Codex app-server client."""
 
-from __future__ import annotations
-
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
 import inspect

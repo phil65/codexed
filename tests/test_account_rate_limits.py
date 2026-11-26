@@ -1,7 +1,5 @@
 """Rate limits from account/rateLimits/updated, and events outside turns."""
 
-from __future__ import annotations
-
 from typing import Any
 
 from codexed import CodexClient

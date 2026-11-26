@@ -5,8 +5,6 @@ Provides a Protocol-based transport interface and concrete implementations:
 - WebSocketTransport: Connects to a remote app-server via WebSocket
 """
 
-from __future__ import annotations
-
 import asyncio
 from collections import deque
 import contextlib

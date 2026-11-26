@@ -1,7 +1,5 @@
 """Logging configuration for codexed."""
 
-from __future__ import annotations
-
 import logging
 
 
