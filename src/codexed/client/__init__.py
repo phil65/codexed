@@ -1,12 +1,22 @@
 """Codex client."""
 
-from .client import CodexClient
-from .fs import CodexFS
-from .skills import CodexSkills
-from .plugin import CodexPlugin
-from .marketplace import CodexMarketPlace
-from .realtime import RealtimeSession
-from .session import Session
+__lazy_modules__ = [
+    "codexed.client.client",
+    "codexed.client.fs",
+    "codexed.client.marketplace",
+    "codexed.client.plugin",
+    "codexed.client.realtime",
+    "codexed.client.session",
+    "codexed.client.skills",
+]
+
+from codexed.client.client import CodexClient
+from codexed.client.fs import CodexFS
+from codexed.client.skills import CodexSkills
+from codexed.client.plugin import CodexPlugin
+from codexed.client.marketplace import CodexMarketPlace
+from codexed.client.realtime import RealtimeSession
+from codexed.client.session import Session
 
 __all__ = [
     "CodexClient",

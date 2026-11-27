@@ -65,6 +65,7 @@ dev = [
   # Only add below (Copier)
   "pytest-asyncio>=1.5.0",
   "pytest-cov",
+  "schemez",
 ]
 benchmark = ["pyinstrument"]
 docs = [
@@ -136,7 +137,7 @@ asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100
-extend-exclude = ["docs", "src/codexed/models/v2_protocol.py"]
+extend-exclude = ["docs", "src/codexed/models/v2_protocol.py", "src/codexed/models/v2_types.py"]
 # Also honour the excludes for paths passed explicitly (pre-commit hooks).
 force-exclude = true
 target-version = "py314"

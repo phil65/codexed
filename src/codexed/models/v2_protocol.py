@@ -9,14 +9,169 @@ from typing import Annotated, Any, Literal
 from pydantic import ConfigDict, Field
 
 from codexed.models.base import CodexBaseModel
-
-
-type AbsolutePathBuf = str
-"""
-A path that is guaranteed to be absolute and normalized (though it is not guaranteed to be canonicalized or exist on the filesystem).
-
-IMPORTANT: When deserializing an `AbsolutePathBuf`, a base path must be set using [AbsolutePathBufGuard::new]. If no base path is set, the deserialization will fail unless the path being deserialized is already absolute.
-"""
+from codexed.models.v2_types import (
+    AbsolutePathBuf,
+    AccountRoutingOverride,
+    AccountSessionWorkspaceKind,
+    AccountUpdateReason,
+    AddCreditsNudgeCreditType,
+    AddCreditsNudgeEmailStatus,
+    AdditionalContextKind,
+    AgentMessageDelivery,
+    AgentPath,
+    AllowDenyRequirement,
+    AppTemplateUnavailableReason,
+    AppToolApproval,
+    ApprovalsReviewer,
+    AuthMode,
+    AutoCompactTokenLimitScope,
+    AutoReviewDecisionSource,
+    AwsCredentialType,
+    BedrockProviderId,
+    BrowserUseAccessApprovalLifetime,
+    CancelLoginAccountStatus,
+    CliAuthCredentialsStoreMode,
+    CodexResponseHandoffMode,
+    CollabAgentStatus,
+    CollabAgentTool,
+    CollabAgentToolCallStatus,
+    CommandExecOutputStream,
+    CommandExecutionSource,
+    CommandExecutionStatus,
+    ConsumeAccountRateLimitResetCreditOutcome,
+    ConversationTextRole,
+    CyberAccessProgram,
+    DesktopOnboardingEntrypoint,
+    DynamicToolCallStatus,
+    EnvironmentStatusKind,
+    ExperimentalFeatureStage,
+    ExternalAgentConfigMigrationItemType,
+    ExternalAgentDetectedConnectorSource,
+    ExternalAgentImportedConnectorSource,
+    FileSystemAccessMode,
+    ForcedChatgptWorkspaceIds,
+    ForcedLoginMethod,
+    FuzzyFileSearchMatchType,
+    GatewayOAuthStatus,
+    GcpProviderId,
+    GuardianApprovalReviewStatus,
+    GuardianAssessmentOutcome,
+    GuardianCommandSource,
+    GuardianRiskLevel,
+    GuardianUserAuthorization,
+    HelplineSubject,
+    HookEventName,
+    HookExecutionMode,
+    HookHandlerType,
+    HookOutputEntryKind,
+    HookRunStatus,
+    HookScope,
+    HookSource,
+    HookTrustStatus,
+    ImageDetail,
+    Indice,
+    InputModality,
+    LegacyAppPathString,
+    LocalShellStatus,
+    LoginAppBrand,
+    McpAppDisplayMode,
+    McpAuthStatus,
+    McpServerConnectionStatus,
+    McpServerOauthClientRegistration,
+    McpServerStartupFailureReason,
+    McpServerStartupState,
+    McpServerStatusDetail,
+    McpToolCallStatus,
+    MergeStrategy,
+    MessagePhase,
+    ModeKind,
+    ModelRerouteReason,
+    ModelVerification,
+    MultiAgentVersion,
+    NetworkAccess,
+    NetworkApprovalProtocol,
+    NetworkDomainPermission,
+    NetworkUnixSocketPermission,
+    NonSteerableTurnKind,
+    OtelHttpProtocol,
+    PatchApplyStatus,
+    PathUri,
+    Personality,
+    PlanType,
+    PluginAuthPolicy,
+    PluginAvailability,
+    PluginDisabledReason,
+    PluginInstallPolicy,
+    PluginInstallPolicySource,
+    PluginListMarketplaceKind,
+    PluginSearchScope,
+    PluginShareDiscoverability,
+    PluginSharePrincipalRole,
+    PluginSharePrincipalType,
+    PluginShareTargetRole,
+    PluginShareUpdateDiscoverability,
+    ProcessOutputStream,
+    ProjectChangeType,
+    ProjectSortKey,
+    RateLimitReachedType,
+    RateLimitResetCreditStatus,
+    RateLimitResetType,
+    RealtimeConversationVersion,
+    RealtimeOutputModality,
+    RealtimeVoice,
+    ReasoningEffort,
+    ReasoningSummary,
+    RemoteControlClientsListOrder,
+    RemoteControlConnectionStatus,
+    RequestId,
+    ResidencyRequirement,
+    ReviewDelivery,
+    SandboxMode,
+    ScheduledTaskWeekday,
+    SkillScope,
+    SortDirection,
+    SubAgentActivityKind,
+    ThreadActiveFlag,
+    ThreadAttachmentAddOutcome,
+    ThreadAttachmentOperation,
+    ThreadGoalMutationOrigin,
+    ThreadGoalStatus,
+    ThreadHistoryMode,
+    ThreadId,
+    ThreadListCwdFilter,
+    ThreadMemoryMode,
+    ThreadRealtimeCoverage,
+    ThreadRealtimeHandoffMode,
+    ThreadRealtimeOrder,
+    ThreadRealtimeSessionOutcome,
+    ThreadRealtimeTranscriptRole,
+    ThreadSearchSortKey,
+    ThreadSortKey,
+    ThreadSource,
+    ThreadSourceKind,
+    ThreadStartSource,
+    ThreadUnsubscribeStatus,
+    ToolExposureSurface,
+    TrustedContacts,
+    TurnItemsView,
+    TurnPlanStepStatus,
+    TurnSettingsUpdateStatus,
+    TurnStatus,
+    UserVerificationBiometricType,
+    UserVerificationCancellationReason,
+    UserVerificationFailureReason,
+    UserVerificationInvalidRequestReason,
+    UserVerificationUnavailableReason,
+    Verbosity,
+    WebSearchContextSize,
+    WebSearchMode,
+    WebSearchProvider,
+    WindowsSandboxImplementation,
+    WindowsSandboxReadiness,
+    WindowsSandboxSetupMode,
+    WorkspaceMessageType,
+    WriteStatus,
+)
 
 
 class AccountBedrockCheckGovCloudRequirementsRequest(CodexBaseModel):
@@ -27,16 +182,12 @@ class AccountBedrockCheckGovCloudRequirementsRequest(CodexBaseModel):
     params: BedrockCheckGovCloudRequirementsParams
 
 
-
-
 class AccountBedrockDiscoverRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/bedrock/discover"] = "account/bedrock/discover"
     params: BedrockDiscoverParams
-
-
 
 
 class AccountBedrockSetupRequest(CodexBaseModel):
@@ -47,16 +198,12 @@ class AccountBedrockSetupRequest(CodexBaseModel):
     params: BedrockSetupParams
 
 
-
-
 class AccountGatewayOAuthCancelRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/gatewayOAuth/cancel"] = "account/gatewayOAuth/cancel"
     params: None = Field(None)
-
-
 
 
 class AccountGatewayOAuthChangedNotification(CodexBaseModel):
@@ -70,16 +217,12 @@ class AccountGatewayOAuthChangedNotification(CodexBaseModel):
     params: GatewayOAuthChangedNotification
 
 
-
-
 class AccountGatewayOAuthLoginRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/gatewayOAuth/login"] = "account/gatewayOAuth/login"
     params: GatewayOAuthLoginParams | None = None
-
-
 
 
 class AccountGatewayOAuthReadRequest(CodexBaseModel):
@@ -90,8 +233,6 @@ class AccountGatewayOAuthReadRequest(CodexBaseModel):
     params: GatewayOAuthReadParams | None = None
 
 
-
-
 class AccountGcpSetupRequest(CodexBaseModel):
     """Request from the client to the server."""
 
@@ -100,16 +241,12 @@ class AccountGcpSetupRequest(CodexBaseModel):
     params: GcpSetupParams
 
 
-
-
 class AccountLoginCancelRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/login/cancel"] = "account/login/cancel"
     params: CancelLoginAccountParams
-
-
 
 
 class AccountLoginCompletedNotification(CodexBaseModel):
@@ -130,16 +267,12 @@ class AccountLoginCompletedMessage(CodexBaseModel):
     params: AccountLoginCompletedNotification
 
 
-
-
 class AccountLoginStartRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/login/start"] = "account/login/start"
     params: LoginAccountParams
-
-
 
 
 class AccountLogoutRequest(CodexBaseModel):
@@ -150,8 +283,6 @@ class AccountLogoutRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class AccountRateLimitResetCreditConsumeRequest(CodexBaseModel):
     """Request from the client to the server."""
 
@@ -160,16 +291,12 @@ class AccountRateLimitResetCreditConsumeRequest(CodexBaseModel):
     params: ConsumeAccountRateLimitResetCreditParams
 
 
-
-
 class AccountRateLimitsReadRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/rateLimits/read"] = "account/rateLimits/read"
     params: GetAccountRateLimitsParams | None = None
-
-
 
 
 class AccountRateLimitsUpdatedNotification(CodexBaseModel):
@@ -192,22 +319,12 @@ class AccountRateLimitsUpdatedMessage(CodexBaseModel):
     params: AccountRateLimitsUpdatedNotification
 
 
-
-
 class AccountReadRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/read"] = "account/read"
     params: GetAccountParams
-
-
-
-
-type AccountRoutingOverride = Literal["NO_CONSTRAINT", "us", "us_cr"]
-"""
-Backend routing policy. Wire values match the accounts/check contract.
-"""
 
 
 class AccountSecuritySetupAction(CodexBaseModel):
@@ -231,16 +348,12 @@ class AccountSecuritySetupReadRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class AccountSendAddCreditsNudgeEmailRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/sendAddCreditsNudgeEmail"] = "account/sendAddCreditsNudgeEmail"
     params: SendAddCreditsNudgeEmailParams
-
-
 
 
 class AccountSession(CodexBaseModel):
@@ -263,8 +376,6 @@ class AccountSessionListRequest(CodexBaseModel):
     params: AccountSessionsListParams
 
 
-
-
 class AccountSessionSwitchRequest(CodexBaseModel):
     """Request from the client to the server."""
 
@@ -273,16 +384,11 @@ class AccountSessionSwitchRequest(CodexBaseModel):
     params: AccountSessionsSwitchParams
 
 
-
-
 class AccountSessionWorkspace(CodexBaseModel):
     account_id: str
     image_url: str | None = None
     kind: AccountSessionWorkspaceKind | None = None
     name: str | None = None
-
-
-type AccountSessionWorkspaceKind = Literal["personal", "workspace"]
 
 
 class AccountSessionsListParams(CodexBaseModel):
@@ -329,9 +435,6 @@ class AccountTokenUsageSummary(CodexBaseModel):
     peak_daily_tokens: int | None = None
 
 
-type AccountUpdateReason = Literal["workspaceRoutingReady", "unknown"]
-
-
 class AccountUpdatedNotification(CodexBaseModel):
     auth_mode: AuthMode | None = None
     plan_type: PlanType | None = None
@@ -352,8 +455,6 @@ class AccountUpdatedMessage(CodexBaseModel):
     params: AccountUpdatedNotification
 
 
-
-
 class AccountUsageReadRequest(CodexBaseModel):
     """Request from the client to the server."""
 
@@ -362,16 +463,12 @@ class AccountUsageReadRequest(CodexBaseModel):
     params: GetAccountTokenUsageParams | None = None
 
 
-
-
 class AccountWorkspaceMessagesReadRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["account/workspaceMessages/read"] = "account/workspaceMessages/read"
     params: None = Field(None)
-
-
 
 
 class ActivePermissionProfile(CodexBaseModel):
@@ -390,8 +487,6 @@ class ActiveThreadStatus(CodexBaseModel):
     type: Literal["active"] = "active"
 
 
-
-
 class ActiveTurnNotSteerable(CodexBaseModel):
     turn_kind: NonSteerableTurnKind
 
@@ -405,16 +500,8 @@ class ActiveTurnNotSteerableCodexErrorInfo(CodexBaseModel):
     active_turn_not_steerable: ActiveTurnNotSteerable
 
 
-type AddCreditsNudgeCreditType = Literal["credits", "usage_limit"]
-
-
-type AddCreditsNudgeEmailStatus = Literal["sent", "cooldown_active"]
-
-
 class AddPatchChangeKind(CodexBaseModel):
     type: Literal["add"] = "add"
-
-
 
 
 class AdditionalContextEntry(CodexBaseModel):
@@ -424,9 +511,6 @@ class AdditionalContextEntry(CodexBaseModel):
     Optional name for untrusted context, used to label its tool output.
     """
     value: str
-
-
-type AdditionalContextKind = Literal["untrusted", "application"]
 
 
 class AdditionalFileSystemPermissions(CodexBaseModel):
@@ -453,12 +537,8 @@ class AdditionalToolsResponseItem(CodexBaseModel):
     type: Literal["additional_tools"] = "additional_tools"
 
 
-
-
 class AgentConfiguredHookHandler(CodexBaseModel):
     type: Literal["agent"] = "agent"
-
-
 
 
 class AgentHookMetadata(CodexBaseModel):
@@ -484,9 +564,6 @@ class AgentHookMetadata(CodexBaseModel):
     timeout_sec: int = Field(..., ge=0)
     trust_status: HookTrustStatus
     handler_type: Literal["agent"] = "agent"
-
-
-type AgentMessageDelivery = Literal["async"]
 
 
 class AgentMessageDeltaNotification(CodexBaseModel):
@@ -541,8 +618,6 @@ class AgentMessageResponseItem(CodexBaseModel):
     type: Literal["agent_message"] = "agent_message"
 
 
-
-
 class AgentMessageThreadItem(CodexBaseModel):
     """A thread item and its recorded lifecycle times. The payload stays flat on the wire."""
 
@@ -564,14 +639,6 @@ class AgentMessageThreadItem(CodexBaseModel):
     type: Literal["agentMessage"] = "agentMessage"
 
 
-
-
-type AgentPath = str
-
-
-type AllowDenyRequirement = Literal["allow", "deny"]
-
-
 class AmazonBedrockAccessKeysv2LoginAccountParams(CodexBaseModel):
     """[UNSTABLE] Managed Amazon Bedrock AWS access key login is experimental."""
 
@@ -582,13 +649,9 @@ class AmazonBedrockAccessKeysv2LoginAccountParams(CodexBaseModel):
     type: Literal["amazonBedrockAccessKeys"] = "amazonBedrockAccessKeys"
 
 
-
-
 class AmazonBedrockAccount(CodexBaseModel):
     type: Literal["amazonBedrock"] = "amazonBedrock"
     uses_codex_managed_credentials: bool | None = False
-
-
 
 
 class AmazonBedrockv2LoginAccountParams(CodexBaseModel):
@@ -599,12 +662,8 @@ class AmazonBedrockv2LoginAccountParams(CodexBaseModel):
     type: Literal["amazonBedrock"] = "amazonBedrock"
 
 
-
-
 class AmazonBedrockv2LoginAccountResponse(CodexBaseModel):
     type: Literal["amazonBedrock"] = "amazonBedrock"
-
-
 
 
 class AnalyticsConfig(CodexBaseModel):
@@ -626,19 +685,13 @@ class ApiKeyAccount(CodexBaseModel):
     type: Literal["apiKey"] = "apiKey"
 
 
-
-
 class ApiKeyv2LoginAccountParams(CodexBaseModel):
     api_key: str
     type: Literal["apiKey"] = "apiKey"
 
 
-
-
 class ApiKeyv2LoginAccountResponse(CodexBaseModel):
     type: Literal["apiKey"] = "apiKey"
-
-
 
 
 class AppBranding(CodexBaseModel):
@@ -701,8 +754,6 @@ class AppInstalledRequest(CodexBaseModel):
     params: AppsInstalledParams
 
 
-
-
 class AppLinkConfig(CodexBaseModel):
     """Approval settings for a connected account within an app."""
 
@@ -722,8 +773,6 @@ class AppListRequest(CodexBaseModel):
     params: AppsListParams
 
 
-
-
 class AppListUpdatedNotification(CodexBaseModel):
     """EXPERIMENTAL - notification emitted when the app list changes."""
 
@@ -739,8 +788,6 @@ class AppListUpdatedMessage(CodexBaseModel):
     """
     method: Literal["app/list/updated"] = "app/list/updated"
     params: AppListUpdatedNotification
-
-
 
 
 class AppMetadata(CodexBaseModel):
@@ -763,8 +810,6 @@ class AppReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["app/read"] = "app/read"
     params: AppsReadParams
-
-
 
 
 class AppReview(CodexBaseModel):
@@ -797,12 +842,6 @@ class AppTemplateSummary(CodexBaseModel):
     name: str
     reason: AppTemplateUnavailableReason | None = None
     template_id: str
-
-
-type AppTemplateUnavailableReason = Literal["NOT_CONFIGURED_FOR_WORKSPACE", "NO_ACTIVE_WORKSPACE"]
-
-
-type AppToolApproval = Literal["auto", "prompt", "writes", "approve"]
 
 
 class AppToolConfig(CodexBaseModel):
@@ -849,14 +888,6 @@ class ApplyPatchGuardianApprovalReviewAction(CodexBaseModel):
     cwd: LegacyAppPathString
     files: list[LegacyAppPathString]
     type: Literal["applyPatch"] = "applyPatch"
-
-
-
-
-type ApprovalsReviewer = Literal["user", "auto_review", "guardian_subagent"]
-"""
-Configures who approval requests are routed to for review. Examples include sandbox escapes, blocked network access, MCP approval prompts, and ARC escalations. Defaults to `user`. `auto_review` uses a carefully prompted subagent to gather relevant context and apply a risk-based decision framework before approving or denying the request. The legacy value `guardian_subagent` is accepted for compatibility.
-"""
 
 
 class AppsConfig(CodexBaseModel):
@@ -967,23 +998,6 @@ class AudioUrlFunctionCallOutputContentItem(CodexBaseModel):
     audio_url: str
 
 
-
-
-type AuthMode = Literal[
-    "apikey",
-    "chatgpt",
-    "chatgptAuthTokens",
-    "headers",
-    "agentIdentity",
-    "personalAccessToken",
-    "bedrockApiKey",
-    "bedrockAccessKeys",
-]
-"""
-Authentication mode for OpenAI-backed providers.
-"""
-
-
 class AuthRecoveryNotification(CodexBaseModel):
     message: str
     provider: str
@@ -1002,26 +1016,9 @@ class AutoApprovalReviewStrictReviewRequiredNotification(CodexBaseModel):
     params: StrictReviewRequiredNotification
 
 
-
-
-type AutoCompactTokenLimitScope = Literal["total", "body_after_prefix"]
-"""
-Selects which part of the active context is charged against `model_auto_compact_token_limit`.
-"""
-
-
-type AutoReviewDecisionSource = Literal["agent"]
-"""
-[UNSTABLE] Source that produced a terminal approval auto-review decision.
-"""
-
-
 class AutoReviewRequirements(CodexBaseModel):
     ignore_rules: list[str] | None = None
     required_on_models: list[str] | None = None
-
-
-type AwsCredentialType = Literal["accessKeys", "bedrockApiKey"]
 
 
 class BaseBranchReviewTarget(CodexBaseModel):
@@ -1029,8 +1026,6 @@ class BaseBranchReviewTarget(CodexBaseModel):
 
     branch: str
     type: Literal["baseBranch"] = "baseBranch"
-
-
 
 
 class BedrockAwsProfile(CodexBaseModel):
@@ -1069,9 +1064,6 @@ class BedrockEnvironmentCredential(CodexBaseModel):
     type: AwsCredentialType
 
 
-type BedrockProviderId = Literal["amazon-bedrock", "amazon-bedrock-runtime"]
-
-
 class BedrockProviderSettings(CodexBaseModel):
     profile: str | None = None
     region: str | None = None
@@ -1088,10 +1080,6 @@ class BedrockProviderSettingsPatch(CodexBaseModel):
     provider_id: BedrockProviderId
     region: str | None = None
     type: Literal["bedrock"] = "bedrock"
-
-
-
-
 
 
 class BedrockSetupResponse(CodexBaseModel):
@@ -1113,17 +1101,12 @@ class BemItemPromotedThreadRealtimeItem(CodexBaseModel):
     type: Literal["bemItemPromoted"] = "bemItemPromoted"
 
 
-
-
 class BlockReason1(CodexBaseModel):
     kind: Literal["protection"] = "protection"
     protection_type: str
     """
     Identifies the same moderation row that Chat writes on the live path.
     """
-
-
-type BrowserUseAccessApprovalLifetime = Literal["turn", "thread"]
 
 
 class BrowserUseConfig(CodexBaseModel):
@@ -1176,9 +1159,6 @@ class CancelLoginAccountResponse(CodexBaseModel):
     status: CancelLoginAccountStatus
 
 
-type CancelLoginAccountStatus = Literal["canceled", "notFound"]
-
-
 class CancelledUserVerificationErrorDetails(CodexBaseModel):
     """Closed error categories; native diagnostic payloads must not cross this boundary."""
 
@@ -1189,8 +1169,6 @@ class CancelledUserVerificationErrorDetails(CodexBaseModel):
     type: Literal["cancelled"] = "cancelled"
 
 
-
-
 class ChatgptAccount(CodexBaseModel):
     email: str | None
     plan_type: PlanType
@@ -1199,8 +1177,6 @@ class ChatgptAccount(CodexBaseModel):
     """
     Display name of the selected ChatGPT workspace, when available.
     """
-
-
 
 
 class ChatgptAuthTokensv2LoginAccountParams(CodexBaseModel):
@@ -1223,18 +1199,12 @@ class ChatgptAuthTokensv2LoginAccountParams(CodexBaseModel):
     type: Literal["chatgptAuthTokens"] = "chatgptAuthTokens"
 
 
-
-
 class ChatgptAuthTokensv2LoginAccountResponse(CodexBaseModel):
     type: Literal["chatgptAuthTokens"] = "chatgptAuthTokens"
 
 
-
-
 class ChatgptDeviceCodev2LoginAccountParams(CodexBaseModel):
     type: Literal["chatgptDeviceCode"] = "chatgptDeviceCode"
-
-
 
 
 class ChatgptDeviceCodev2LoginAccountResponse(CodexBaseModel):
@@ -1250,15 +1220,11 @@ class ChatgptDeviceCodev2LoginAccountResponse(CodexBaseModel):
     """
 
 
-
-
 class Chatgptv2LoginAccountParams(CodexBaseModel):
     app_brand: LoginAppBrand | None = None
     codex_streamlined_login: bool | None = None
     type: Literal["chatgpt"] = "chatgpt"
     use_hosted_login_success_page: bool | None = None
-
-
 
 
 class Chatgptv2LoginAccountResponse(CodexBaseModel):
@@ -1268,11 +1234,6 @@ class Chatgptv2LoginAccountResponse(CodexBaseModel):
     """
     login_id: str
     type: Literal["chatgpt"] = "chatgpt"
-
-
-
-
-type CliAuthCredentialsStoreMode = Literal["file", "keyring", "auto", "ephemeral"]
 
 
 class ClientInfo(CodexBaseModel):
@@ -1285,33 +1246,9 @@ class CodexAppServerProtocolV2(CodexBaseModel):
     pass
 
 
-type CodexResponseHandoffMode = Literal["thinking", "commentary", "bemTags"]
-
-
 class CollabAgentState(CodexBaseModel):
     message: str | None = None
     status: CollabAgentStatus
-
-
-type CollabAgentStatus = Literal[
-    "pendingInit", "running", "interrupted", "completed", "errored", "shutdown", "notFound"
-]
-
-
-type CollabAgentTool = Literal[
-    "spawnAgent",
-    "sendInput",
-    "resumeAgent",
-    "wait",
-    "closeAgent",
-    "sendMessage",
-    "followupTask",
-    "interruptAgent",
-    "listAgents",
-]
-
-
-type CollabAgentToolCallStatus = Literal["inProgress", "completed", "failed", "interrupted"]
 
 
 class CollabAgentToolCallThreadItem(CodexBaseModel):
@@ -1364,8 +1301,6 @@ class CollabAgentToolCallThreadItem(CodexBaseModel):
     type: Literal["collabAgentToolCall"] = "collabAgentToolCall"
 
 
-
-
 class CollaborationMode(CodexBaseModel):
     """Collaboration mode for a Codex session."""
 
@@ -1383,8 +1318,6 @@ class CollaborationModeListRequest(CodexBaseModel):
     id: RequestId
     method: Literal["collaborationMode/list"] = "collaborationMode/list"
     params: CollaborationModeListParams
-
-
 
 
 class CollaborationModeListResponse(CodexBaseModel):
@@ -1413,8 +1346,6 @@ class CommandConfiguredHookHandler(CodexBaseModel):
     status_message: str | None = None
     timeout_sec: int | None = Field(None, ge=0)
     type: Literal["command"] = "command"
-
-
 
 
 class CommandExecOutputDeltaNotification(CodexBaseModel):
@@ -1450,14 +1381,6 @@ class CommandExecOutputDeltaMessage(CodexBaseModel):
     """
     method: Literal["command/exec/outputDelta"] = "command/exec/outputDelta"
     params: CommandExecOutputDeltaNotification
-
-
-
-
-type CommandExecOutputStream = Literal["stdout", "stderr"]
-"""
-Stream label for `command/exec/outputDelta` notifications.
-"""
 
 
 class CommandExecParams(CodexBaseModel):
@@ -1554,8 +1477,6 @@ class CommandExecRequest(CodexBaseModel):
     params: CommandExecParams
 
 
-
-
 class CommandExecResizeParams(CodexBaseModel):
     """Resize a running PTY-backed `command/exec` session."""
 
@@ -1575,8 +1496,6 @@ class CommandExecResizeRequest(CodexBaseModel):
     id: RequestId
     method: Literal["command/exec/resize"] = "command/exec/resize"
     params: CommandExecResizeParams
-
-
 
 
 class CommandExecResizeResponse(CodexBaseModel):
@@ -1634,8 +1553,6 @@ class CommandExecTerminateRequest(CodexBaseModel):
     params: CommandExecTerminateParams
 
 
-
-
 class CommandExecTerminateResponse(CodexBaseModel):
     """Empty success response for `command/exec/terminate`."""
 
@@ -1665,8 +1582,6 @@ class CommandExecWriteRequest(CodexBaseModel):
     params: CommandExecWriteParams
 
 
-
-
 class CommandExecWriteResponse(CodexBaseModel):
     """Empty success response for `command/exec/write`."""
 
@@ -1676,14 +1591,6 @@ class CommandExecutionOutputDeltaNotification(CodexBaseModel):
     item_id: str
     thread_id: str
     turn_id: str
-
-
-type CommandExecutionSource = Literal[
-    "agent", "userShell", "unifiedExecStartup", "unifiedExecInteraction"
-]
-
-
-type CommandExecutionStatus = Literal["inProgress", "completed", "failed", "declined"]
 
 
 class CommandExecutionThreadItem(CodexBaseModel):
@@ -1739,15 +1646,11 @@ class CommandExecutionThreadItem(CodexBaseModel):
     type: Literal["commandExecution"] = "commandExecution"
 
 
-
-
 class CommandGuardianApprovalReviewAction(CodexBaseModel):
     command: str
     cwd: LegacyAppPathString
     source: GuardianCommandSource
     type: Literal["command"] = "command"
-
-
 
 
 class CommandMigration(CodexBaseModel):
@@ -1765,8 +1668,6 @@ class CommitReviewTarget(CodexBaseModel):
     type: Literal["commit"] = "commit"
 
 
-
-
 class CompactionResponseItem(CodexBaseModel):
     encrypted_content: str
     id: str | None = None
@@ -1774,19 +1675,13 @@ class CompactionResponseItem(CodexBaseModel):
     type: Literal["compaction"] = "compaction"
 
 
-
-
 class CompactionTriggerResponseItem(CodexBaseModel):
     type: Literal["compaction_trigger"] = "compaction_trigger"
-
-
 
 
 class CompletedThreadPredictionResult(CodexBaseModel):
     text: str | None = None
     type: Literal["completed"] = "completed"
-
-
 
 
 class ComputerUseConfig(CodexBaseModel):
@@ -1895,8 +1790,6 @@ class ConfigBatchWriteRequest(CodexBaseModel):
     params: ConfigBatchWriteParams
 
 
-
-
 class ConfigEdit(CodexBaseModel):
     key_path: str
     merge_strategy: MergeStrategy
@@ -1923,8 +1816,6 @@ class ConfigMcpServerReloadRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class ConfigReadParams(CodexBaseModel):
     cwd: str | None = None
     """
@@ -1939,8 +1830,6 @@ class ConfigReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["config/read"] = "config/read"
     params: ConfigReadParams
-
-
 
 
 class ConfigReadResponse(CodexBaseModel):
@@ -2003,8 +1892,6 @@ class ConfigRequirementsReadRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class ConfigRequirementsReadResponse(CodexBaseModel):
     requirements: ConfigRequirements | None = None
     """
@@ -2033,8 +1920,6 @@ class ConfigValueWriteRequest(CodexBaseModel):
     id: RequestId
     method: Literal["config/value/write"] = "config/value/write"
     params: ConfigValueWriteParams
-
-
 
 
 class ConfigWarningNotification(CodexBaseModel):
@@ -2067,8 +1952,6 @@ class ConfigWarningMessage(CodexBaseModel):
     params: ConfigWarningNotification
 
 
-
-
 class ConfigWriteResponse(CodexBaseModel):
     file_path: AbsolutePathBuf
     """
@@ -2092,8 +1975,6 @@ class ConfigurationUpdateResponseItem(CodexBaseModel):
     type: Literal["configuration_update"] = "configuration_update"
 
 
-
-
 class ConfiguredHookMatcherGroup(CodexBaseModel):
     hooks: list[ConfiguredHookHandler]
     matcher: str | None = None
@@ -2111,11 +1992,6 @@ class ConnectorMetadata(CodexBaseModel):
     name: str
     plugin_display_names: list[str] | None = []
     tool_summaries: list[AppToolSummary] | None = None
-
-
-type ConsumeAccountRateLimitResetCreditOutcome = Literal[
-    "reset", "nothingToReset", "noCredit", "alreadyRedeemed"
-]
 
 
 class ConsumeAccountRateLimitResetCreditParams(CodexBaseModel):
@@ -2147,8 +2023,6 @@ class ContextCompactionResponseItem(CodexBaseModel):
     type: Literal["context_compaction"] = "context_compaction"
 
 
-
-
 class ContextCompactionThreadItem(CodexBaseModel):
     """A thread item and its recorded lifecycle times. The payload stays flat on the wire."""
 
@@ -2162,11 +2036,6 @@ class ContextCompactionThreadItem(CodexBaseModel):
     """
     id: str
     type: Literal["contextCompaction"] = "contextCompaction"
-
-
-
-
-type ConversationTextRole = Literal["user", "developer", "assistant"]
 
 
 class CreditsSnapshot(CodexBaseModel):
@@ -2196,10 +2065,6 @@ class CustomGatewayProviderSettingsPatch(CodexBaseModel):
     type: Literal["customGateway"] = "customGateway"
 
 
-
-
-
-
 class CustomMultiAgentMode(CodexBaseModel):
     """Controls the effective multi-agent delegation instructions for a turn. `custom` means the configured mode hint defines the policy instead of a built-in policy."""
 
@@ -2214,8 +2079,6 @@ class CustomReviewTarget(CodexBaseModel):
 
     instructions: str
     type: Literal["custom"] = "custom"
-
-
 
 
 class CustomSessionSource(CodexBaseModel):
@@ -2234,8 +2097,6 @@ class CustomToolCallOutputResponseItem(CodexBaseModel):
     type: Literal["custom_tool_call_output"] = "custom_tool_call_output"
 
 
-
-
 class CustomToolCallResponseItem(CodexBaseModel):
     call_id: str
     encrypted_content: str | None = None
@@ -2248,31 +2109,17 @@ class CustomToolCallResponseItem(CodexBaseModel):
     type: Literal["custom_tool_call"] = "custom_tool_call"
 
 
-
-
-type CyberAccessProgram = Literal["standard", "daybreakBlue", "daybreakRed"]
-"""
-Requested cyber treatment for an OpenAI model turn. Authorization and model-tier restrictions remain server-owned.
-"""
-
-
 class DailyScheduledTaskSchedule(CodexBaseModel):
     time: str
     type: Literal["daily"] = "daily"
-
-
 
 
 class DangerFullAccessSandboxPolicy(CodexBaseModel):
     type: Literal["dangerFullAccess"] = "dangerFullAccess"
 
 
-
-
 class DeletePatchChangeKind(CodexBaseModel):
     type: Literal["delete"] = "delete"
-
-
 
 
 class DeprecationNoticeNotification(CodexBaseModel):
@@ -2295,14 +2142,6 @@ class DeprecationNoticeMessage(CodexBaseModel):
     """
     method: Literal["deprecationNotice"] = "deprecationNotice"
     params: DeprecationNoticeNotification
-
-
-
-
-type DesktopOnboardingEntrypoint = Literal["life_sciences"]
-
-
-type DynamicToolCallStatus = Literal["inProgress", "completed", "failed"]
 
 
 class DynamicToolCallThreadItem(CodexBaseModel):
@@ -2330,13 +2169,9 @@ class DynamicToolCallThreadItem(CodexBaseModel):
     type: Literal["dynamicToolCall"] = "dynamicToolCall"
 
 
-
-
 class EncryptedContentAgentMessageInputContent(CodexBaseModel):
     encrypted_content: str
     type: Literal["encrypted_content"] = "encrypted_content"
-
-
 
 
 class EncryptedContentFunctionCallOutputContentItem(CodexBaseModel):
@@ -2344,8 +2179,6 @@ class EncryptedContentFunctionCallOutputContentItem(CodexBaseModel):
 
     encrypted_content: str
     type: Literal["encrypted_content"] = "encrypted_content"
-
-
 
 
 class EnteredReviewModeThreadItem(CodexBaseModel):
@@ -2364,8 +2197,6 @@ class EnteredReviewModeThreadItem(CodexBaseModel):
     type: Literal["enteredReviewMode"] = "enteredReviewMode"
 
 
-
-
 class EnterpriseManagedConfigLayerSource(CodexBaseModel):
     """Enterprise-managed config layer delivered by the cloud config bundle."""
 
@@ -2378,8 +2209,6 @@ class EnterpriseManagedConfigLayerSource(CodexBaseModel):
     Admin-facing name for the delivered layer. This is surfaced in diagnostics so users know which cloud layer needs administrator attention.
     """
     type: Literal["enterpriseManaged"] = "enterpriseManaged"
-
-
 
 
 class EnvironmentAddParams(CodexBaseModel):
@@ -2411,8 +2240,6 @@ class EnvironmentAddRequest(CodexBaseModel):
     params: EnvironmentAddParams
 
 
-
-
 class EnvironmentAddResponse(CodexBaseModel):
     pass
 
@@ -2434,8 +2261,6 @@ Location used to resolve a selected capability root.
 """
 
 
-
-
 class EnvironmentConnectionNotification(CodexBaseModel):
     environment_id: str
     thread_id: str
@@ -2451,8 +2276,6 @@ class EnvironmentInfoRequest(CodexBaseModel):
     id: RequestId
     method: Literal["environment/info"] = "environment/info"
     params: EnvironmentInfoParams
-
-
 
 
 class EnvironmentInfoResponse(CodexBaseModel):
@@ -2481,14 +2304,6 @@ class EnvironmentSkillsParams(CodexBaseModel):
     """
 
 
-type EnvironmentStatusKind = Literal["ready", "pending", "disconnected", "unknown"]
-"""
-Current status observed by app-server without starting or recovering an environment.
-
-For a currently ready remote environment, app-server asks the existing exec-server connection for `environment/status` without allowing recovery.
-"""
-
-
 class EnvironmentStatusParams(CodexBaseModel):
     """Parameters for reading the current status of one configured environment."""
 
@@ -2504,8 +2319,6 @@ class EnvironmentStatusRequest(CodexBaseModel):
     id: RequestId
     method: Literal["environment/status"] = "environment/status"
     params: EnvironmentStatusParams
-
-
 
 
 class EnvironmentStatusResponse(CodexBaseModel):
@@ -2526,8 +2339,6 @@ class Environmentv2BedrockSetupParams(CodexBaseModel):
     type: Literal["environment"] = "environment"
 
 
-
-
 class ErrorNotification(CodexBaseModel):
     error: TurnError
     thread_id: str
@@ -2546,8 +2357,6 @@ class ErrorMessage(CodexBaseModel):
     params: ErrorNotification
 
 
-
-
 class ExecLocalShellAction(CodexBaseModel):
     command: list[str]
     env: dict[str, Any] | None = None
@@ -2555,8 +2364,6 @@ class ExecLocalShellAction(CodexBaseModel):
     type: Literal["exec"] = "exec"
     user: str | None = None
     working_directory: str | None = None
-
-
 
 
 class ExecveGuardianApprovalReviewAction(CodexBaseModel):
@@ -2567,8 +2374,6 @@ class ExecveGuardianApprovalReviewAction(CodexBaseModel):
     type: Literal["execve"] = "execve"
 
 
-
-
 class ExistingCallThreadRealtimeStartTransport(CodexBaseModel):
     """EXPERIMENTAL - transport used by thread realtime."""
 
@@ -2577,8 +2382,6 @@ class ExistingCallThreadRealtimeStartTransport(CodexBaseModel):
     Identifier of a realtime call already created and negotiated by the client.
     """
     type: Literal["existingCall"] = "existingCall"
-
-
 
 
 class ExitedReviewModeThreadItem(CodexBaseModel):
@@ -2595,8 +2398,6 @@ class ExitedReviewModeThreadItem(CodexBaseModel):
     id: str
     review: str
     type: Literal["exitedReviewMode"] = "exitedReviewMode"
-
-
 
 
 class ExperimentalFeature(CodexBaseModel):
@@ -2647,8 +2448,6 @@ class ExperimentalFeatureEnablementSetRequest(CodexBaseModel):
     params: ExperimentalFeatureEnablementSetParams
 
 
-
-
 class ExperimentalFeatureEnablementSetResponse(CodexBaseModel):
     enablement: dict[str, bool]
     """
@@ -2679,19 +2478,12 @@ class ExperimentalFeatureListRequest(CodexBaseModel):
     params: ExperimentalFeatureListParams
 
 
-
-
 class ExperimentalFeatureListResponse(CodexBaseModel):
     data: list[ExperimentalFeature]
     next_cursor: str | None = None
     """
     Opaque cursor to pass to the next call to continue after the last item. If None, there are no more items to return.
     """
-
-
-type ExperimentalFeatureStage = Literal[
-    "beta", "underDevelopment", "stable", "deprecated", "removed"
-]
 
 
 class ExternalAgentConfigDetectParams(CodexBaseModel):
@@ -2729,8 +2521,6 @@ class ExternalAgentConfigDetectRequest(CodexBaseModel):
     params: ExternalAgentConfigDetectParams
 
 
-
-
 class ExternalAgentConfigDetectResponse(CodexBaseModel):
     connectors: list[ExternalAgentDetectedConnectorCandidate] | None = Field(
         [], validate_default=True
@@ -2752,8 +2542,6 @@ class ExternalAgentConfigImportCompletedMessage(CodexBaseModel):
     """
     method: Literal["externalAgentConfig/import/completed"] = "externalAgentConfig/import/completed"
     params: ExternalAgentConfigImportCompletedNotification
-
-
 
 
 class ExternalAgentConfigImportHistoriesReadResponse(CodexBaseModel):
@@ -2854,16 +2642,12 @@ class ExternalAgentConfigImportProgressMessage(CodexBaseModel):
     params: ExternalAgentConfigImportProgressNotification
 
 
-
-
 class ExternalAgentConfigImportReadHistoriesRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["externalAgentConfig/import/readHistories"] = "externalAgentConfig/import/readHistories"
     params: None = Field(None)
-
-
 
 
 class ExternalAgentConfigImportRecordHistoryRequest(CodexBaseModel):
@@ -2874,16 +2658,12 @@ class ExternalAgentConfigImportRecordHistoryRequest(CodexBaseModel):
     params: ExternalAgentConfigImportHistoryRecordParams
 
 
-
-
 class ExternalAgentConfigImportRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["externalAgentConfig/import"] = "externalAgentConfig/import"
     params: ExternalAgentConfigImportParams
-
-
 
 
 class ExternalAgentConfigImportResponse(CodexBaseModel):
@@ -2906,27 +2686,10 @@ class ExternalAgentConfigMigrationItem(CodexBaseModel):
     item_type: ExternalAgentConfigMigrationItemType
 
 
-type ExternalAgentConfigMigrationItemType = Literal[
-    "AGENTS_MD",
-    "CONFIG",
-    "SKILLS",
-    "PLUGINS",
-    "MCP_SERVER_CONFIG",
-    "SUBAGENTS",
-    "HOOKS",
-    "COMMANDS",
-    "MEMORY",
-    "SESSIONS",
-]
-
-
 class ExternalAgentDetectedConnectorCandidate(CodexBaseModel):
     name: str
     session_count: int = Field(..., ge=0)
     source: ExternalAgentDetectedConnectorSource
-
-
-type ExternalAgentDetectedConnectorSource = Literal["remoteMcpServersConfig", "sessionToolUse"]
 
 
 class ExternalAgentImportedConnectorCandidate(CodexBaseModel):
@@ -2935,20 +2698,13 @@ class ExternalAgentImportedConnectorCandidate(CodexBaseModel):
     source: ExternalAgentImportedConnectorSource
 
 
-type ExternalAgentImportedConnectorSource = Literal["remoteMcpServersConfig"]
-
-
 class ExternalSandboxSandboxPolicy(CodexBaseModel):
     network_access: NetworkAccess | None = "restricted"
     type: Literal["externalSandbox"] = "externalSandbox"
 
 
-
-
 class FailedThreadPredictionResult(CodexBaseModel):
     type: Literal["failed"] = "failed"
-
-
 
 
 class FailedUserVerificationErrorDetails(CodexBaseModel):
@@ -2959,8 +2715,6 @@ class FailedUserVerificationErrorDetails(CodexBaseModel):
     )
     reason: UserVerificationFailureReason
     type: Literal["failed"] = "failed"
-
-
 
 
 class FeedbackRequirements(CodexBaseModel):
@@ -2988,8 +2742,6 @@ class FeedbackSaveRequest(CodexBaseModel):
     params: FeedbackSaveParams
 
 
-
-
 class FeedbackSaveResponse(CodexBaseModel):
     prompt_hash: str | None = None
     """
@@ -3014,8 +2766,6 @@ class FeedbackUploadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["feedback/upload"] = "feedback/upload"
     params: FeedbackUploadParams
-
-
 
 
 class FeedbackUploadResponse(CodexBaseModel):
@@ -3060,8 +2810,6 @@ class FileChangeThreadItem(CodexBaseModel):
     id: str
     status: PatchApplyStatus
     type: Literal["fileChange"] = "fileChange"
-
-
 
 
 class FileIdContentItem(CodexBaseModel):
@@ -3135,9 +2883,6 @@ class FileIdUserInput1(CodexBaseModel):
     file_id: str
 
 
-type FileSystemAccessMode = Literal["read", "write", "deny"]
-
-
 class FileSystemSandboxEntry(CodexBaseModel):
     access: FileSystemAccessMode
     path: FileSystemPath
@@ -3161,23 +2906,10 @@ class FindInPageResponsesApiWebSearchAction(CodexBaseModel):
     url: str | None = None
 
 
-
-
 class FindInPageWebSearchAction(CodexBaseModel):
     pattern: str | None = None
     type: Literal["findInPage"] = "findInPage"
     url: str | None = None
-
-
-
-
-type ForcedChatgptWorkspaceIds = str | list[str]
-"""
-Backward-compatible API shape for ChatGPT workspace login restrictions.
-"""
-
-
-type ForcedLoginMethod = Literal["chatgpt", "api"]
 
 
 class FrameThreadRealtimeItem(CodexBaseModel):
@@ -3191,8 +2923,6 @@ class FrameThreadRealtimeItem(CodexBaseModel):
     realtime_session_id: str
     channels: ThreadRealtimeFrameChannels
     type: Literal["frame"] = "frame"
-
-
 
 
 class FsChangedNotification(CodexBaseModel):
@@ -3217,8 +2947,6 @@ class FsChangedMessage(CodexBaseModel):
     """
     method: Literal["fs/changed"] = "fs/changed"
     params: FsChangedNotification
-
-
 
 
 class FsCopyParams(CodexBaseModel):
@@ -3246,8 +2974,6 @@ class FsCopyRequest(CodexBaseModel):
     params: FsCopyParams
 
 
-
-
 class FsCopyResponse(CodexBaseModel):
     """Successful response for `fs/copy`."""
 
@@ -3273,8 +2999,6 @@ class FsCreateDirectoryRequest(CodexBaseModel):
     params: FsCreateDirectoryParams
 
 
-
-
 class FsCreateDirectoryResponse(CodexBaseModel):
     """Successful response for `fs/createDirectory`."""
 
@@ -3294,8 +3018,6 @@ class FsGetMetadataRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fs/getMetadata"] = "fs/getMetadata"
     params: FsGetMetadataParams
-
-
 
 
 class FsGetMetadataResponse(CodexBaseModel):
@@ -3357,8 +3079,6 @@ class FsReadDirectoryRequest(CodexBaseModel):
     params: FsReadDirectoryParams
 
 
-
-
 class FsReadDirectoryResponse(CodexBaseModel):
     """Directory entries returned by `fs/readDirectory`."""
 
@@ -3383,8 +3103,6 @@ class FsReadFileRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fs/readFile"] = "fs/readFile"
     params: FsReadFileParams
-
-
 
 
 class FsReadFileResponse(CodexBaseModel):
@@ -3421,8 +3139,6 @@ class FsRemoveRequest(CodexBaseModel):
     params: FsRemoveParams
 
 
-
-
 class FsRemoveResponse(CodexBaseModel):
     """Successful response for `fs/remove`."""
 
@@ -3442,8 +3158,6 @@ class FsUnwatchRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fs/unwatch"] = "fs/unwatch"
     params: FsUnwatchParams
-
-
 
 
 class FsUnwatchResponse(CodexBaseModel):
@@ -3469,8 +3183,6 @@ class FsWatchRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fs/watch"] = "fs/watch"
     params: FsWatchParams
-
-
 
 
 class FsWatchResponse(CodexBaseModel):
@@ -3503,8 +3215,6 @@ class FsWriteFileRequest(CodexBaseModel):
     params: FsWriteFileParams
 
 
-
-
 class FsWriteFileResponse(CodexBaseModel):
     """Successful response for `fs/writeFile`."""
 
@@ -3517,8 +3227,6 @@ class FunctionCallOutputResponseItem(CodexBaseModel):
     namespace: str | None = None
     output: FunctionCallOutputBody
     type: Literal["function_call_output"] = "function_call_output"
-
-
 
 
 class FunctionCallOutputThreadItem(CodexBaseModel):
@@ -3539,8 +3247,6 @@ class FunctionCallOutputThreadItem(CodexBaseModel):
     type: Literal["functionCallOutput"] = "functionCallOutput"
 
 
-
-
 class FunctionCallResponseItem(CodexBaseModel):
     arguments: str
     call_id: str
@@ -3554,8 +3260,6 @@ class FunctionCallResponseItem(CodexBaseModel):
     type: Literal["function_call"] = "function_call"
 
 
-
-
 class FunctionDynamicToolNamespaceTool(CodexBaseModel):
     defer_loading: bool | None = None
     description: str
@@ -3567,19 +3271,12 @@ class FunctionDynamicToolNamespaceTool(CodexBaseModel):
 type DynamicToolNamespaceTool = FunctionDynamicToolNamespaceTool
 
 
-
-
 class FunctionDynamicToolSpec(CodexBaseModel):
     defer_loading: bool | None = None
     description: str
     input_schema: Any
     name: str
     type: Literal["function"] = "function"
-
-
-
-
-type FuzzyFileSearchMatchType = Literal["file", "directory"]
 
 
 class FuzzyFileSearchParams(CodexBaseModel):
@@ -3594,8 +3291,6 @@ class FuzzyFileSearchRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fuzzyFileSearch"] = "fuzzyFileSearch"
     params: FuzzyFileSearchParams
-
-
 
 
 class FuzzyFileSearchResult(CodexBaseModel):
@@ -3624,8 +3319,6 @@ class FuzzyFileSearchSessionCompletedMessage(CodexBaseModel):
     params: FuzzyFileSearchSessionCompletedNotification
 
 
-
-
 class FuzzyFileSearchSessionStartParams(CodexBaseModel):
     roots: list[str]
     session_id: str
@@ -3637,8 +3330,6 @@ class FuzzyFileSearchSessionStartRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fuzzyFileSearch/sessionStart"] = "fuzzyFileSearch/sessionStart"
     params: FuzzyFileSearchSessionStartParams
-
-
 
 
 class FuzzyFileSearchSessionStopParams(CodexBaseModel):
@@ -3653,8 +3344,6 @@ class FuzzyFileSearchSessionStopRequest(CodexBaseModel):
     params: FuzzyFileSearchSessionStopParams
 
 
-
-
 class FuzzyFileSearchSessionUpdateParams(CodexBaseModel):
     query: str
     session_id: str
@@ -3666,8 +3355,6 @@ class FuzzyFileSearchSessionUpdateRequest(CodexBaseModel):
     id: RequestId
     method: Literal["fuzzyFileSearch/sessionUpdate"] = "fuzzyFileSearch/sessionUpdate"
     params: FuzzyFileSearchSessionUpdateParams
-
-
 
 
 class FuzzyFileSearchSessionUpdatedNotification(CodexBaseModel):
@@ -3685,8 +3372,6 @@ class FuzzyFileSearchSessionUpdatedMessage(CodexBaseModel):
     """
     method: Literal["fuzzyFileSearch/sessionUpdated"] = "fuzzyFileSearch/sessionUpdated"
     params: FuzzyFileSearchSessionUpdatedNotification
-
-
 
 
 class GatewayAuth1(CodexBaseModel):
@@ -3764,9 +3449,6 @@ class GatewayOAuthReadResponse(CodexBaseModel):
     """
 
 
-type GatewayOAuthStatus = Literal["notReady", "started", "succeeded", "failed"]
-
-
 class GcpAccount(CodexBaseModel):
     """Google Cloud Vertex AI with externally managed credentials."""
 
@@ -3774,11 +3456,6 @@ class GcpAccount(CodexBaseModel):
 
 
 type Account = ApiKeyAccount | ChatgptAccount | AmazonBedrockAccount | GcpAccount
-
-
-
-
-type GcpProviderId = Literal["gcp"]
 
 
 class GcpProviderSettings(CodexBaseModel):
@@ -3802,10 +3479,6 @@ class GcpProviderSettingsPatch(CodexBaseModel):
     project_id: str | None = None
     provider_id: GcpProviderId
     type: Literal["gcp"] = "gcp"
-
-
-
-
 
 
 class GcpSetupParams(CodexBaseModel):
@@ -3927,13 +3600,9 @@ class GitPluginSource(CodexBaseModel):
     url: str
 
 
-
-
 class GlobPatternFileSystemPath(CodexBaseModel):
     pattern: str
     type: Literal["glob_pattern"] = "glob_pattern"
-
-
 
 
 class Granular(CodexBaseModel):
@@ -3963,35 +3632,6 @@ class GuardianApprovalReview(CodexBaseModel):
     user_authorization: GuardianUserAuthorization | None = None
 
 
-type GuardianApprovalReviewStatus = Literal[
-    "inProgress", "approved", "denied", "timedOut", "aborted"
-]
-"""
-[UNSTABLE] Lifecycle state for an approval auto-review.
-"""
-
-
-type GuardianAssessmentOutcome = Literal["allow", "deny"]
-"""
-Final allow/deny outcome returned by the guardian reviewer.
-"""
-
-
-type GuardianCommandSource = Literal["shell", "unifiedExec"]
-
-
-type GuardianRiskLevel = Literal["low", "medium", "high", "critical"]
-"""
-[UNSTABLE] Risk level assigned by approval auto-review.
-"""
-
-
-type GuardianUserAuthorization = Literal["unknown", "low", "medium", "high"]
-"""
-[UNSTABLE] Authorization level assigned by approval auto-review.
-"""
-
-
 class GuardianWarningNotification(CodexBaseModel):
     message: str
     """
@@ -4014,11 +3654,6 @@ class GuardianWarningMessage(CodexBaseModel):
     params: GuardianWarningNotification
 
 
-
-
-type HelplineSubject = Literal["answer", "prompt"]
-
-
 class HookCompletedNotification(CodexBaseModel):
     run: HookRunSummary
     thread_id: str
@@ -4036,35 +3671,9 @@ class HookCompletedMessage(CodexBaseModel):
     params: HookCompletedNotification
 
 
-
-
 class HookErrorInfo(CodexBaseModel):
     message: str
     path: str
-
-
-type HookEventName = Literal[
-    "preModelRequest",
-    "postModelRequest",
-    "preToolUse",
-    "permissionRequest",
-    "postToolUse",
-    "preCompact",
-    "postCompact",
-    "sessionStart",
-    "sessionEnd",
-    "userPromptSubmit",
-    "subagentStart",
-    "subagentStop",
-    "stop",
-    "interrupt",
-]
-
-
-type HookExecutionMode = Literal["sync", "async"]
-
-
-type HookHandlerType = Literal["command", "mcpTool", "prompt", "agent"]
 
 
 class HookMetadata1(CodexBaseModel):
@@ -4130,9 +3739,6 @@ class HookOutputEntry(CodexBaseModel):
     text: str
 
 
-type HookOutputEntryKind = Literal["warning", "stop", "feedback", "context", "error"]
-
-
 class HookPromptFragment(CodexBaseModel):
     hook_run_id: str
     text: str
@@ -4154,11 +3760,6 @@ class HookPromptThreadItem(CodexBaseModel):
     type: Literal["hookPrompt"] = "hookPrompt"
 
 
-
-
-type HookRunStatus = Literal["running", "completed", "failed", "blocked", "stopped"]
-
-
 class HookRunSummary(CodexBaseModel):
     completed_at: int | None = None
     display_order: int
@@ -4176,24 +3777,6 @@ class HookRunSummary(CodexBaseModel):
     status_message: str | None = None
 
 
-type HookScope = Literal["thread", "turn"]
-
-
-type HookSource = Literal[
-    "system",
-    "user",
-    "project",
-    "mdm",
-    "sessionFlags",
-    "plugin",
-    "cloudRequirements",
-    "cloudManagedConfig",
-    "legacyManagedConfigFile",
-    "legacyManagedConfigMdm",
-    "unknown",
-]
-
-
 class HookStartedNotification(CodexBaseModel):
     run: HookRunSummary
     thread_id: str
@@ -4209,11 +3792,6 @@ class HookStartedMessage(CodexBaseModel):
     """
     method: Literal["hook/started"] = "hook/started"
     params: HookStartedNotification
-
-
-
-
-type HookTrustStatus = Literal["managed", "untrusted", "trusted", "modified"]
 
 
 class HooksListEntry(CodexBaseModel):
@@ -4242,8 +3820,6 @@ class HooksListRequest(CodexBaseModel):
     params: HooksListParams
 
 
-
-
 class HooksListResponse(CodexBaseModel):
     data: list[HooksListEntry]
 
@@ -4252,8 +3828,6 @@ class HourlyScheduledTaskSchedule(CodexBaseModel):
     days: list[ScheduledTaskWeekday] | None = None
     interval_hours: int = Field(..., ge=0)
     type: Literal["hourly"] = "hourly"
-
-
 
 
 class HttpConnectionFailed(CodexBaseModel):
@@ -4276,11 +3850,6 @@ class IdleThreadStatus(CodexBaseModel):
     type: Literal["idle"] = "idle"
 
 
-
-
-type ImageDetail = Literal["auto", "low", "high", "original"]
-
-
 class ImageGenerationCallResponseItem(CodexBaseModel):
     encrypted_content: str | None = None
     id: str | None = None
@@ -4291,8 +3860,6 @@ class ImageGenerationCallResponseItem(CodexBaseModel):
     type: Literal["image_generation_call"] = "image_generation_call"
 
 
-
-
 class ImageGenerationInputImage(CodexBaseModel):
     """A local image file successfully read for this exact image-generation request."""
 
@@ -4301,8 +3868,6 @@ class ImageGenerationInputImage(CodexBaseModel):
     """
     Lowercase SHA-256 of the file bytes read before image normalization.
     """
-
-
 
 
 class ImageUrlContentItem(CodexBaseModel):
@@ -4317,8 +3882,6 @@ class ImageUrlFunctionCallOutputContentItem(CodexBaseModel):
     detail: ImageDetail | None = None
     type: Literal["input_image"] = "input_image"
     image_url: str
-
-
 
 
 class ImageViewThreadItem(CodexBaseModel):
@@ -4337,13 +3900,8 @@ class ImageViewThreadItem(CodexBaseModel):
     type: Literal["imageView"] = "imageView"
 
 
-
-
 class InAppBrowserRequirements(CodexBaseModel):
     allow_external_browser_settings_import: bool | None = None
-
-
-type Indice = Annotated[int, Field(..., ge=0)]
 
 
 class InitializeCapabilities(CodexBaseModel):
@@ -4394,14 +3952,10 @@ class InitializeRequest(CodexBaseModel):
     params: InitializeParams
 
 
-
-
 class InlineMarkdownThreadRealtimeBemItemPresentation(CodexBaseModel):
     """EXPERIMENTAL - how an existing agent item appears in a realtime conversation."""
 
     type: Literal["inlineMarkdown"] = "inlineMarkdown"
-
-
 
 
 class InlineVisualizationThreadRealtimeBemItemPresentation(CodexBaseModel):
@@ -4409,8 +3963,6 @@ class InlineVisualizationThreadRealtimeBemItemPresentation(CodexBaseModel):
 
     index: int = Field(..., ge=0)
     type: Literal["inlineVisualization"] = "inlineVisualization"
-
-
 
 
 type InputAudioContentItem = Annotated[
@@ -4421,13 +3973,9 @@ Inline audio data or an uploaded file loaded by the Responses API.
 """
 
 
-
-
 class InputAudioDynamicToolCallOutputContentItem(CodexBaseModel):
     audio_url: str
     type: Literal["inputAudio"] = "inputAudio"
-
-
 
 
 type InputAudioFunctionCallOutputContentItem = Annotated[
@@ -4439,20 +3987,14 @@ Inline audio data or an uploaded file loaded by the Responses API.
 """
 
 
-
-
 type InputImageContentItem = Annotated[
     ImageUrlContentItem | FileIdContentItem, Field(..., title="InputImageContentItem")
 ]
 
 
-
-
 class InputImageDynamicToolCallOutputContentItem(CodexBaseModel):
     image_url: str
     type: Literal["inputImage"] = "inputImage"
-
-
 
 
 type InputImageFunctionCallOutputContentItem = Annotated[
@@ -4461,14 +4003,6 @@ type InputImageFunctionCallOutputContentItem = Annotated[
 ]
 """
 Responses API compatible content items that can be returned by a tool call. This is a subset of ContentItem with the types we support as function call outputs.
-"""
-
-
-
-
-type InputModality = Literal["text", "image", "audio"]
-"""
-Canonical user-input modality tags advertised by a model.
 """
 
 
@@ -4482,13 +4016,9 @@ type AgentMessageInputContent = (
 )
 
 
-
-
 class InputTextContentItem(CodexBaseModel):
     text: str
     type: Literal["input_text"] = "input_text"
-
-
 
 
 class InputTextDynamicToolCallOutputContentItem(CodexBaseModel):
@@ -4501,8 +4031,6 @@ type DynamicToolCallOutputContentItem = (
     | InputImageDynamicToolCallOutputContentItem
     | InputAudioDynamicToolCallOutputContentItem
 )
-
-
 
 
 class InputTextFunctionCallOutputContentItem(CodexBaseModel):
@@ -4524,8 +4052,6 @@ Responses API compatible content items that can be returned by a tool call. This
 
 
 type FunctionCallOutputBody = str | list[FunctionCallOutputContentItem]
-
-
 
 
 class InstalledApp(CodexBaseModel):
@@ -4565,8 +4091,6 @@ class InvalidRequestUserVerificationErrorDetails(CodexBaseModel):
     type: Literal["invalidRequest"] = "invalidRequest"
 
 
-
-
 class ItemAgentMessageDeltaNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4576,8 +4100,6 @@ class ItemAgentMessageDeltaNotification(CodexBaseModel):
     """
     method: Literal["item/agentMessage/delta"] = "item/agentMessage/delta"
     params: AgentMessageDeltaNotification
-
-
 
 
 class ItemAutoApprovalReviewCompletedNotification(CodexBaseModel):
@@ -4591,8 +4113,6 @@ class ItemAutoApprovalReviewCompletedNotification(CodexBaseModel):
     params: ItemGuardianApprovalReviewCompletedNotification
 
 
-
-
 class ItemAutoApprovalReviewStartedNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4602,8 +4122,6 @@ class ItemAutoApprovalReviewStartedNotification(CodexBaseModel):
     """
     method: Literal["item/autoApprovalReview/started"] = "item/autoApprovalReview/started"
     params: ItemGuardianApprovalReviewStartedNotification
-
-
 
 
 class ItemCommandExecutionOutputDeltaNotification(CodexBaseModel):
@@ -4617,8 +4135,6 @@ class ItemCommandExecutionOutputDeltaNotification(CodexBaseModel):
     params: CommandExecutionOutputDeltaNotification
 
 
-
-
 class ItemCommandExecutionTerminalInteractionNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4628,8 +4144,6 @@ class ItemCommandExecutionTerminalInteractionNotification(CodexBaseModel):
     """
     method: Literal["item/commandExecution/terminalInteraction"] = "item/commandExecution/terminalInteraction"
     params: TerminalInteractionNotification
-
-
 
 
 class ItemCompletedNotification(CodexBaseModel):
@@ -4657,8 +4171,6 @@ class ItemCompletedMessage(CodexBaseModel):
     params: ItemCompletedNotification
 
 
-
-
 class ItemFileChangeOutputDeltaNotification(CodexBaseModel):
     """Deprecated legacy apply_patch output stream notification."""
 
@@ -4670,8 +4182,6 @@ class ItemFileChangeOutputDeltaNotification(CodexBaseModel):
     params: FileChangeOutputDeltaNotification
 
 
-
-
 class ItemFileChangePatchUpdatedNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4681,8 +4191,6 @@ class ItemFileChangePatchUpdatedNotification(CodexBaseModel):
     """
     method: Literal["item/fileChange/patchUpdated"] = "item/fileChange/patchUpdated"
     params: FileChangePatchUpdatedNotification
-
-
 
 
 class ItemGuardianApprovalReviewCompletedNotification(CodexBaseModel):
@@ -4751,8 +4259,6 @@ class ItemMcpToolCallProgressNotification(CodexBaseModel):
     params: McpToolCallProgressNotification
 
 
-
-
 class ItemPlanDeltaNotification(CodexBaseModel):
     """EXPERIMENTAL - proposed plan streaming deltas for plan items."""
 
@@ -4762,8 +4268,6 @@ class ItemPlanDeltaNotification(CodexBaseModel):
     """
     method: Literal["item/plan/delta"] = "item/plan/delta"
     params: PlanDeltaNotification
-
-
 
 
 class ItemReasoningSummaryPartAddedNotification(CodexBaseModel):
@@ -4777,8 +4281,6 @@ class ItemReasoningSummaryPartAddedNotification(CodexBaseModel):
     params: ReasoningSummaryPartAddedNotification
 
 
-
-
 class ItemReasoningSummaryTextDeltaNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4790,8 +4292,6 @@ class ItemReasoningSummaryTextDeltaNotification(CodexBaseModel):
     params: ReasoningSummaryTextDeltaNotification
 
 
-
-
 class ItemReasoningTextDeltaNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -4801,8 +4301,6 @@ class ItemReasoningTextDeltaNotification(CodexBaseModel):
     """
     method: Literal["item/reasoning/textDelta"] = "item/reasoning/textDelta"
     params: ReasoningTextDeltaNotification
-
-
 
 
 class ItemStartedNotification(CodexBaseModel):
@@ -4826,15 +4324,11 @@ class ItemStartedMessage(CodexBaseModel):
     params: ItemStartedNotification
 
 
-
-
 class ItemThreadItemsListAnchor(CodexBaseModel):
     """An exclusive item position within the requested visible turn."""
 
     item_id: str
     type: Literal["item"] = "item"
-
-
 
 
 class ItemThreadTimelineEntry(CodexBaseModel):
@@ -4844,8 +4338,6 @@ class ItemThreadTimelineEntry(CodexBaseModel):
     position: int = Field(..., ge=0)
     turn_id: str
     type: Literal["item"] = "item"
-
-
 
 
 class KindBlockReason(CodexBaseModel):
@@ -4861,9 +4353,6 @@ class KindFileSystemSpecialPath(CodexBaseModel):
     subpath: LegacyAppPathString | None = None
 
 
-type LegacyAppPathString = str
-
-
 class LegacyManagedConfigTomlFromFileConfigLayerSource(CodexBaseModel):
     """`managed_config.toml` was designed to be a config that was loaded as the last layer on top of everything else. This scheme did not quite work out as intended, but we keep this variant as a "best effort" while we phase out `managed_config.toml` in favor of `requirements.toml`."""
 
@@ -4871,20 +4360,14 @@ class LegacyManagedConfigTomlFromFileConfigLayerSource(CodexBaseModel):
     type: Literal["legacyManagedConfigTomlFromFile"] = "legacyManagedConfigTomlFromFile"
 
 
-
-
 class LegacyManagedConfigTomlFromMdmConfigLayerSource(CodexBaseModel):
     type: Literal["legacyManagedConfigTomlFromMdm"] = "legacyManagedConfigTomlFromMdm"
-
-
 
 
 class ListFilesCommandAction(CodexBaseModel):
     command: str
     path: str | None = None
     type: Literal["listFiles"] = "listFiles"
-
-
 
 
 class ListMcpServerStatusParams(CodexBaseModel):
@@ -4924,21 +4407,15 @@ class LocalAudioUserInput(CodexBaseModel):
     type: Literal["localAudio"] = "localAudio"
 
 
-
-
 class LocalImageUserInput(CodexBaseModel):
     detail: ImageDetail | None = None
     path: str
     type: Literal["localImage"] = "localImage"
 
 
-
-
 class LocalPluginSource(CodexBaseModel):
     path: AbsolutePathBuf
     type: Literal["local"] = "local"
-
-
 
 
 type LocalShellAction = ExecLocalShellAction
@@ -4960,11 +4437,6 @@ class LocalShellCallResponseItem(CodexBaseModel):
     type: Literal["local_shell_call"] = "local_shell_call"
 
 
-
-
-type LocalShellStatus = Literal["completed", "in_progress", "incomplete"]
-
-
 type LoginAccountParams = Annotated[
     ApiKeyv2LoginAccountParams
     | Chatgptv2LoginAccountParams
@@ -4984,9 +4456,6 @@ type LoginAccountResponse = Annotated[
     | AmazonBedrockv2LoginAccountResponse,
     Field(..., title="LoginAccountResponse"),
 ]
-
-
-type LoginAppBrand = Literal["codex", "chatgpt"]
 
 
 class LogoutAccountResponse(CodexBaseModel):
@@ -5026,8 +4495,6 @@ class MarketplaceAddRequest(CodexBaseModel):
     params: MarketplaceAddParams
 
 
-
-
 class MarketplaceAddResponse(CodexBaseModel):
     already_added: bool
     installed_root: AbsolutePathBuf
@@ -5055,8 +4522,6 @@ class MarketplaceRemoveRequest(CodexBaseModel):
     params: MarketplaceRemoveParams
 
 
-
-
 class MarketplaceRemoveResponse(CodexBaseModel):
     installed_root: AbsolutePathBuf | None = None
     marketplace_name: str
@@ -5079,15 +4544,10 @@ class MarketplaceUpgradeRequest(CodexBaseModel):
     params: MarketplaceUpgradeParams
 
 
-
-
 class MarketplaceUpgradeResponse(CodexBaseModel):
     errors: list[MarketplaceUpgradeErrorInfo]
     selected_marketplaces: list[str]
     upgraded_roots: list[AbsolutePathBuf]
-
-
-type McpAppDisplayMode = Literal["inline", "fullscreen"]
 
 
 class McpAppUi(CodexBaseModel):
@@ -5095,9 +4555,6 @@ class McpAppUi(CodexBaseModel):
 
     preferred_model_display_mode: McpAppDisplayMode
     resource_uri: str
-
-
-type McpAuthStatus = Literal["unknown", "unsupported", "notLoggedIn", "bearerToken", "oAuth"]
 
 
 class McpResourceReadParams(CodexBaseModel):
@@ -5139,17 +4596,6 @@ class McpResourceReadTarget(CodexBaseModel):
     """
 
 
-type McpServerConnectionStatus = Literal[
-    "notStarted",
-    "starting",
-    "connected",
-    "authenticationRequired",
-    "failed",
-    "cancelled",
-    "disabled",
-]
-
-
 class McpServerEventNotification(CodexBaseModel):
     method: str
     params: Any
@@ -5171,8 +4617,6 @@ class McpServerEventStreamNotificationNotification(CodexBaseModel):
     params: McpServerEventStreamNotification
 
 
-
-
 class McpServerEventStreamStartParams(CodexBaseModel):
     field_meta: Any | None = None
     arguments: Any
@@ -5190,8 +4634,6 @@ class McpServerEventStreamStartRequest(CodexBaseModel):
     params: McpServerEventStreamStartParams
 
 
-
-
 class McpServerEventStreamStartResponse(CodexBaseModel):
     pass
 
@@ -5206,8 +4648,6 @@ class McpServerEventStreamStopRequest(CodexBaseModel):
     id: RequestId
     method: Literal["mcpServer/event/stream/stop"] = "mcpServer/event/stream/stop"
     params: McpServerEventStreamStopParams
-
-
 
 
 class McpServerEventStreamStopResponse(CodexBaseModel):
@@ -5227,9 +4667,6 @@ class McpServerInfo(CodexBaseModel):
 
 class McpServerMigration(CodexBaseModel):
     name: str
-
-
-type McpServerOauthClientRegistration = Literal["auto", "cimd", "dcr"]
 
 
 class McpServerOauthLoginCompletedNotification(CodexBaseModel):
@@ -5252,8 +4689,6 @@ class McpServerOauthLoginCompletedMessage(CodexBaseModel):
     """
     method: Literal["mcpServer/oauthLogin/completed"] = "mcpServer/oauthLogin/completed"
     params: McpServerOauthLoginCompletedNotification
-
-
 
 
 class McpServerOauthLoginParams(CodexBaseModel):
@@ -5279,8 +4714,6 @@ class McpServerOauthLoginRequest(CodexBaseModel):
     params: McpServerOauthLoginParams
 
 
-
-
 class McpServerOauthLoginResponse(CodexBaseModel):
     authorization_url: str
     login_id: str | None = None
@@ -5301,14 +4734,6 @@ class McpServerResourceReadRequest(CodexBaseModel):
     params: McpResourceReadParams
 
 
-
-
-type McpServerStartupFailureReason = Literal["reauthenticationRequired"]
-
-
-type McpServerStartupState = Literal["starting", "ready", "failed", "cancelled"]
-
-
 class McpServerStartupStatusUpdatedNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -5318,8 +4743,6 @@ class McpServerStartupStatusUpdatedNotification(CodexBaseModel):
     """
     method: Literal["mcpServer/startupStatus/updated"] = "mcpServer/startupStatus/updated"
     params: McpServerStatusUpdatedNotification
-
-
 
 
 class McpServerStatus(CodexBaseModel):
@@ -5356,17 +4779,12 @@ class McpServerStatus(CodexBaseModel):
     """
 
 
-type McpServerStatusDetail = Literal["full", "toolsAndAuthOnly"]
-
-
 class McpServerStatusListRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["mcpServerStatus/list"] = "mcpServerStatus/list"
     params: ListMcpServerStatusParams
-
-
 
 
 class McpServerStatusUpdatedNotification(CodexBaseModel):
@@ -5401,8 +4819,6 @@ class McpServerToolCallRequest(CodexBaseModel):
     params: McpServerToolCallParams
 
 
-
-
 class McpServerToolCallResponse(CodexBaseModel):
     field_meta: Any | None = None
     content: list[Any]
@@ -5431,8 +4847,6 @@ class McpToolCallGuardianApprovalReviewAction(CodexBaseModel):
     type: Literal["mcpToolCall"] = "mcpToolCall"
 
 
-
-
 class McpToolCallProgressNotification(CodexBaseModel):
     item_id: str
     message: str
@@ -5444,9 +4858,6 @@ class McpToolCallResult(CodexBaseModel):
     field_meta: Any | None = None
     content: list[Any]
     structured_content: Any | None = None
-
-
-type McpToolCallStatus = Literal["inProgress", "completed", "failed"]
 
 
 class McpToolCallThreadItem(CodexBaseModel):
@@ -5489,8 +4900,6 @@ class McpToolCallThreadItem(CodexBaseModel):
     type: Literal["mcpToolCall"] = "mcpToolCall"
 
 
-
-
 class McpToolConfiguredHookHandler(CodexBaseModel):
     input: dict[str, Any]
     server: str
@@ -5500,16 +4909,12 @@ class McpToolConfiguredHookHandler(CodexBaseModel):
     type: Literal["mcp_tool"] = "mcp_tool"
 
 
-
-
 class MdmConfigLayerSource(CodexBaseModel):
     """Managed preferences layer delivered by MDM (macOS only)."""
 
     domain: str
     key: str
     type: Literal["mdm"] = "mdm"
-
-
 
 
 class MemoryCitation(CodexBaseModel):
@@ -5532,8 +4937,6 @@ class MemoryResetRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class MemoryResetResponse(CodexBaseModel):
     pass
 
@@ -5553,8 +4956,6 @@ class MemoryStatusRequest(CodexBaseModel):
     params: MemoryStatusParams
 
 
-
-
 class MemoryStatusResponse(CodexBaseModel):
     v2_consolidated_threads: int = Field(..., ge=0)
     v2_ready: bool
@@ -5566,19 +4967,6 @@ class MentionUserInput(CodexBaseModel):
     type: Literal["mention"] = "mention"
 
 
-
-
-type MergeStrategy = Literal["replace", "upsert"]
-
-
-type MessagePhase = Literal["commentary", "partial_answer", "final_answer"]
-"""
-Classifies assistant text as commentary, a partial answer, or a terminal answer.
-
-Providers do not emit this consistently, so callers must treat `None` as "phase unknown" and keep compatibility behavior for legacy models.
-"""
-
-
 class MessageResponseItem(CodexBaseModel):
     content: list[ContentItem]
     encrypted_content: str | None = None
@@ -5588,8 +4976,6 @@ class MessageResponseItem(CodexBaseModel):
     role: str
     status: str | None = None
     type: Literal["message"] = "message"
-
-
 
 
 class MigrationDetails(CodexBaseModel):
@@ -5645,8 +5031,6 @@ class MockExperimentalMethodRequest(CodexBaseModel):
     params: MockExperimentalMethodParams
 
 
-
-
 class MockExperimentalMethodResponse(CodexBaseModel):
     echoed: str | None = None
     """
@@ -5659,14 +5043,6 @@ class ModeGatewayAuth(CodexBaseModel):
 
     env_key: str | None = None
     mode: Literal["externallyConfigured"] = "externallyConfigured"
-
-
-
-
-type ModeKind = Literal["plan", "default"]
-"""
-Initial collaboration mode to use when the TUI starts.
-"""
 
 
 class Model(CodexBaseModel):
@@ -5746,8 +5122,6 @@ class ModelListRequest(CodexBaseModel):
     params: ModelListParams
 
 
-
-
 class ModelListResponse(CodexBaseModel):
     data: list[Model]
     next_cursor: str | None = None
@@ -5767,8 +5141,6 @@ class ModelProviderAuthRecoveryCompletedNotification(CodexBaseModel):
     params: AuthRecoveryNotification
 
 
-
-
 class ModelProviderAuthRecoveryStartedNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -5778,8 +5150,6 @@ class ModelProviderAuthRecoveryStartedNotification(CodexBaseModel):
     """
     method: Literal["modelProvider/authRecoveryStarted"] = "modelProvider/authRecoveryStarted"
     params: AuthRecoveryNotification
-
-
 
 
 class ModelProviderCapabilitiesReadParams(CodexBaseModel):
@@ -5792,8 +5162,6 @@ class ModelProviderCapabilitiesReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["modelProvider/capabilities/read"] = "modelProvider/capabilities/read"
     params: ModelProviderCapabilitiesReadParams
-
-
 
 
 class ModelProviderCapabilitiesReadResponse(CodexBaseModel):
@@ -5816,8 +5184,6 @@ class ModelProviderConfigWriteRequest(CodexBaseModel):
     params: ModelProviderConfigWriteParams
 
 
-
-
 class ModelProviderConfigWriteResponse(CodexBaseModel):
     provider: ModelProviderSummary
 
@@ -5837,8 +5203,6 @@ class ModelProviderDefaultSetRequest(CodexBaseModel):
     params: ModelProviderDefaultSetParams
 
 
-
-
 class ModelProviderListParams(CodexBaseModel):
     pass
 
@@ -5849,8 +5213,6 @@ class ModelProviderListRequest(CodexBaseModel):
     id: RequestId
     method: Literal["modelProvider/list"] = "modelProvider/list"
     params: ModelProviderListParams
-
-
 
 
 class ModelProviderListResponse(CodexBaseModel):
@@ -5867,15 +5229,11 @@ class ModelProviderMismatchv2ModelProviderError(CodexBaseModel):
     type: Literal["modelProviderMismatch"] = "modelProviderMismatch"
 
 
-
-
 class ModelProviderNotConfiguredv2ModelProviderError(CodexBaseModel):
     """Structured JSON-RPC error data. Unknown errors must retain the client's normal fallback."""
 
     model_provider: str
     type: Literal["modelProviderNotConfigured"] = "modelProviderNotConfigured"
-
-
 
 
 class ModelProviderPolicyConflictv2ModelProviderError(CodexBaseModel):
@@ -5897,8 +5255,6 @@ Structured JSON-RPC error data. Unknown errors must retain the client's normal f
 """
 
 
-
-
 class ModelProviderSummary(CodexBaseModel):
     base_url: str | None = None
     """
@@ -5911,9 +5267,6 @@ class ModelProviderSummary(CodexBaseModel):
     id: str
     name: str
     settings: ProviderSettings
-
-
-type ModelRerouteReason = Literal["highRiskCyberActivity"]
 
 
 class ModelReroutedNotification(CodexBaseModel):
@@ -5933,8 +5286,6 @@ class ModelReroutedMessage(CodexBaseModel):
     """
     method: Literal["model/rerouted"] = "model/rerouted"
     params: ModelReroutedNotification
-
-
 
 
 class ModelSafetyBufferingUpdatedNotification(CodexBaseModel):
@@ -5958,8 +5309,6 @@ class ModelSafetyBufferingUpdatedMessage(CodexBaseModel):
     params: ModelSafetyBufferingUpdatedNotification
 
 
-
-
 class ModelServiceTier(CodexBaseModel):
     description: str
     id: str
@@ -5975,9 +5324,6 @@ class ModelUpgradeInfo(CodexBaseModel):
     Informational Unix timestamp for this upgrade's scheduled retirement, if known.
     """
     upgrade_copy: str | None = None
-
-
-type ModelVerification = Literal["trustedAccessForCyber"]
 
 
 class ModelVerificationNotification(CodexBaseModel):
@@ -5997,8 +5343,6 @@ class ModelVerificationMessage(CodexBaseModel):
     params: ModelVerificationNotification
 
 
-
-
 class ModelsRequirements(CodexBaseModel):
     new_thread: NewThreadModelDefaults | None = None
 
@@ -6006,12 +5350,6 @@ class ModelsRequirements(CodexBaseModel):
 type MultiAgentMode = Literal["explicitRequestOnly", "proactive"] | CustomMultiAgentMode
 """
 Controls the effective multi-agent delegation instructions for a turn. `custom` means the configured mode hint defines the policy instead of a built-in policy.
-"""
-
-
-type MultiAgentVersion = Literal["disabled", "v1", "v2"]
-"""
-Multi-agent runtime supported by a model.
 """
 
 
@@ -6025,25 +5363,12 @@ class NamespaceDynamicToolSpec(CodexBaseModel):
 type DynamicToolSpec = FunctionDynamicToolSpec | NamespaceDynamicToolSpec
 
 
-
-
-type NetworkAccess = Literal["restricted", "enabled"]
-
-
 class NetworkAccessGuardianApprovalReviewAction(CodexBaseModel):
     host: str
     port: int = Field(..., ge=0)
     protocol: NetworkApprovalProtocol
     target: str
     type: Literal["networkAccess"] = "networkAccess"
-
-
-
-
-type NetworkApprovalProtocol = Literal["http", "https", "socks5Tcp", "socks5Udp"]
-
-
-type NetworkDomainPermission = Literal["allow", "deny"]
 
 
 class NetworkRequirements(CodexBaseModel):
@@ -6084,16 +5409,10 @@ class NetworkRequirements(CodexBaseModel):
     """
 
 
-type NetworkUnixSocketPermission = Literal["allow", "deny"]
-
-
 class NewThreadModelDefaults(CodexBaseModel):
     model: str | None = None
     model_reasoning_effort: ReasoningEffort | None = None
     service_tier: str | None = None
-
-
-type NonSteerableTurnKind = Literal["review", "compact"]
 
 
 class NoneGatewayAuth(CodexBaseModel):
@@ -6103,12 +5422,8 @@ class NoneGatewayAuth(CodexBaseModel):
 type GatewayAuth = NoneGatewayAuth | GatewayAuth1 | ModeGatewayAuth
 
 
-
-
 class NotLoadedThreadStatus(CodexBaseModel):
     type: Literal["notLoaded"] = "notLoaded"
-
-
 
 
 class NpmPluginSource(CodexBaseModel):
@@ -6122,8 +5437,6 @@ class NpmPluginSource(CodexBaseModel):
     """
     Optional npm version or version range.
     """
-
-
 
 
 type NullableGatewayOAuthLoginParams = Annotated[
@@ -6151,22 +5464,13 @@ class OpenPageResponsesApiWebSearchAction(CodexBaseModel):
     url: str | None = None
 
 
-
-
 class OpenPageWebSearchAction(CodexBaseModel):
     type: Literal["openPage"] = "openPage"
     url: str | None = None
 
 
-
-
 class OpenaiProviderSettings(CodexBaseModel):
     type: Literal["openai"] = "openai"
-
-
-
-
-type OtelHttpProtocol = Literal["binary", "json"]
 
 
 class OtelRequirements(CodexBaseModel):
@@ -6199,12 +5503,8 @@ class OtherResponseItem(CodexBaseModel):
     type: Literal["other"] = "other"
 
 
-
-
 class OtherResponsesApiWebSearchAction(CodexBaseModel):
     type: Literal["other"] = "other"
-
-
 
 
 class OtherSubAgentSource(CodexBaseModel):
@@ -6216,8 +5516,6 @@ class OtherSubAgentSource(CodexBaseModel):
 
 class OtherWebSearchAction(CodexBaseModel):
     type: Literal["other"] = "other"
-
-
 
 
 class OtlpGrpc(CodexBaseModel):
@@ -6268,8 +5566,6 @@ type ContentItem = (
 )
 
 
-
-
 class OverriddenMetadata(CodexBaseModel):
     effective_value: Any
     message: str
@@ -6286,19 +5582,9 @@ class PackagedDefaultsConfigLayerSource(CodexBaseModel):
     type: Literal["packagedDefaults"] = "packagedDefaults"
 
 
-
-
-type PatchApplyStatus = Literal["inProgress", "completed", "failed", "declined"]
-
-
 class PathFileSystemPath(CodexBaseModel):
     path: LegacyAppPathString
     type: Literal["path"] = "path"
-
-
-
-
-type PathUri = str
 
 
 class PermissionProfileListParams(CodexBaseModel):
@@ -6324,8 +5610,6 @@ class PermissionProfileListRequest(CodexBaseModel):
     params: PermissionProfileListParams
 
 
-
-
 class PermissionProfileListResponse(CodexBaseModel):
     data: list[PermissionProfileSummary]
     next_cursor: str | None = None
@@ -6347,12 +5631,6 @@ class PermissionProfileSummary(CodexBaseModel):
     """
     Available permission profile identifier.
     """
-
-
-type Personality = Literal["none", "friendly", "pragmatic"]
-"""
-Deprecated: `friendly` and `pragmatic` no longer select a style.
-"""
 
 
 class PlanDeltaNotification(CodexBaseModel):
@@ -6380,38 +5658,6 @@ class PlanThreadItem(CodexBaseModel):
     type: Literal["plan"] = "plan"
 
 
-
-
-type PlanType = Literal[
-    "free",
-    "go",
-    "plus",
-    "pro",
-    "prolite",
-    "promax",
-    "team",
-    "self_serve_business_prolite",
-    "self_serve_business_usage_based",
-    "business",
-    "ent26",
-    "enterprise_cbp_automation",
-    "enterprise_cbp_usage_based",
-    "enterprise",
-    "edu",
-    "edu_plus",
-    "edu_pro",
-    "sci",
-    "sci_plus",
-    "unknown",
-]
-
-
-type PluginAuthPolicy = Literal["ON_INSTALL", "ON_USE"]
-
-
-type PluginAvailability = Literal["DISABLED_BY_ADMIN", "AVAILABLE"]
-
-
 class PluginDetail(CodexBaseModel):
     app_templates: list[AppTemplateSummary]
     apps: list[AppSummary]
@@ -6430,11 +5676,6 @@ class PluginDetail(CodexBaseModel):
     summary: PluginSummary
 
 
-type PluginDisabledReason = Literal[
-    "disabled_by_admin", "plan_not_eligible", "required_app_unavailable", "unknown"
-]
-
-
 class PluginHookSummary(CodexBaseModel):
     event_name: HookEventName
     key: str
@@ -6450,20 +5691,12 @@ class PluginInstallParams(CodexBaseModel):
     remote_marketplace_name: str | None = None
 
 
-type PluginInstallPolicy = Literal["NOT_AVAILABLE", "AVAILABLE", "INSTALLED_BY_DEFAULT"]
-
-
-type PluginInstallPolicySource = Literal["WORKSPACE_SETTING", "IMPLICIT_CANONICAL_APP"]
-
-
 class PluginInstallRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["plugin/install"] = "plugin/install"
     params: PluginInstallParams
-
-
 
 
 class PluginInstallResponse(CodexBaseModel):
@@ -6488,8 +5721,6 @@ class PluginInstalledRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/installed"] = "plugin/installed"
     params: PluginInstalledParams
-
-
 
 
 class PluginInstalledResponse(CodexBaseModel):
@@ -6548,11 +5779,6 @@ class PluginInterface(CodexBaseModel):
     website_url: str | None = None
 
 
-type PluginListMarketplaceKind = Literal[
-    "local", "vertical", "workspace-directory", "shared-with-me", "created-by-me-remote"
-]
-
-
 class PluginListParams(CodexBaseModel):
     cwds: list[AbsolutePathBuf] | None = None
     """
@@ -6574,8 +5800,6 @@ class PluginListRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/list"] = "plugin/list"
     params: PluginListParams
-
-
 
 
 class PluginListResponse(CodexBaseModel):
@@ -6608,8 +5832,6 @@ class PluginReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/read"] = "plugin/read"
     params: PluginReadParams
-
-
 
 
 class PluginReadResponse(CodexBaseModel):
@@ -6647,8 +5869,6 @@ class PluginReconcileRequest(CodexBaseModel):
     params: PluginReconcileParams
 
 
-
-
 class PluginReconcileResponse(CodexBaseModel):
     """Bundle and installed-state changes observed by this pass, not a runtime-readiness acknowledgement or a cumulative diff since the client's last request. Other metadata-only changes are not listed."""
 
@@ -6682,8 +5902,6 @@ class PluginSearchRequest(CodexBaseModel):
     params: PluginSearchParams
 
 
-
-
 class PluginSearchResponse(CodexBaseModel):
     data: list[PluginSearchResult]
     next_cursor: str | None = None
@@ -6693,9 +5911,6 @@ class PluginSearchResult(CodexBaseModel):
     marketplace_name: str
     marketplace_path: AbsolutePathBuf | None = None
     plugin: PluginSummary
-
-
-type PluginSearchScope = Literal["global", "workspace", "personal"]
 
 
 class PluginShareCheckoutParams(CodexBaseModel):
@@ -6708,8 +5923,6 @@ class PluginShareCheckoutRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/share/checkout"] = "plugin/share/checkout"
     params: PluginShareCheckoutParams
-
-
 
 
 class PluginShareCheckoutResponse(CodexBaseModel):
@@ -6748,13 +5961,8 @@ class PluginShareDeleteRequest(CodexBaseModel):
     params: PluginShareDeleteParams
 
 
-
-
 class PluginShareDeleteResponse(CodexBaseModel):
     pass
-
-
-type PluginShareDiscoverability = Literal["LISTED", "UNLISTED", "PRIVATE"]
 
 
 class PluginShareListItem(CodexBaseModel):
@@ -6774,8 +5982,6 @@ class PluginShareListRequest(CodexBaseModel):
     params: PluginShareListParams
 
 
-
-
 class PluginShareListResponse(CodexBaseModel):
     data: list[PluginShareListItem]
 
@@ -6785,12 +5991,6 @@ class PluginSharePrincipal(CodexBaseModel):
     principal_id: str
     principal_type: PluginSharePrincipalType
     role: PluginSharePrincipalRole
-
-
-type PluginSharePrincipalRole = Literal["reader", "editor", "owner"]
-
-
-type PluginSharePrincipalType = Literal["user", "group", "workspace"]
 
 
 class PluginShareSaveParams(CodexBaseModel):
@@ -6808,8 +6008,6 @@ class PluginShareSaveRequest(CodexBaseModel):
     params: PluginShareSaveParams
 
 
-
-
 class PluginShareSaveResponse(CodexBaseModel):
     can_publish_to_workspace: bool | None = None
     remote_plugin_id: str
@@ -6820,12 +6018,6 @@ class PluginShareTarget(CodexBaseModel):
     principal_id: str
     principal_type: PluginSharePrincipalType
     role: PluginShareTargetRole
-
-
-type PluginShareTargetRole = Literal["reader", "editor"]
-
-
-type PluginShareUpdateDiscoverability = Literal["UNLISTED", "PRIVATE", "LISTED"]
 
 
 class PluginShareUpdateTargetsParams(CodexBaseModel):
@@ -6840,8 +6032,6 @@ class PluginShareUpdateTargetsRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/share/updateTargets"] = "plugin/share/updateTargets"
     params: PluginShareUpdateTargetsParams
-
-
 
 
 class PluginShareUpdateTargetsResponse(CodexBaseModel):
@@ -6861,8 +6051,6 @@ class PluginSkillReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["plugin/skill/read"] = "plugin/skill/read"
     params: PluginSkillReadParams
-
-
 
 
 class PluginSkillReadResponse(CodexBaseModel):
@@ -6927,8 +6115,6 @@ class PluginUninstallRequest(CodexBaseModel):
     params: PluginUninstallParams
 
 
-
-
 class PluginUninstallResponse(CodexBaseModel):
     pass
 
@@ -6990,8 +6176,6 @@ class ProcessExitedMessage(CodexBaseModel):
     params: ProcessExitedNotification
 
 
-
-
 class ProcessKillParams(CodexBaseModel):
     """Terminate a running `process/spawn` session."""
 
@@ -7007,8 +6191,6 @@ class ProcessKillRequest(CodexBaseModel):
     id: RequestId
     method: Literal["process/kill"] = "process/kill"
     params: ProcessKillParams
-
-
 
 
 class ProcessKillResponse(CodexBaseModel):
@@ -7047,14 +6229,6 @@ class ProcessOutputDeltaMessage(CodexBaseModel):
     params: ProcessOutputDeltaNotification
 
 
-
-
-type ProcessOutputStream = Literal["stdout", "stderr"]
-"""
-Stream label for `process/outputDelta` notifications.
-"""
-
-
 class ProcessResizePtyParams(CodexBaseModel):
     """Resize a running PTY-backed `process/spawn` session."""
 
@@ -7074,8 +6248,6 @@ class ProcessResizePtyRequest(CodexBaseModel):
     id: RequestId
     method: Literal["process/resizePty"] = "process/resizePty"
     params: ProcessResizePtyParams
-
-
 
 
 class ProcessResizePtyResponse(CodexBaseModel):
@@ -7150,8 +6322,6 @@ class ProcessSpawnRequest(CodexBaseModel):
     params: ProcessSpawnParams
 
 
-
-
 class ProcessSpawnResponse(CodexBaseModel):
     """Successful response for `process/spawn`."""
 
@@ -7194,8 +6364,6 @@ class ProcessWriteStdinRequest(CodexBaseModel):
     params: ProcessWriteStdinParams
 
 
-
-
 class ProcessWriteStdinResponse(CodexBaseModel):
     """Empty success response for `process/writeStdin`."""
 
@@ -7212,8 +6380,6 @@ type BedrockSetupParams = Annotated[
 ]
 
 
-
-
 class Project(CodexBaseModel):
     created_at: int
     id: str
@@ -7225,9 +6391,6 @@ class Project(CodexBaseModel):
     """
     roots: list[ProjectRoot]
     updated_at: int
-
-
-type ProjectChangeType = Literal["created", "updated", "deleted"]
 
 
 class ProjectChangedNotification(CodexBaseModel):
@@ -7246,15 +6409,11 @@ class ProjectChangedMessage(CodexBaseModel):
     params: ProjectChangedNotification
 
 
-
-
 class ProjectConfigLayerSource(CodexBaseModel):
     """Path to a .codex/ folder within a project. There could be multiple of these between `cwd` and the project/repo root."""
 
     dot_codex_folder: AbsolutePathBuf
     type: Literal["project"] = "project"
-
-
 
 
 class ProjectCreateParams(CodexBaseModel):
@@ -7272,8 +6431,6 @@ class ProjectCreateRequest(CodexBaseModel):
     params: ProjectCreateParams
 
 
-
-
 class ProjectCreateResponse(CodexBaseModel):
     project: Project
 
@@ -7288,8 +6445,6 @@ class ProjectDeleteRequest(CodexBaseModel):
     id: RequestId
     method: Literal["project/delete"] = "project/delete"
     params: ProjectDeleteParams
-
-
 
 
 class ProjectDeleteResponse(CodexBaseModel):
@@ -7310,8 +6465,6 @@ class ProjectImportRequest(CodexBaseModel):
     id: RequestId
     method: Literal["project/import"] = "project/import"
     params: ProjectImportParams
-
-
 
 
 class ProjectImportResponse(CodexBaseModel):
@@ -7339,8 +6492,6 @@ class ProjectListRequest(CodexBaseModel):
     params: ProjectListParams
 
 
-
-
 class ProjectListResponse(CodexBaseModel):
     data: list[Project]
     next_cursor: str | None = None
@@ -7362,8 +6513,6 @@ class ProjectMoveRequest(CodexBaseModel):
     params: ProjectMoveParams
 
 
-
-
 class ProjectMoveResponse(CodexBaseModel):
     pass
 
@@ -7380,17 +6529,12 @@ class ProjectReadRequest(CodexBaseModel):
     params: ProjectReadParams
 
 
-
-
 class ProjectReadResponse(CodexBaseModel):
     project: Project
 
 
 class ProjectRoot(CodexBaseModel):
     path: AbsolutePathBuf
-
-
-type ProjectSortKey = Literal["position", "recencyAt"]
 
 
 class ProjectUpdateParams(CodexBaseModel):
@@ -7408,8 +6552,6 @@ class ProjectUpdateRequest(CodexBaseModel):
     params: ProjectUpdateParams
 
 
-
-
 class ProjectUpdateResponse(CodexBaseModel):
     project: Project
 
@@ -7424,8 +6566,6 @@ type ConfiguredHookHandler = (
     | PromptConfiguredHookHandler
     | AgentConfiguredHookHandler
 )
-
-
 
 
 class PromptHookMetadata(CodexBaseModel):
@@ -7482,15 +6622,6 @@ class QueuedSubmission(CodexBaseModel):
     """
 
 
-type RateLimitReachedType = Literal[
-    "rate_limit_reached",
-    "workspace_owner_credits_depleted",
-    "workspace_member_credits_depleted",
-    "workspace_owner_usage_limit_reached",
-    "workspace_member_usage_limit_reached",
-]
-
-
 class RateLimitResetCredit(CodexBaseModel):
     description: str | None = None
     """
@@ -7516,9 +6647,6 @@ class RateLimitResetCredit(CodexBaseModel):
     """
 
 
-type RateLimitResetCreditStatus = Literal["available", "redeeming", "redeemed", "unknown"]
-
-
 class RateLimitResetCreditsSummary(CodexBaseModel):
     available_count: int
     credits: list[RateLimitResetCredit] | None = None
@@ -7527,9 +6655,6 @@ class RateLimitResetCreditsSummary(CodexBaseModel):
 
     `null` means only `availableCount` is known, while an empty array means details were fetched and no available credits were returned. The backend may cap this list, so its length can be less than `availableCount`.
     """
-
-
-type RateLimitResetType = Literal["codexRateLimits", "unknown"]
 
 
 class RateLimitSnapshot(CodexBaseModel):
@@ -7580,25 +6705,13 @@ class ReadCommandAction(CodexBaseModel):
     type: Literal["read"] = "read"
 
 
-
-
 class ReadOnlySandboxPolicy(CodexBaseModel):
     network_access: bool | None = False
     type: Literal["readOnly"] = "readOnly"
 
 
-
-
 class ReadThreadReadStateOperation(CodexBaseModel):
     type: Literal["read"] = "read"
-
-
-
-
-type RealtimeConversationVersion = Literal["v1", "v2", "v3"]
-
-
-type RealtimeOutputModality = Literal["text", "audio"]
 
 
 class RealtimeSessionClosedThreadRealtimeItem(CodexBaseModel):
@@ -7614,8 +6727,6 @@ class RealtimeSessionClosedThreadRealtimeItem(CodexBaseModel):
     type: Literal["realtimeSessionClosed"] = "realtimeSessionClosed"
 
 
-
-
 class RealtimeSessionStartedThreadRealtimeItem(CodexBaseModel):
     """EXPERIMENTAL - a thread-scoped realtime item in the canonical timeline."""
 
@@ -7628,8 +6739,6 @@ class RealtimeSessionStartedThreadRealtimeItem(CodexBaseModel):
     type: Literal["realtimeSessionStarted"] = "realtimeSessionStarted"
 
 
-
-
 class RealtimeThreadTimelineEntry(CodexBaseModel):
     """EXPERIMENTAL - one item or turn boundary in canonical rollout order."""
 
@@ -7638,59 +6747,12 @@ class RealtimeThreadTimelineEntry(CodexBaseModel):
     type: Literal["realtime"] = "realtime"
 
 
-
-
-type RealtimeVoice = Literal[
-    "alloy",
-    "arbor",
-    "ash",
-    "aube",
-    "ballad",
-    "breeze",
-    "bubbie",
-    "cedar",
-    "coral",
-    "cove",
-    "echo",
-    "ember",
-    "haetsal",
-    "hanul",
-    "himari",
-    "juniper",
-    "leher",
-    "maple",
-    "marin",
-    "miko",
-    "neer",
-    "porto",
-    "rindo",
-    "rio",
-    "rivage",
-    "sage",
-    "selva",
-    "shimmer",
-    "sol",
-    "sonna",
-    "spruce",
-    "tinta",
-    "vale",
-    "verse",
-    "viola",
-]
-
-
 class RealtimeVoicesList(CodexBaseModel):
     default_v1: RealtimeVoice
     default_v2: RealtimeVoice
     v1: list[RealtimeVoice]
     v2: list[RealtimeVoice]
     v3: list[RealtimeVoice] | None = []
-
-
-type ReasoningEffort = Annotated[str, Field(..., min_length=1)]
-"""
-A non-empty reasoning effort value advertised by the model.
-"""
 
 
 class ReasoningEffortOption(CodexBaseModel):
@@ -7705,14 +6767,6 @@ class ReasoningResponseItem(CodexBaseModel):
     internal_chat_message_metadata_passthrough: InternalChatMessageMetadataPassthrough | None = None
     summary: list[ReasoningItemReasoningSummary]
     type: Literal["reasoning"] = "reasoning"
-
-
-
-
-type ReasoningSummary = Literal["auto", "concise", "detailed", "none"]
-"""
-A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process. See https://platform.openai.com/docs/guides/reasoning?api-mode=responses#reasoning-summaries
-"""
 
 
 class ReasoningSummaryPartAddedNotification(CodexBaseModel):
@@ -7743,8 +6797,6 @@ class ReasoningTextReasoningItemContent(CodexBaseModel):
     type: Literal["reasoning_text"] = "reasoning_text"
 
 
-
-
 class ReasoningThreadItem(CodexBaseModel):
     """A thread item and its recorded lifecycle times. The payload stays flat on the wire."""
 
@@ -7760,8 +6812,6 @@ class ReasoningThreadItem(CodexBaseModel):
     id: str
     summary: list[str] | None = []
     type: Literal["reasoning"] = "reasoning"
-
-
 
 
 class RemoteControlClient(CodexBaseModel):
@@ -7783,19 +6833,12 @@ class RemoteControlClientListRequest(CodexBaseModel):
     params: RemoteControlClientsListParams
 
 
-
-
 class RemoteControlClientRevokeRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["remoteControl/client/revoke"] = "remoteControl/client/revoke"
     params: RemoteControlClientsRevokeParams
-
-
-
-
-type RemoteControlClientsListOrder = Literal["asc", "desc"]
 
 
 class RemoteControlClientsListParams(CodexBaseModel):
@@ -7819,9 +6862,6 @@ class RemoteControlClientsRevokeResponse(CodexBaseModel):
     pass
 
 
-type RemoteControlConnectionStatus = Literal["disabled", "connecting", "connected", "errored"]
-
-
 class RemoteControlDisableParams(CodexBaseModel):
     ephemeral: bool | None = None
 
@@ -7837,8 +6877,6 @@ class RemoteControlDisableRequest(CodexBaseModel):
     id: RequestId
     method: Literal["remoteControl/disable"] = "remoteControl/disable"
     params: RemoteControlDisableParams | None = None
-
-
 
 
 class RemoteControlDisableResponse(CodexBaseModel):
@@ -7865,8 +6903,6 @@ class RemoteControlEnableRequest(CodexBaseModel):
     params: RemoteControlEnableParams | None = None
 
 
-
-
 class RemoteControlEnableResponse(CodexBaseModel):
     environment_id: str | None = None
     installation_id: str
@@ -7884,8 +6920,6 @@ class RemoteControlPairingStartRequest(CodexBaseModel):
     id: RequestId
     method: Literal["remoteControl/pairing/start"] = "remoteControl/pairing/start"
     params: RemoteControlPairingStartParams
-
-
 
 
 class RemoteControlPairingStartResponse(CodexBaseModel):
@@ -7906,8 +6940,6 @@ class RemoteControlPairingStatusRequest(CodexBaseModel):
     id: RequestId
     method: Literal["remoteControl/pairing/status"] = "remoteControl/pairing/status"
     params: RemoteControlPairingStatusParams
-
-
 
 
 class RemoteControlPairingStatusResponse(CodexBaseModel):
@@ -7934,16 +6966,12 @@ class RemoteControlStatusChangedMessage(CodexBaseModel):
     params: RemoteControlStatusChangedNotification
 
 
-
-
 class RemoteControlStatusReadRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["remoteControl/status/read"] = "remoteControl/status/read"
     params: None = Field(None)
-
-
 
 
 class RemoteControlStatusReadResponse(CodexBaseModel):
@@ -7962,14 +6990,9 @@ class RemotePluginSource(CodexBaseModel):
 type PluginSource = LocalPluginSource | GitPluginSource | NpmPluginSource | RemotePluginSource
 
 
-
-
 class RequestHeader(CodexBaseModel):
     name: str
     value: str
-
-
-type RequestId = str | int
 
 
 class RequestPermissionProfile(CodexBaseModel):
@@ -7984,11 +7007,6 @@ class RequestPermissionsGuardianApprovalReviewAction(CodexBaseModel):
     permissions: RequestPermissionProfile
     reason: str | None = None
     type: Literal["requestPermissions"] = "requestPermissions"
-
-
-
-
-type ResidencyRequirement = Literal["us"]
 
 
 class Resource(CodexBaseModel):
@@ -8171,9 +7189,6 @@ Either inline generated-image data or its durable attachment-store identity.
 """
 
 
-type ReviewDelivery = Literal["inline"]
-
-
 class ReviewStartParams(CodexBaseModel):
     delivery: ReviewDelivery | None = None
     """
@@ -8189,8 +7204,6 @@ class ReviewStartRequest(CodexBaseModel):
     id: RequestId
     method: Literal["review/start"] = "review/start"
     params: ReviewStartParams
-
-
 
 
 class ReviewStartResponse(CodexBaseModel):
@@ -8209,17 +7222,12 @@ class RolloutCompressRequest(CodexBaseModel):
     params: None = Field(None)
 
 
-
-
 class RolloutCompressResponse(CodexBaseModel):
     """Acknowledges the compression trigger, not completion. Existing maintenance locks and cooldowns can cause the background pass to skip without doing work."""
 
 
 class RootFileSystemSpecialPath(CodexBaseModel):
     kind: Literal["root"] = "root"
-
-
-type SandboxMode = Literal["read-only", "workspace-write", "danger-full-access"]
 
 
 class SandboxWorkspaceWrite(CodexBaseModel):
@@ -8236,16 +7244,11 @@ class ScheduledTaskSummary(CodexBaseModel):
     schedule: ScheduledTaskSchedule
 
 
-type ScheduledTaskWeekday = Literal["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
-
-
 class SearchCommandAction(CodexBaseModel):
     command: str
     path: str | None = None
     query: str | None = None
     type: Literal["search"] = "search"
-
-
 
 
 class SearchResponsesApiWebSearchAction(CodexBaseModel):
@@ -8262,14 +7265,10 @@ type ResponsesApiWebSearchAction = (
 )
 
 
-
-
 class SearchWebSearchAction(CodexBaseModel):
     queries: list[str] | None = None
     query: str | None = None
     type: Literal["search"] = "search"
-
-
 
 
 class SelectedCapabilityRoot(CodexBaseModel):
@@ -8316,8 +7315,6 @@ class ServerDiagnosticsRequest(CodexBaseModel):
     params: ServerDiagnosticsParams
 
 
-
-
 class ServerDiagnosticsResponse(CodexBaseModel):
     gauges: list[ServerDiagnosticsGauge]
     process: ServerDiagnosticsProcess
@@ -8326,8 +7323,6 @@ class ServerDiagnosticsResponse(CodexBaseModel):
 class ServerRequestResolvedNotification(CodexBaseModel):
     request_id: RequestId
     thread_id: str
-
-
 
 
 class ServerRequestResolvedMessage(CodexBaseModel):
@@ -8356,14 +7351,10 @@ class SessionEndInputSavedThreadRealtimeItem(CodexBaseModel):
     type: Literal["sessionEndInputSaved"] = "sessionEndInputSaved"
 
 
-
-
 class SessionFlagsConfigLayerSource(CodexBaseModel):
     """Session-layer overrides supplied via `-c`/`--config`."""
 
     type: Literal["sessionFlags"] = "sessionFlags"
-
-
 
 
 class SessionMigration(CodexBaseModel):
@@ -8439,9 +7430,6 @@ class SkillMigration(CodexBaseModel):
     name: str
 
 
-type SkillScope = Literal["user", "repo", "system", "admin"]
-
-
 class SkillSummary(CodexBaseModel):
     description: str
     enabled: bool
@@ -8466,15 +7454,11 @@ class SkillUserInput(CodexBaseModel):
     type: Literal["skill"] = "skill"
 
 
-
-
 class SkillsChangedNotification(CodexBaseModel):
     """Notification emitted when watched local skill files change.
 
     Treat this as an invalidation signal and re-run `skills/list` with the client's current parameters when refreshed skill metadata is needed.
     """
-
-
 
 
 class SkillsChangedMessage(CodexBaseModel):
@@ -8508,8 +7492,6 @@ class SkillsConfigWriteRequest(CodexBaseModel):
     params: SkillsConfigWriteParams
 
 
-
-
 class SkillsConfigWriteResponse(CodexBaseModel):
     effective_enabled: bool
 
@@ -8524,8 +7506,6 @@ class SkillsExtraRootsSetRequest(CodexBaseModel):
     id: RequestId
     method: Literal["skills/extraRoots/set"] = "skills/extraRoots/set"
     params: SkillsExtraRootsSetParams
-
-
 
 
 class SkillsExtraRootsSetResponse(CodexBaseModel):
@@ -8557,8 +7537,6 @@ class SkillsListRequest(CodexBaseModel):
     params: SkillsListParams
 
 
-
-
 class SkillsListResponse(CodexBaseModel):
     data: list[SkillsListEntry]
 
@@ -8583,19 +7561,12 @@ class SleepThreadItem(CodexBaseModel):
     type: Literal["sleep"] = "sleep"
 
 
-
-
-type SortDirection = Literal["asc", "desc"]
-
-
 class SpecialFileSystemPath(CodexBaseModel):
     type: Literal["special"] = "special"
     value: FileSystemSpecialPath
 
 
 type FileSystemPath = PathFileSystemPath | GlobPatternFileSystemPath | SpecialFileSystemPath
-
-
 
 
 class SpendControlLimitSnapshot(CodexBaseModel):
@@ -8612,9 +7583,6 @@ class StrictReviewRequiredNotification(CodexBaseModel):
     """
     thread_id: str
     turn_id: str
-
-
-type SubAgentActivityKind = Literal["started", "interacted", "interrupted", "completed"]
 
 
 class SubAgentActivityThreadItem(CodexBaseModel):
@@ -8643,8 +7611,6 @@ class SubAgentActivityThreadItem(CodexBaseModel):
     type: Literal["subAgentActivity"] = "subAgentActivity"
 
 
-
-
 class SubAgentSessionSource(CodexBaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -8671,8 +7637,6 @@ class SummaryTextReasoningItemReasoningSummary(CodexBaseModel):
 type ReasoningItemReasoningSummary = SummaryTextReasoningItemReasoningSummary
 
 
-
-
 class SystemConfigLayerSource(CodexBaseModel):
     """Managed config layer from a file (usually `managed_config.toml`)."""
 
@@ -8683,12 +7647,8 @@ class SystemConfigLayerSource(CodexBaseModel):
     type: Literal["system"] = "system"
 
 
-
-
 class SystemErrorThreadStatus(CodexBaseModel):
     type: Literal["systemError"] = "systemError"
-
-
 
 
 class TerminalInteractionNotification(CodexBaseModel):
@@ -8734,8 +7694,6 @@ class TextReasoningItemContent(CodexBaseModel):
 type ReasoningItemContent = ReasoningTextReasoningItemContent | TextReasoningItemContent
 
 
-
-
 class TextUserInput(CodexBaseModel):
     text: str
     text_elements: list[TextElement] | None = Field([], validate_default=True)
@@ -8743,8 +7701,6 @@ class TextUserInput(CodexBaseModel):
     UI-defined spans within `text` used to render or persist special elements.
     """
     type: Literal["text"] = "text"
-
-
 
 
 class Thread(CodexBaseModel):
@@ -8882,9 +7838,6 @@ class Thread(CodexBaseModel):
     """
 
 
-type ThreadActiveFlag = Literal["waitingOnApproval", "waitingOnUserInput"]
-
-
 class ThreadApproveGuardianDeniedActionParams(CodexBaseModel):
     event: Any
     """
@@ -8899,8 +7852,6 @@ class ThreadApproveGuardianDeniedActionRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/approveGuardianDeniedAction"] = "thread/approveGuardianDeniedAction"
     params: ThreadApproveGuardianDeniedActionParams
-
-
 
 
 class ThreadApproveGuardianDeniedActionResponse(CodexBaseModel):
@@ -8919,16 +7870,12 @@ class ThreadArchiveRequest(CodexBaseModel):
     params: ThreadArchiveParams
 
 
-
-
 class ThreadArchiveResponse(CodexBaseModel):
     pass
 
 
 class ThreadArchivedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadArchivedMessage(CodexBaseModel):
@@ -8952,12 +7899,6 @@ class ThreadAttachment(CodexBaseModel):
     payload: Any
 
 
-type ThreadAttachmentAddOutcome = Literal["created", "existing"]
-"""
-Result of attempting to associate an attachment with a thread.
-"""
-
-
 class ThreadAttachmentAddParams(CodexBaseModel):
     """Parameters for creating or locating an attachment on its owning thread."""
 
@@ -8973,8 +7914,6 @@ class ThreadAttachmentAddRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/attachment/add"] = "thread/attachment/add"
     params: ThreadAttachmentAddParams
-
-
 
 
 class ThreadAttachmentAddResponse(CodexBaseModel):
@@ -9000,19 +7939,11 @@ class ThreadAttachmentListRequest(CodexBaseModel):
     params: ThreadAttachmentListParams
 
 
-
-
 class ThreadAttachmentListResponse(CodexBaseModel):
     """One page of attachments associated with the requested thread."""
 
     data: list[ThreadAttachment]
     next_cursor: str | None = None
-
-
-type ThreadAttachmentOperation = Literal["created", "deleted"]
-"""
-The persisted attachment change represented by a notification.
-"""
 
 
 class ThreadAttachmentOwner(CodexBaseModel):
@@ -9046,8 +7977,6 @@ class ThreadAttachmentOwnerListRequest(CodexBaseModel):
     params: ThreadAttachmentOwnerListParams
 
 
-
-
 class ThreadAttachmentOwnerListResponse(CodexBaseModel):
     """One page of matching owners, including threads without their own user messages."""
 
@@ -9071,8 +8000,6 @@ class ThreadAttachmentRemoveRequest(CodexBaseModel):
     params: ThreadAttachmentRemoveParams
 
 
-
-
 class ThreadAttachmentRemoveResponse(CodexBaseModel):
     """Successful deletion does not return additional attachment data."""
 
@@ -9085,8 +8012,6 @@ class ThreadAttachmentUpdatedNotification(CodexBaseModel):
     identity_key: str
     operation: ThreadAttachmentOperation
     thread_id: str
-
-
 
 
 class ThreadAttachmentUpdatedMessage(CodexBaseModel):
@@ -9122,8 +8047,6 @@ class ThreadBackgroundTerminalsCleanRequest(CodexBaseModel):
     params: ThreadBackgroundTerminalsCleanParams
 
 
-
-
 class ThreadBackgroundTerminalsCleanResponse(CodexBaseModel):
     pass
 
@@ -9148,8 +8071,6 @@ class ThreadBackgroundTerminalsListRequest(CodexBaseModel):
     params: ThreadBackgroundTerminalsListParams
 
 
-
-
 class ThreadBackgroundTerminalsListResponse(CodexBaseModel):
     data: list[ThreadBackgroundTerminal]
     next_cursor: str | None = None
@@ -9171,16 +8092,12 @@ class ThreadBackgroundTerminalsTerminateRequest(CodexBaseModel):
     params: ThreadBackgroundTerminalsTerminateParams
 
 
-
-
 class ThreadBackgroundTerminalsTerminateResponse(CodexBaseModel):
     terminated: bool
 
 
 class ThreadClosedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadClosedMessage(CodexBaseModel):
@@ -9206,8 +8123,6 @@ class ThreadCompactStartRequest(CodexBaseModel):
     params: ThreadCompactStartParams
 
 
-
-
 class ThreadCompactStartResponse(CodexBaseModel):
     pass
 
@@ -9221,8 +8136,6 @@ class ThreadCompactedMessage(CodexBaseModel):
     """
     method: Literal["thread/compacted"] = "thread/compacted"
     params: ContextCompactedNotification
-
-
 
 
 class ThreadDecrementElicitationParams(CodexBaseModel):
@@ -9243,8 +8156,6 @@ class ThreadDecrementElicitationRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/decrement_elicitation"] = "thread/decrement_elicitation"
     params: ThreadDecrementElicitationParams
-
-
 
 
 class ThreadDecrementElicitationResponse(CodexBaseModel):
@@ -9272,16 +8183,12 @@ class ThreadDeleteRequest(CodexBaseModel):
     params: ThreadDeleteParams
 
 
-
-
 class ThreadDeleteResponse(CodexBaseModel):
     pass
 
 
 class ThreadDeletedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadDeletedMessage(CodexBaseModel):
@@ -9314,8 +8221,6 @@ class ThreadEnvironmentConnectedNotification(CodexBaseModel):
     params: EnvironmentConnectionNotification
 
 
-
-
 class ThreadEnvironmentDisconnectedNotification(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -9325,8 +8230,6 @@ class ThreadEnvironmentDisconnectedNotification(CodexBaseModel):
     """
     method: Literal["thread/environment/disconnected"] = "thread/environment/disconnected"
     params: EnvironmentConnectionNotification
-
-
 
 
 class ThreadExtra(CodexBaseModel):
@@ -9415,8 +8318,6 @@ class ThreadForkRequest(CodexBaseModel):
     params: ThreadForkParams
 
 
-
-
 class ThreadForkResponse(CodexBaseModel):
     active_permission_profile: ActivePermissionProfile | None = None
     """
@@ -9482,16 +8383,12 @@ class ThreadGoalClearRequest(CodexBaseModel):
     params: ThreadGoalClearParams
 
 
-
-
 class ThreadGoalClearResponse(CodexBaseModel):
     cleared: bool
 
 
 class ThreadGoalClearedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadGoalClearedMessage(CodexBaseModel):
@@ -9517,16 +8414,8 @@ class ThreadGoalGetRequest(CodexBaseModel):
     params: ThreadGoalGetParams
 
 
-
-
 class ThreadGoalGetResponse(CodexBaseModel):
     goal: ThreadGoal | None = None
-
-
-type ThreadGoalMutationOrigin = Literal["user", "automatic"]
-"""
-Distinguishes explicit user actions from automatic goal lifecycle mutations.
-"""
 
 
 class ThreadGoalSetParams(CodexBaseModel):
@@ -9548,23 +8437,14 @@ class ThreadGoalSetRequest(CodexBaseModel):
     params: ThreadGoalSetParams
 
 
-
-
 class ThreadGoalSetResponse(CodexBaseModel):
     goal: ThreadGoal
-
-
-type ThreadGoalStatus = Literal[
-    "active", "paused", "blocked", "usageLimited", "budgetLimited", "complete"
-]
 
 
 class ThreadGoalUpdatedNotification(CodexBaseModel):
     goal: ThreadGoal
     thread_id: str
     turn_id: str | None = None
-
-
 
 
 class ThreadGoalUpdatedMessage(CodexBaseModel):
@@ -9599,20 +8479,12 @@ class ThreadGuardianReviewRequest(CodexBaseModel):
     params: ThreadGuardianReviewParams
 
 
-
-
 class ThreadGuardianReviewResponse(CodexBaseModel):
     assessment: ThreadGuardianAssessment | None = None
     """
     Null when current policy or a remembered approval skips review.
     """
     call_id: str
-
-
-type ThreadHistoryMode = Literal["legacy", "paginated"]
-
-
-type ThreadId = str
 
 
 class ThreadIncrementElicitationParams(CodexBaseModel):
@@ -9633,8 +8505,6 @@ class ThreadIncrementElicitationRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/increment_elicitation"] = "thread/increment_elicitation"
     params: ThreadIncrementElicitationParams
-
-
 
 
 class ThreadIncrementElicitationResponse(CodexBaseModel):
@@ -9664,8 +8534,6 @@ class ThreadInjectItemsRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/inject_items"] = "thread/inject_items"
     params: ThreadInjectItemsParams
-
-
 
 
 class ThreadInjectItemsResponse(CodexBaseModel):
@@ -9747,8 +8615,6 @@ class ThreadItemsListRequest(CodexBaseModel):
     params: ThreadItemsListParams
 
 
-
-
 class ThreadItemsListResponse(CodexBaseModel):
     backwards_cursor: str | None = None
     """
@@ -9780,15 +8646,10 @@ class ThreadItemsReadRequest(CodexBaseModel):
     params: ThreadItemsReadParams
 
 
-
-
 class ThreadItemsReadResponse(CodexBaseModel):
     """EXPERIMENTAL - persisted items returned in canonical stored order."""
 
     data: list[ThreadItemEntry]
-
-
-type ThreadListCwdFilter = str | list[str]
 
 
 class ThreadListParams(CodexBaseModel):
@@ -9882,8 +8743,6 @@ class ThreadListRequest(CodexBaseModel):
     params: ThreadListParams
 
 
-
-
 class ThreadListResponse(CodexBaseModel):
     backwards_cursor: str | None = None
     """
@@ -9919,8 +8778,6 @@ class ThreadLoadedListRequest(CodexBaseModel):
     params: ThreadLoadedListParams
 
 
-
-
 class ThreadLoadedListResponse(CodexBaseModel):
     data: list[str]
     """
@@ -9930,9 +8787,6 @@ class ThreadLoadedListResponse(CodexBaseModel):
     """
     Opaque cursor to pass to the next call to continue after the last item. if None, there are no more items to return.
     """
-
-
-type ThreadMemoryMode = Literal["enabled", "disabled"]
 
 
 class ThreadMemoryModeSetParams(CodexBaseModel):
@@ -9946,8 +8800,6 @@ class ThreadMemoryModeSetRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/memoryMode/set"] = "thread/memoryMode/set"
     params: ThreadMemoryModeSetParams
-
-
 
 
 class ThreadMemoryModeSetResponse(CodexBaseModel):
@@ -9967,8 +8819,6 @@ class ThreadMemoryReadRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/memory/read"] = "thread/memory/read"
     params: ThreadMemoryReadParams
-
-
 
 
 class ThreadMemoryReadResponse(CodexBaseModel):
@@ -10017,8 +8867,6 @@ class ThreadMetadataUpdateRequest(CodexBaseModel):
     params: ThreadMetadataUpdateParams
 
 
-
-
 class ThreadMetadataUpdateResponse(CodexBaseModel):
     thread: Thread
 
@@ -10031,13 +8879,9 @@ class ThreadNameSetRequest(CodexBaseModel):
     params: ThreadSetNameParams
 
 
-
-
 class ThreadNameUpdatedNotification(CodexBaseModel):
     thread_id: str
     thread_name: str | None = None
-
-
 
 
 class ThreadNameUpdatedMessage(CodexBaseModel):
@@ -10064,8 +8908,6 @@ class ThreadPredictionRequestRequest(CodexBaseModel):
     params: ThreadPredictionRequestParams
 
 
-
-
 class ThreadPredictionRequestResponse(CodexBaseModel):
     pass
 
@@ -10077,8 +8919,6 @@ class ThreadPredictionUpdatedNotification(CodexBaseModel):
     result: ThreadPredictionResult
     source_turn_id: str
     thread_id: str
-
-
 
 
 class ThreadPredictionUpdatedMessage(CodexBaseModel):
@@ -10111,8 +8951,6 @@ class ThreadPrepareApprovedPlanRequest(CodexBaseModel):
     params: ThreadPrepareApprovedPlanParams
 
 
-
-
 class ThreadPrepareApprovedPlanResponse(CodexBaseModel):
     prompt: str
     """
@@ -10123,8 +8961,6 @@ class ThreadPrepareApprovedPlanResponse(CodexBaseModel):
 class ThreadProjectUpdatedNotification(CodexBaseModel):
     project_id: str | None
     thread_id: str
-
-
 
 
 class ThreadProjectUpdatedMessage(CodexBaseModel):
@@ -10156,16 +8992,12 @@ class ThreadQueueAddRequest(CodexBaseModel):
     params: ThreadQueueAddParams
 
 
-
-
 class ThreadQueueAddResponse(CodexBaseModel):
     queued_submission: QueuedSubmission
 
 
 class ThreadQueueChangedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadQueueChangedMessage(CodexBaseModel):
@@ -10192,8 +9024,6 @@ class ThreadQueueDeleteRequest(CodexBaseModel):
     params: ThreadQueueDeleteParams
 
 
-
-
 class ThreadQueueDeleteResponse(CodexBaseModel):
     deleted: bool
 
@@ -10218,8 +9048,6 @@ class ThreadQueueListRequest(CodexBaseModel):
     params: ThreadQueueListParams
 
 
-
-
 class ThreadQueueListResponse(CodexBaseModel):
     data: list[QueuedSubmission]
     next_cursor: str | None = None
@@ -10241,8 +9069,6 @@ class ThreadQueueReorderRequest(CodexBaseModel):
     params: ThreadQueueReorderParams
 
 
-
-
 class ThreadQueueReorderResponse(CodexBaseModel):
     pass
 
@@ -10258,8 +9084,6 @@ class ThreadQueueStartRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/queue/start"] = "thread/queue/start"
     params: ThreadQueueStartParams
-
-
 
 
 class ThreadQueueStartResponse(CodexBaseModel):
@@ -10284,8 +9108,6 @@ class ThreadQueueUpdateRequest(CodexBaseModel):
     params: ThreadQueueUpdateParams
 
 
-
-
 class ThreadQueueUpdateResponse(CodexBaseModel):
     queued_submission: QueuedSubmission
 
@@ -10306,8 +9128,6 @@ class ThreadReadRequest(CodexBaseModel):
     params: ThreadReadParams
 
 
-
-
 class ThreadReadResponse(CodexBaseModel):
     read_state: ThreadReadState | None = None
     """
@@ -10326,8 +9146,6 @@ class ThreadReadState(CodexBaseModel):
 class ThreadReadStateChangedNotification(CodexBaseModel):
     read_state: ThreadReadState
     thread_id: str
-
-
 
 
 class ThreadReadStateChangedMessage(CodexBaseModel):
@@ -10358,8 +9176,6 @@ class ThreadReadStateUpdateRequest(CodexBaseModel):
     params: ThreadReadStateUpdateParams
 
 
-
-
 class ThreadReadStateUpdateResponse(CodexBaseModel):
     read_state: ThreadReadState
 
@@ -10377,8 +9193,6 @@ class ThreadRealtimeAppendAudioRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/realtime/appendAudio"] = "thread/realtime/appendAudio"
     params: ThreadRealtimeAppendAudioParams
-
-
 
 
 class ThreadRealtimeAppendAudioResponse(CodexBaseModel):
@@ -10400,8 +9214,6 @@ class ThreadRealtimeAppendSpeechRequest(CodexBaseModel):
     params: ThreadRealtimeAppendSpeechParams
 
 
-
-
 class ThreadRealtimeAppendSpeechResponse(CodexBaseModel):
     """EXPERIMENTAL - response for appending realtime speech."""
 
@@ -10420,8 +9232,6 @@ class ThreadRealtimeAppendTextRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/realtime/appendText"] = "thread/realtime/appendText"
     params: ThreadRealtimeAppendTextParams
-
-
 
 
 class ThreadRealtimeAppendTextResponse(CodexBaseModel):
@@ -10445,8 +9255,6 @@ class ThreadRealtimeClosedNotification(CodexBaseModel):
     thread_id: str
 
 
-
-
 class ThreadRealtimeClosedMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -10456,9 +9264,6 @@ class ThreadRealtimeClosedMessage(CodexBaseModel):
     """
     method: Literal["thread/realtime/closed"] = "thread/realtime/closed"
     params: ThreadRealtimeClosedNotification
-
-
-type ThreadRealtimeCoverage = Literal["unsupported", "pending", "ready"]
 
 
 class ThreadRealtimeEntry(CodexBaseModel):
@@ -10471,8 +9276,6 @@ class ThreadRealtimeErrorNotification(CodexBaseModel):
 
     message: str
     thread_id: str
-
-
 
 
 class ThreadRealtimeErrorMessage(CodexBaseModel):
@@ -10492,9 +9295,6 @@ class ThreadRealtimeFrameChannels(CodexBaseModel):
     voice_transcript: ThreadRealtimeVoiceTranscript
 
 
-type ThreadRealtimeHandoffMode = Literal["start", "steer"]
-
-
 class ThreadRealtimeInitialItem(CodexBaseModel):
     """EXPERIMENTAL - role-bearing text item included when a realtime V3 session starts."""
 
@@ -10507,8 +9307,6 @@ class ThreadRealtimeItemAddedNotification(CodexBaseModel):
 
     item: Any
     thread_id: str
-
-
 
 
 class ThreadRealtimeItemAddedMessage(CodexBaseModel):
@@ -10529,8 +9327,6 @@ class ThreadRealtimeItemCompletedNotification(CodexBaseModel):
     thread_id: str
 
 
-
-
 class ThreadRealtimeItemCompletedMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -10547,8 +9343,6 @@ class ThreadRealtimeItemStartedNotification(CodexBaseModel):
 
     item: ThreadRealtimeItem
     thread_id: str
-
-
 
 
 class ThreadRealtimeItemStartedMessage(CodexBaseModel):
@@ -10568,8 +9362,6 @@ class ThreadRealtimeItemTranscriptDeltaNotification(CodexBaseModel):
     delta: str
     item_id: str
     thread_id: str
-
-
 
 
 class ThreadRealtimeItemTranscriptDeltaMessage(CodexBaseModel):
@@ -10623,8 +9415,6 @@ class ThreadRealtimeListRequest(CodexBaseModel):
     params: ThreadRealtimeListParams
 
 
-
-
 class ThreadRealtimeListResponse(CodexBaseModel):
     coverage: ThreadRealtimeCoverage
     data: list[ThreadRealtimeEntry]
@@ -10648,15 +9438,10 @@ class ThreadRealtimeListVoicesRequest(CodexBaseModel):
     params: ThreadRealtimeListVoicesParams
 
 
-
-
 class ThreadRealtimeListVoicesResponse(CodexBaseModel):
     """EXPERIMENTAL - response for listing supported realtime voices."""
 
     voices: RealtimeVoicesList
-
-
-type ThreadRealtimeOrder = Literal["observedAt", "position"]
 
 
 class ThreadRealtimeOutputAudioDeltaNotification(CodexBaseModel):
@@ -10664,8 +9449,6 @@ class ThreadRealtimeOutputAudioDeltaNotification(CodexBaseModel):
 
     audio: ThreadRealtimeAudioChunk
     thread_id: str
-
-
 
 
 class ThreadRealtimeOutputAudioDeltaMessage(CodexBaseModel):
@@ -10686,8 +9469,6 @@ class ThreadRealtimeSdpNotification(CodexBaseModel):
     thread_id: str
 
 
-
-
 class ThreadRealtimeSdpMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -10697,9 +9478,6 @@ class ThreadRealtimeSdpMessage(CodexBaseModel):
     """
     method: Literal["thread/realtime/sdp"] = "thread/realtime/sdp"
     params: ThreadRealtimeSdpNotification
-
-
-type ThreadRealtimeSessionOutcome = Literal["ended", "failed"]
 
 
 class ThreadRealtimeStartParams(CodexBaseModel):
@@ -10784,8 +9562,6 @@ class ThreadRealtimeStartRequest(CodexBaseModel):
     params: ThreadRealtimeStartParams
 
 
-
-
 class ThreadRealtimeStartResponse(CodexBaseModel):
     """EXPERIMENTAL - response for starting thread realtime."""
 
@@ -10796,8 +9572,6 @@ class ThreadRealtimeStartedNotification(CodexBaseModel):
     realtime_session_id: str | None = None
     thread_id: str
     version: RealtimeConversationVersion
-
-
 
 
 class ThreadRealtimeStartedMessage(CodexBaseModel):
@@ -10825,8 +9599,6 @@ class ThreadRealtimeStopRequest(CodexBaseModel):
     params: ThreadRealtimeStopParams
 
 
-
-
 class ThreadRealtimeStopResponse(CodexBaseModel):
     """EXPERIMENTAL - response for stopping thread realtime."""
 
@@ -10840,8 +9612,6 @@ class ThreadRealtimeTranscriptDeltaNotification(CodexBaseModel):
     """
     role: str
     thread_id: str
-
-
 
 
 class ThreadRealtimeTranscriptDeltaMessage(CodexBaseModel):
@@ -10866,8 +9636,6 @@ class ThreadRealtimeTranscriptDoneNotification(CodexBaseModel):
     thread_id: str
 
 
-
-
 class ThreadRealtimeTranscriptDoneMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -10877,9 +9645,6 @@ class ThreadRealtimeTranscriptDoneMessage(CodexBaseModel):
     """
     method: Literal["thread/realtime/transcript/done"] = "thread/realtime/transcript/done"
     params: ThreadRealtimeTranscriptDoneNotification
-
-
-type ThreadRealtimeTranscriptRole = Literal["user", "assistant"]
 
 
 class ThreadRealtimeVoiceTranscript(CodexBaseModel):
@@ -10967,8 +9732,6 @@ class ThreadResumeRequest(CodexBaseModel):
     params: ThreadResumeParams
 
 
-
-
 class ThreadResumeResponse(CodexBaseModel):
     active_permission_profile: ActivePermissionProfile | None = None
     """
@@ -11048,8 +9811,6 @@ class ThreadRevertRequest(CodexBaseModel):
     params: ThreadRevertParams
 
 
-
-
 class ThreadRevertResponse(CodexBaseModel):
     items_backwards_cursor: str | None = None
     """
@@ -11071,8 +9832,6 @@ class ThreadRevertResponse(CodexBaseModel):
 
 class ThreadRevertedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadRevertedMessage(CodexBaseModel):
@@ -11099,8 +9858,6 @@ class ThreadSampleCancelRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/sample/cancel"] = "thread/sample/cancel"
     params: ThreadSampleCancelParams
-
-
 
 
 class ThreadSampleCancelResponse(CodexBaseModel):
@@ -11146,8 +9903,6 @@ class ThreadSampleRequest(CodexBaseModel):
     params: ThreadSampleParams
 
 
-
-
 class ThreadSampleResponse(CodexBaseModel):
     cached_input_tokens: int | None = None
     input_tokens: int | None = None
@@ -11172,8 +9927,6 @@ class ThreadSearchCancelRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/search/cancel"] = "thread/search/cancel"
     params: ThreadSearchCancelParams
-
-
 
 
 class ThreadSearchCancelResponse(CodexBaseModel):
@@ -11220,8 +9973,6 @@ class ThreadSearchOccurrencesRequest(CodexBaseModel):
     id: RequestId
     method: Literal["thread/searchOccurrences"] = "thread/searchOccurrences"
     params: ThreadSearchOccurrencesParams
-
-
 
 
 class ThreadSearchOccurrencesResponse(CodexBaseModel):
@@ -11281,8 +10032,6 @@ class ThreadSearchPartialNotification(CodexBaseModel):
     request_id: RequestId
 
 
-
-
 class ThreadSearchPartialMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -11302,8 +10051,6 @@ class ThreadSearchRequest(CodexBaseModel):
     params: ThreadSearchParams
 
 
-
-
 class ThreadSearchResponse(CodexBaseModel):
     backwards_cursor: str | None = None
     """
@@ -11321,9 +10068,6 @@ class ThreadSearchResult(CodexBaseModel):
     thread: Thread
 
 
-type ThreadSearchSortKey = Literal["created_at", "updated_at", "recency_at"]
-
-
 class ThreadSearchStreamCancelRequest(CodexBaseModel):
     """Cancel a `thread/search/stream` request on this connection."""
 
@@ -11332,16 +10076,12 @@ class ThreadSearchStreamCancelRequest(CodexBaseModel):
     params: ThreadSearchCancelParams
 
 
-
-
 class ThreadSearchStreamRequest(CodexBaseModel):
     """Search with best-effort incremental `thread/search/partial` notifications. The final response is authoritative for results, ordering, and cursors."""
 
     id: RequestId
     method: Literal["thread/search/stream"] = "thread/search/stream"
     params: ThreadSearchParams
-
-
 
 
 class ThreadSearchTextRange(CodexBaseModel):
@@ -11391,8 +10131,6 @@ class ThreadSectionChangedNotification(CodexBaseModel):
     thread_id: str
 
 
-
-
 class ThreadSectionChangedMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -11422,8 +10160,6 @@ class ThreadSectionCreateRequest(CodexBaseModel):
     params: ThreadSectionCreateParams
 
 
-
-
 class ThreadSectionCreateResponse(CodexBaseModel):
     """The independently persisted section created by the server."""
 
@@ -11445,8 +10181,6 @@ class ThreadSectionDeleteRequest(CodexBaseModel):
     id: RequestId
     method: Literal["threadSection/delete"] = "threadSection/delete"
     params: ThreadSectionDeleteParams
-
-
 
 
 class ThreadSectionDeleteResponse(CodexBaseModel):
@@ -11472,8 +10206,6 @@ class ThreadSectionListRequest(CodexBaseModel):
     id: RequestId
     method: Literal["threadSection/list"] = "threadSection/list"
     params: ThreadSectionListParams
-
-
 
 
 class ThreadSectionListResponse(CodexBaseModel):
@@ -11511,8 +10243,6 @@ class ThreadSectionMoveRequest(CodexBaseModel):
     params: ThreadSectionMoveParams
 
 
-
-
 class ThreadSectionMoveResponse(CodexBaseModel):
     pass
 
@@ -11540,8 +10270,6 @@ class ThreadSectionUpdateRequest(CodexBaseModel):
     id: RequestId
     method: Literal["threadSection/update"] = "threadSection/update"
     params: ThreadSectionUpdateParams
-
-
 
 
 class ThreadSectionUpdateResponse(CodexBaseModel):
@@ -11659,8 +10387,6 @@ class ThreadSettingsUpdateRequest(CodexBaseModel):
     params: ThreadSettingsUpdateParams
 
 
-
-
 class ThreadSettingsUpdateResponse(CodexBaseModel):
     pass
 
@@ -11668,8 +10394,6 @@ class ThreadSettingsUpdateResponse(CodexBaseModel):
 class ThreadSettingsUpdatedNotification(CodexBaseModel):
     thread_id: str
     thread_settings: ThreadSettings
-
-
 
 
 class ThreadSettingsUpdatedMessage(CodexBaseModel):
@@ -11703,30 +10427,8 @@ class ThreadShellCommandRequest(CodexBaseModel):
     params: ThreadShellCommandParams
 
 
-
-
 class ThreadShellCommandResponse(CodexBaseModel):
     pass
-
-
-type ThreadSortKey = Literal["created_at", "updated_at", "recency_at", "section_position"]
-
-
-type ThreadSource = str
-
-
-type ThreadSourceKind = Literal[
-    "cli",
-    "vscode",
-    "exec",
-    "appServer",
-    "subAgent",
-    "subAgentReview",
-    "subAgentCompact",
-    "subAgentThreadSpawn",
-    "subAgentOther",
-    "unknown",
-]
 
 
 class ThreadSpawn(CodexBaseModel):
@@ -11833,8 +10535,6 @@ class ThreadStartRequest(CodexBaseModel):
     params: ThreadStartParams
 
 
-
-
 class ThreadStartResponse(CodexBaseModel):
     active_permission_profile: ActivePermissionProfile | None = None
     """
@@ -11873,21 +10573,14 @@ class ThreadStartResponse(CodexBaseModel):
     thread: Thread
 
 
-type ThreadStartSource = Literal["startup", "clear"]
-
-
 class ThreadStartThreadUnreadPosition(CodexBaseModel):
     """Explicitly marked unread, including when the thread has no turns."""
 
     type: Literal["threadStart"] = "threadStart"
 
 
-
-
 class ThreadStartedNotification(CodexBaseModel):
     thread: Thread
-
-
 
 
 class ThreadStartedMessage(CodexBaseModel):
@@ -11909,8 +10602,6 @@ type ThreadStatus = (
 class ThreadStatusChangedNotification(CodexBaseModel):
     status: ThreadStatus
     thread_id: str
-
-
 
 
 class ThreadStatusChangedMessage(CodexBaseModel):
@@ -11940,8 +10631,6 @@ class ThreadTimelineListRequest(CodexBaseModel):
     params: ThreadTimelineListParams
 
 
-
-
 class ThreadTimelineListResponse(CodexBaseModel):
     """EXPERIMENTAL - a bounded timeline page with its resolved opening voice state."""
 
@@ -11960,8 +10649,6 @@ class ThreadTokenUsageUpdatedNotification(CodexBaseModel):
     thread_id: str
     token_usage: ThreadTokenUsage
     turn_id: str
-
-
 
 
 class ThreadTokenUsageUpdatedMessage(CodexBaseModel):
@@ -12003,8 +10690,6 @@ class ThreadTurnsListRequest(CodexBaseModel):
     params: ThreadTurnsListParams
 
 
-
-
 class ThreadTurnsListResponse(CodexBaseModel):
     backwards_cursor: str | None = None
     """
@@ -12029,16 +10714,12 @@ class ThreadUnarchiveRequest(CodexBaseModel):
     params: ThreadUnarchiveParams
 
 
-
-
 class ThreadUnarchiveResponse(CodexBaseModel):
     thread: Thread
 
 
 class ThreadUnarchivedNotification(CodexBaseModel):
     thread_id: str
-
-
 
 
 class ThreadUnarchivedMessage(CodexBaseModel):
@@ -12064,13 +10745,8 @@ class ThreadUnsubscribeRequest(CodexBaseModel):
     params: ThreadUnsubscribeParams
 
 
-
-
 class ThreadUnsubscribeResponse(CodexBaseModel):
     status: ThreadUnsubscribeStatus
-
-
-type ThreadUnsubscribeStatus = Literal["notLoaded", "notSubscribed", "unsubscribed"]
 
 
 class ThreadUsage(CodexBaseModel):
@@ -12132,12 +10808,6 @@ class Tool(CodexBaseModel):
     title: str | None = None
 
 
-type ToolExposureSurface = Literal["code_mode", "deferred", "direct"]
-"""
-A model-facing surface on which a tool can be exposed.
-"""
-
-
 class ToolSearchCallResponseItem(CodexBaseModel):
     arguments: Any
     call_id: str | None = None
@@ -12149,8 +10819,6 @@ class ToolSearchCallResponseItem(CodexBaseModel):
     type: Literal["tool_search_call"] = "tool_search_call"
 
 
-
-
 class ToolSearchOutputResponseItem(CodexBaseModel):
     call_id: str | None = None
     execution: str
@@ -12159,8 +10827,6 @@ class ToolSearchOutputResponseItem(CodexBaseModel):
     status: str
     tools: list[Any]
     type: Literal["tool_search_output"] = "tool_search_output"
-
-
 
 
 class ToolsV2(CodexBaseModel):
@@ -12179,11 +10845,6 @@ class TranscriptSegmentThreadRealtimeItem(CodexBaseModel):
     role: ThreadRealtimeTranscriptRole
     text: str
     type: Literal["transcriptSegment"] = "transcriptSegment"
-
-
-
-
-type TrustedContacts = Literal["check", "skip"]
 
 
 class Turn(CodexBaseModel):
@@ -12227,8 +10888,6 @@ class TurnCompletedNotification(CodexBaseModel):
     turn: Turn
 
 
-
-
 class TurnCompletedMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -12253,16 +10912,12 @@ class TurnCompletedThreadTimelineEntry(CodexBaseModel):
     type: Literal["turnCompleted"] = "turnCompleted"
 
 
-
-
 class TurnDiffUpdatedNotification(CodexBaseModel):
     """Notification that the turn-level unified diff has changed. Contains the latest aggregated diff across all file changes in the turn."""
 
     diff: str
     thread_id: str
     turn_id: str
-
-
 
 
 class TurnDiffUpdatedMessage(CodexBaseModel):
@@ -12327,8 +10982,6 @@ EXPERIMENTAL - a thread-scoped realtime item in the canonical timeline.
 """
 
 
-
-
 class TurnInterruptParams(CodexBaseModel):
     thread_id: str
     turn_id: str
@@ -12342,21 +10995,14 @@ class TurnInterruptRequest(CodexBaseModel):
     params: TurnInterruptParams
 
 
-
-
 class TurnInterruptResponse(CodexBaseModel):
     pass
-
-
-type TurnItemsView = Literal["notLoaded", "summary", "full"]
 
 
 class TurnModerationMetadataNotification(CodexBaseModel):
     metadata: Any
     thread_id: str
     turn_id: str
-
-
 
 
 class TurnModerationMetadataMessage(CodexBaseModel):
@@ -12375,16 +11021,11 @@ class TurnPlanStep(CodexBaseModel):
     step: str
 
 
-type TurnPlanStepStatus = Literal["pending", "inProgress", "completed"]
-
-
 class TurnPlanUpdatedNotification(CodexBaseModel):
     explanation: str | None = None
     plan: list[TurnPlanStep]
     thread_id: str
     turn_id: str
-
-
 
 
 class TurnPlanUpdatedMessage(CodexBaseModel):
@@ -12440,13 +11081,8 @@ class TurnSettingsUpdateRequest(CodexBaseModel):
     params: TurnSettingsUpdateParams
 
 
-
-
 class TurnSettingsUpdateResponse(CodexBaseModel):
     status: TurnSettingsUpdateStatus
-
-
-type TurnSettingsUpdateStatus = Literal["applied", "targetUnavailable"]
 
 
 class TurnStartParams(CodexBaseModel):
@@ -12572,8 +11208,6 @@ class TurnStartRequest(CodexBaseModel):
     params: TurnStartParams
 
 
-
-
 class TurnStartResponse(CodexBaseModel):
     turn: Turn
 
@@ -12581,8 +11215,6 @@ class TurnStartResponse(CodexBaseModel):
 class TurnStartedNotification(CodexBaseModel):
     thread_id: str
     turn: Turn
-
-
 
 
 class TurnStartedMessage(CodexBaseModel):
@@ -12614,11 +11246,6 @@ type ThreadTimelineEntry = (
 """
 EXPERIMENTAL - one item or turn boundary in canonical rollout order.
 """
-
-
-
-
-type TurnStatus = Literal["completed", "interrupted", "failed", "inProgress"]
 
 
 class TurnSteerParams(CodexBaseModel):
@@ -12655,8 +11282,6 @@ class TurnSteerRequest(CodexBaseModel):
     params: TurnSteerParams
 
 
-
-
 class TurnSteerResponse(CodexBaseModel):
     turn_id: str
 
@@ -12669,8 +11294,6 @@ class TurnThreadUnreadPosition(CodexBaseModel):
 
 
 type ThreadUnreadPosition = ThreadStartThreadUnreadPosition | TurnThreadUnreadPosition
-
-
 
 
 class TurnToolOutput(CodexBaseModel):
@@ -12699,8 +11322,6 @@ class UnavailableUserVerificationErrorDetails(CodexBaseModel):
     type: Literal["unavailable"] = "unavailable"
 
 
-
-
 class UncommittedChangesReviewTarget(CodexBaseModel):
     """Review the working tree: staged, unstaged, and untracked files."""
 
@@ -12715,8 +11336,6 @@ type ReviewTarget = (
 )
 
 
-
-
 class UnknownCommandAction(CodexBaseModel):
     command: str
     type: Literal["unknown"] = "unknown"
@@ -12727,15 +11346,11 @@ type CommandAction = (
 )
 
 
-
-
 class UnreadThreadReadStateOperation(CodexBaseModel):
     type: Literal["unread"] = "unread"
 
 
 type ThreadReadStateOperation = ReadThreadReadStateOperation | UnreadThreadReadStateOperation
-
-
 
 
 class UpdatePatchChangeKind(CodexBaseModel):
@@ -12744,8 +11359,6 @@ class UpdatePatchChangeKind(CodexBaseModel):
 
 
 type PatchChangeKind = AddPatchChangeKind | DeletePatchChangeKind | UpdatePatchChangeKind
-
-
 
 
 class UrlUserInput(CodexBaseModel):
@@ -12776,8 +11389,6 @@ class UsageLimitExceededImageGenerationFailure(CodexBaseModel):
 type ImageGenerationFailure = UsageLimitExceededImageGenerationFailure
 
 
-
-
 class UserConfigLayerSource(CodexBaseModel):
     """User config layer from $CODEX_HOME/config.toml. This layer is special in that it is expected to be: - writable by the user - generally outside the workspace directory."""
 
@@ -12803,8 +11414,6 @@ type ConfigLayerSource = (
     | LegacyManagedConfigTomlFromFileConfigLayerSource
     | LegacyManagedConfigTomlFromMdmConfigLayerSource
 )
-
-
 
 
 type UserInput = (
@@ -12835,11 +11444,6 @@ class UserMessageThreadItem(CodexBaseModel):
     type: Literal["userMessage"] = "userMessage"
 
 
-
-
-type UserVerificationBiometricType = Literal["fingerprint"]
-
-
 class UserVerificationCancelParams(CodexBaseModel):
     """Cancels a native verification RPC issued on this connection, not an elicitation. Use a fresh request ID for each operation and a distinct ID for this cancellation RPC."""
 
@@ -12857,13 +11461,8 @@ class UserVerificationCancelRequest(CodexBaseModel):
     params: UserVerificationCancelParams
 
 
-
-
 class UserVerificationCancelResponse(CodexBaseModel):
     """Acknowledges the cancellation signal; native work may still be finishing. Unknown or finished requests are a no-op, and completed effects are not rolled back."""
-
-
-type UserVerificationCancellationReason = Literal["userCancelled", "interrupted"]
 
 
 class UserVerificationDeleteParams(CodexBaseModel):
@@ -12878,8 +11477,6 @@ class UserVerificationDeleteRequest(CodexBaseModel):
     id: RequestId
     method: Literal["userVerification/delete"] = "userVerification/delete"
     params: UserVerificationDeleteParams
-
-
 
 
 class UserVerificationDeleteResponse(CodexBaseModel):
@@ -12898,8 +11495,6 @@ class UserVerificationEnrollRequest(CodexBaseModel):
     id: RequestId
     method: Literal["userVerification/enroll"] = "userVerification/enroll"
     params: UserVerificationEnrollParams
-
-
 
 
 class UserVerificationEnrollResponse(CodexBaseModel):
@@ -12922,14 +11517,6 @@ type UserVerificationErrorDetails = (
 """
 Closed error categories; native diagnostic payloads must not cross this boundary.
 """
-
-
-type UserVerificationFailureReason = Literal[
-    "authenticationFailed", "timeout", "providerError", "serviceError"
-]
-
-
-type UserVerificationInvalidRequestReason = Literal["invalidParams"]
 
 
 class UserVerificationProof(CodexBaseModel):
@@ -12970,19 +11557,12 @@ class UserVerificationStatusRequest(CodexBaseModel):
     params: UserVerificationStatusParams
 
 
-
-
 class UserVerificationStatusResponse(CodexBaseModel):
     """Local readiness only; this neither prompts nor queries server registration."""
 
     credential_id: str | None = None
     unavailable_message: str | None = None
     unavailable_reason: UserVerificationUnavailableReason | None = None
-
-
-type UserVerificationUnavailableReason = Literal[
-    "credentialMissing", "biometricsUnavailable", "providerUnavailable"
-]
 
 
 class UserVerificationVerifyParams(CodexBaseModel):
@@ -13013,20 +11593,12 @@ class UserVerificationVerifyRequest(CodexBaseModel):
     params: UserVerificationVerifyParams
 
 
-
-
 class UserVerificationVerifyResponse(CodexBaseModel):
     biometric_type: UserVerificationBiometricType | None = None
     """
     Native-reported authentication method for this signature. Older servers omit it. This is approval context, not part of the signed proof.
     """
     proof: UserVerificationProof
-
-
-type Verbosity = Literal["low", "medium", "high"]
-"""
-Controls output length/detail on GPT-5 models via the Responses API. Serialized with lowercase values to match the OpenAI API.
-"""
 
 
 class WarningNotification(CodexBaseModel):
@@ -13038,8 +11610,6 @@ class WarningNotification(CodexBaseModel):
     """
     Optional thread target when the warning applies to a specific thread.
     """
-
-
 
 
 class WarningMessage(CodexBaseModel):
@@ -13092,11 +11662,6 @@ type ResponseItem = (
 )
 
 
-
-
-type WebSearchContextSize = Literal["low", "medium", "high"]
-
-
 class WebSearchLocation(CodexBaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -13105,15 +11670,6 @@ class WebSearchLocation(CodexBaseModel):
     country: str | None = None
     region: str | None = None
     timezone: str | None = None
-
-
-type WebSearchMode = Literal["disabled", "cached", "indexed", "live"]
-
-
-type WebSearchProvider = Literal["standalone", "search_mcp"]
-"""
-Provider preference selected by the resolved model catalog entry.
-"""
 
 
 class WebSearchThreadItem(CodexBaseModel):
@@ -13165,8 +11721,6 @@ A thread item and its recorded lifecycle times. The payload stays flat on the wi
 """
 
 
-
-
 class WebSearchToolConfig(CodexBaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -13186,8 +11740,6 @@ class WebrtcThreadRealtimeStartTransport(CodexBaseModel):
     type: Literal["webrtc"] = "webrtc"
 
 
-
-
 class WebsocketThreadRealtimeStartTransport(CodexBaseModel):
     """EXPERIMENTAL - transport used by thread realtime."""
 
@@ -13204,13 +11756,9 @@ EXPERIMENTAL - transport used by thread realtime.
 """
 
 
-
-
 class WeekdaysScheduledTaskSchedule(CodexBaseModel):
     time: str
     type: Literal["weekdays"] = "weekdays"
-
-
 
 
 class WeeklyScheduledTaskSchedule(CodexBaseModel):
@@ -13225,8 +11773,6 @@ type ScheduledTaskSchedule = (
     | WeekdaysScheduledTaskSchedule
     | WeeklyScheduledTaskSchedule
 )
-
-
 
 
 class WellbeingPromptHelplineAnswerReplacement(CodexBaseModel):
@@ -13252,22 +11798,12 @@ EXPERIMENTAL - how an existing agent item appears in a realtime conversation.
 """
 
 
-
-
-type WindowsSandboxImplementation = Literal["elevated", "unelevated", "mxc"]
-
-
-type WindowsSandboxReadiness = Literal["ready", "notConfigured", "updateRequired"]
-
-
 class WindowsSandboxReadinessRequest(CodexBaseModel):
     """Request from the client to the server."""
 
     id: RequestId
     method: Literal["windowsSandbox/readiness"] = "windowsSandbox/readiness"
     params: None = Field(None)
-
-
 
 
 class WindowsSandboxReadinessResponse(CodexBaseModel):
@@ -13280,8 +11816,6 @@ class WindowsSandboxSetupCompletedNotification(CodexBaseModel):
     success: bool
 
 
-
-
 class WindowsSandboxSetupCompletedMessage(CodexBaseModel):
     """Notification sent from the server to the client."""
 
@@ -13291,9 +11825,6 @@ class WindowsSandboxSetupCompletedMessage(CodexBaseModel):
     """
     method: Literal["windowsSandbox/setupCompleted"] = "windowsSandbox/setupCompleted"
     params: WindowsSandboxSetupCompletedNotification
-
-
-type WindowsSandboxSetupMode = Literal["elevated", "unelevated"]
 
 
 class WindowsSandboxSetupStartParams(CodexBaseModel):
@@ -13506,8 +12037,6 @@ Request from the client to the server.
 """
 
 
-
-
 class WindowsSandboxSetupStartResponse(CodexBaseModel):
     started: bool
 
@@ -13516,8 +12045,6 @@ class WindowsWorldWritableWarningNotification(CodexBaseModel):
     extra_count: int = Field(..., ge=0)
     failed_scan: bool
     sample_paths: list[str]
-
-
 
 
 class WindowsWorldWritableWarningMessage(CodexBaseModel):
@@ -13640,9 +12167,6 @@ class WorkspaceMessage(CodexBaseModel):
     message_type: WorkspaceMessageType
 
 
-type WorkspaceMessageType = Literal["headline", "announcement", "unknown"]
-
-
 class WorkspaceRouting(CodexBaseModel):
     account_routing_override: AccountRoutingOverride
     backend_origin: str
@@ -13663,11 +12187,6 @@ type SandboxPolicy = (
     | ExternalSandboxSandboxPolicy
     | WorkspaceWriteSandboxPolicy
 )
-
-
-
-
-type WriteStatus = Literal["ok", "okOverridden"]
 
 
 class WriteStdinGuardianApprovalReviewAction(CodexBaseModel):
