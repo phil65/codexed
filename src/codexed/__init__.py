@@ -15,6 +15,17 @@ __license__ = "MIT"
 __url__ = "https://github.com/phil65/codexed"
 
 
+__lazy_modules__ = [
+    "codexed.client",
+    "codexed.exceptions",
+    "codexed.models",
+    "codexed.models.codex_types",
+    "codexed.models.tool_config",
+    "codexed.models.v2_types",
+    "codexed.request_handlers",
+    "codexed.transport",
+]
+
 from codexed.client import CodexClient, Session
 from codexed.exceptions import (
     CodexError,
@@ -30,6 +41,33 @@ from codexed.exceptions import (
     TransportClosedError,
     TurnFailedError,
     is_retryable_error,
+)
+from codexed.models.codex_types import (
+    ApprovalDecision,
+    SkillApprovalDecision,
+)
+from codexed.models.v2_types import (
+    CollabAgentStatus,
+    CollabAgentTool,
+    CommandExecutionSource,
+    CommandExecutionStatus,
+    InputModality,
+    McpAuthStatus,
+    MessagePhase,
+    ModeKind,
+    ModelRerouteReason,
+    NetworkAccess,
+    PatchApplyStatus,
+    Personality,
+    ReasoningEffort,
+    ReasoningSummary,
+    ReviewDelivery,
+    SandboxMode,
+    SkillScope,
+    ThreadActiveFlag,
+    ThreadSortKey,
+    ThreadSourceKind,
+    TurnStatus,
 )
 from codexed.models import (
     AgentMessageDeltaNotification,
@@ -72,32 +110,9 @@ from codexed.models import (
     Settings,
     DangerFullAccessSandboxPolicy,
     ExternalSandboxSandboxPolicy,
-    ApprovalDecision,
-    CollabAgentStatus,
-    CollabAgentTool,
-    CommandExecutionSource,
-    CommandExecutionStatus,
-    McpAuthStatus,
-    InputModality,
-    ModelRerouteReason,
-    PatchApplyStatus,
-    MessagePhase,
-    ReviewDelivery,
-    SandboxMode,
-    SkillScope,
-    ModeKind,
-    NetworkAccess,
-    Personality,
     ReadOnlySandboxPolicy,
-    ReasoningEffort,
-    ReasoningSummary,
     SandboxPolicy,
     SessionSource,
-    SkillApprovalDecision,
-    ThreadActiveFlag,
-    ThreadSortKey,
-    ThreadSourceKind,
-    TurnStatus,
     WorkspaceWriteSandboxPolicy,
     ItemAgentMessageDeltaNotification,
     AppListUpdatedMessage,

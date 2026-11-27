@@ -26,6 +26,7 @@ import tempfile
 PROJECT_ROOT = Path(__file__).parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "src" / "codexed" / "models"
 OUTPUT_FILE = OUTPUT_DIR / "v2_protocol.py"
+TYPES_OUTPUT_FILE = OUTPUT_DIR / "v2_types.py"
 SCHEMA_FILENAME = "codex_app_server_protocol.v2.schemas.json"
 
 
@@ -253,6 +254,28 @@ def post_process(primitive_aliases: dict[str, str], codex_version: str) -> None:
         print("  No post-processing needed")
 
 
+def split_types() -> None:
+    """Split pure scalar/Literal type aliases out of ``v2_protocol.py`` into ``v2_types.py``."""
+    from schemez import split_scalar_type_aliases
+
+    content = OUTPUT_FILE.read_text()
+    header_lines = [line for line in content.splitlines()[:6] if line.startswith("#")]
+    header = (
+        "\n".join(header_lines)
+        + '\n\n"""Generated scalar and literal type aliases from the Codex v2 protocol schema."""'
+    )
+    result = split_scalar_type_aliases(
+        content,
+        types_module="codexed.models.v2_types",
+        header=header,
+    )
+    TYPES_OUTPUT_FILE.write_text(result.types_source)
+    OUTPUT_FILE.write_text(result.models_source)
+    print(
+        f"  Extracted {len(result.extracted_names)} scalar/literal aliases to {TYPES_OUTPUT_FILE}"
+    )
+
+
 def write_init() -> None:
     """Write __init__.py for the reference package if it doesn't exist."""
     init_file = OUTPUT_DIR / "__init__.py"
@@ -295,6 +318,7 @@ def main() -> None:
             primitive_aliases = find_primitive_aliases(schema_path)
 
         post_process(primitive_aliases, codex_version)
+        split_types()
         write_init()
         verify_output()
 
